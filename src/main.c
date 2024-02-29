@@ -4,13 +4,13 @@
 #include <clock_vector.h>
 
 int main(void){
-  if (init_window(1280, 720, "GLFW Window") < 0) return 1;
+  if (init_window(800, 800, "GLFW Window") < 0) return 1;
 
   // triangle {x,y,z,w}
   Vectorf vertices[]  = {
-    {-1.f, -1.f, 0.f, 1.f}, // bottom-left
-    { 1.f, -1.f, 0.f, 1.f}, // top-middle
-    { 0.f,  1.f, 0.f, 1.f} // bottom-right
+    {-0.5f, -0.5f, 0.f, 1.f}, // bottom-left
+    { 0.5f, -0.5f, 0.f, 1.f}, // top-middle
+    { 0.f,   0.45f, 0.f, 1.f} // bottom-right
   };
   const size_t vertex_count = ARRAY_LEN(vertices);
 

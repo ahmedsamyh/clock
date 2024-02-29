@@ -47,14 +47,14 @@ void clearf(Colorf colorf);
 
 // Shader
 static const char* default_vert_shader =
-  "#version 330\n"
+  "#version 460\n"
   "layout(location = 0)in vec4 position;\n"
   "void main(void){\n"
   "  gl_Position = position;\n"
   "}\n";
 
 static const char* default_frag_shader =
-  "#version 330\n"
+  "#version 460\n"
   "out vec4 frag_col;"
   "void main(void){\n"
   "  frag_col = vec4(1.0);\n"

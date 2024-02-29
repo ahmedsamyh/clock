@@ -32,7 +32,7 @@ int init_window(u32 _width, u32 _height, const char* _title){
   win_width = _width == 0 ? DEFAULT_WIN_WIDTH : _width;
   win_height = _height == 0 ? DEFAULT_WIN_HEIGHT : _height;
 
-  log_f(LOG_INFO, "Running %s", win_title);
+  log_f(LOG_INFO, "Running '%s'", win_title);
   if (!glfwInit()){
     log_f(LOG_ERROR, "GLFW Could not initialize!");
     return -1;
@@ -77,14 +77,14 @@ void quit(GLFWwindow* window, int exit_code){
 // Shader
 int create_shader(const char* vert_src, const char* frag_src){
   GLuint vert = glCreateShader(GL_VERTEX_SHADER); gl_check_and_log_error();
-  if (!vert){
+  if (vert == 0){
     log_f(LOG_ERROR, "Failed to create vertex shader!");
     return -1;
   }
   log_f(LOG_INFO, "Successfully created vertex shader!");
 
   GLuint frag = glCreateShader(GL_FRAGMENT_SHADER); gl_check_and_log_error();
-  if (!frag){
+  if (frag == 0){
     log_f(LOG_ERROR, "Failed to create fragment shader!");
     return -1;
   }
@@ -96,7 +96,7 @@ int create_shader(const char* vert_src, const char* frag_src){
   glCompileShader(vert); gl_check_and_log_error();
   int compiled;
   glGetShaderiv(vert, GL_COMPILE_STATUS, &compiled); gl_check_and_log_error();
-  if (!compiled){
+  if (compiled == GL_FALSE){
     int infolog_len;
     glGetShaderiv(vert, GL_INFO_LOG_LENGTH, &infolog_len); gl_check_and_log_error();
 
@@ -104,7 +104,7 @@ int create_shader(const char* vert_src, const char* frag_src){
 
     glGetShaderInfoLog(vert, infolog_len, &infolog_len, infolog); gl_check_and_log_error();
 
-    log_f(LOG_ERROR, "Failed to compile vertex shader: %s", infolog);
+    log_f(LOG_ERROR, "Failed to compile vertex shader: \n    %s", infolog);
 
     free(infolog);
     return -1;
@@ -113,7 +113,7 @@ int create_shader(const char* vert_src, const char* frag_src){
 
   glCompileShader(frag); gl_check_and_log_error();
   glGetShaderiv(frag, GL_COMPILE_STATUS, &compiled); gl_check_and_log_error();
-  if (!compiled){
+  if (compiled == GL_FALSE){
     int infolog_len;
     glGetShaderiv(frag, GL_INFO_LOG_LENGTH, &infolog_len); gl_check_and_log_error();
 
@@ -121,7 +121,7 @@ int create_shader(const char* vert_src, const char* frag_src){
 
     glGetShaderInfoLog(frag, infolog_len, &infolog_len, infolog); gl_check_and_log_error();
 
-    log_f(LOG_ERROR, "Failed to compile fragment shader: %s", infolog);
+    log_f(LOG_ERROR, "Failed to compile fragment shader: \n    %s", infolog);
 
     free(infolog);
     return -1;
@@ -129,7 +129,7 @@ int create_shader(const char* vert_src, const char* frag_src){
   log_f(LOG_INFO, "Successfully compiled fragment shader!");
 
   GLuint program = glCreateProgram(); gl_check_and_log_error();
-  if (!program){
+  if (program == GL_FALSE){
     log_f(LOG_ERROR, "Failed to create shader program!");
     return -1;
   }
@@ -142,7 +142,7 @@ int create_shader(const char* vert_src, const char* frag_src){
 
   int linked;
   glGetProgramiv(program, GL_LINK_STATUS, &linked); gl_check_and_log_error();
-  if (!linked){
+  if (linked == GL_FALSE){
     int infolog_len;
     glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infolog_len); gl_check_and_log_error();
 
@@ -161,6 +161,25 @@ int create_shader(const char* vert_src, const char* frag_src){
   glDetachShader(program, frag); gl_check_and_log_error();
   glDeleteShader(vert); gl_check_and_log_error();
   glDeleteShader(frag); gl_check_and_log_error();
+
+  glValidateProgram(program);
+
+  int validated;
+  glGetProgramiv(program, GL_VALIDATE_STATUS, &validated);
+  if (validated == GL_FALSE){
+    int infolog_len;
+    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infolog_len); gl_check_and_log_error();
+
+    char* infolog = (char*)malloc(sizeof(char)*infolog_len);
+
+    glGetProgramInfoLog(program, infolog_len, &infolog_len, infolog); gl_check_and_log_error();
+
+    log_f(LOG_ERROR, "Failed to validate shader program: %s", infolog);
+
+    free(infolog);
+    return -1;
+  }
+  log_f(LOG_INFO, "Successfully validated shader program!");
 
   return program;
 }
