@@ -79,6 +79,84 @@ float v4f_mag2(Vector4f v);
 float v4f_dist(Vector4f v);
 float v4f_dist2(Vector4f v);
 
+// Vector2d --------------------------------------------------
+typedef struct {
+  union {
+    double x;
+    double u;
+  };
+  union {
+    double y;
+    double v;
+  };
+} Vector2d;
+
+Vector2d v2d_add(Vector2d v1, Vector2d v2);
+Vector2d v2d_sub(Vector2d v1, Vector2d v2);
+Vector2d v2d_mul(Vector2d v1, Vector2d v2);
+Vector2d v2d_div(Vector2d v1, Vector2d v2);
+Vector2d v2d_adds(Vector2d v, double num);
+Vector2d v2d_subs(Vector2d v, double num);
+Vector2d v2d_muls(Vector2d v, double num);
+Vector2d v2d_divs(Vector2d v, double num);
+float v2d_mag(Vector2d v);
+float v2d_mag2(Vector2d v);
+float v2d_dist(Vector2d v);
+float v2d_dist2(Vector2d v);
+
+// Vector3d --------------------------------------------------
+typedef struct {
+  double x;
+  double y;
+  double z;
+} Vector3d;
+
+Vector3d v3d_add(Vector3d v1, Vector3d v2);
+Vector3d v3d_sub(Vector3d v1, Vector3d v2);
+Vector3d v3d_mul(Vector3d v1, Vector3d v2);
+Vector3d v3d_div(Vector3d v1, Vector3d v2);
+Vector3d v3d_adds(Vector3d v, double num);
+Vector3d v3d_subs(Vector3d v, double num);
+Vector3d v3d_muls(Vector3d v, double num);
+Vector3d v3d_divs(Vector3d v, double num);
+float v3d_mag(Vector3d v);
+float v3d_mag2(Vector3d v);
+float v3d_dist(Vector3d v);
+float v3d_dist2(Vector3d v);
+
+// Vector4d --------------------------------------------------
+typedef struct {
+  union {
+    double x;
+    double r;
+  };
+  union {
+    double y;
+    double g;
+  };
+  union {
+    double z;
+    double b;
+  };
+  union {
+    double w;
+    double a;
+  };
+} Vector4d;
+
+Vector4d v4d_add(Vector4d v1, Vector4d v2);
+Vector4d v4d_sub(Vector4d v1, Vector4d v2);
+Vector4d v4d_mul(Vector4d v1, Vector4d v2);
+Vector4d v4d_div(Vector4d v1, Vector4d v2);
+Vector4d v4d_adds(Vector4d v, double num);
+Vector4d v4d_subs(Vector4d v, double num);
+Vector4d v4d_muls(Vector4d v, double num);
+Vector4d v4d_divs(Vector4d v, double num);
+float v4d_mag(Vector4d v);
+float v4d_mag2(Vector4d v);
+float v4d_dist(Vector4d v);
+float v4d_dist2(Vector4d v);
+
 // Vector2i --------------------------------------------------
 typedef struct {
   union {
@@ -371,6 +449,219 @@ float v4f_dist(Vector4f v){
   return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
 }
 float v4f_dist2(Vector4f v){
+  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+}
+
+// Vector2d --------------------------------------------------
+
+Vector2d v2d_add(Vector2d v1, Vector2d v2){
+  return (Vector2d){
+    .x = v1.x + v2.x,
+    .y = v1.y + v2.y,
+  };
+}
+Vector2d v2d_sub(Vector2d v1, Vector2d v2){
+  return (Vector2d){
+    .x = v1.x - v2.x,
+    .y = v1.y - v2.y,
+  };
+}
+Vector2d v2d_mul(Vector2d v1, Vector2d v2){
+  return (Vector2d){
+    .x = v1.x * v2.x,
+    .y = v1.y * v2.y,
+  };
+}
+Vector2d v2d_div(Vector2d v1, Vector2d v2){
+  return (Vector2d){
+    .x = v1.x / v2.x,
+    .y = v1.y / v2.y,
+  };
+}
+Vector2d v2d_adds(Vector2d v1, double num){
+  return (Vector2d){
+    .x = v1.x + num,
+    .y = v1.y + num,
+  };
+}
+Vector2d v2d_subs(Vector2d v1, double num){
+  return (Vector2d){
+    .x = v1.x - num,
+    .y = v1.y - num,
+  };
+}
+Vector2d v2d_muls(Vector2d v1, double num){
+  return (Vector2d){
+    .x = v1.x * num,
+    .y = v1.y * num,
+  };
+}
+Vector2d v2d_divs(Vector2d v1, double num){
+  return (Vector2d){
+    .x = v1.x / num,
+    .y = v1.y / num,
+  };
+}
+float v2d_mag(Vector2d v){
+  return sqrtf((v.x*v.x) + (v.y*v.y));
+}
+float v2d_mag2(Vector2d v){
+  return ((v.x*v.x) + (v.y*v.y));
+}
+float v2d_dist(Vector2d v){
+  return sqrtf((v.x*v.x) + (v.y*v.y));
+}
+float v2d_dist2(Vector2d v){
+  return ((v.x*v.x) + (v.y*v.y));
+}
+
+// Vector3d --------------------------------------------------
+
+Vector3d v3d_add(Vector3d v1, Vector3d v2){
+  return (Vector3d){
+    .x = v1.x + v2.x,
+    .y = v1.y + v2.y,
+    .z = v1.z + v2.z,
+  };
+}
+Vector3d v3d_sub(Vector3d v1, Vector3d v2){
+  return (Vector3d){
+    .x = v1.x - v2.x,
+    .y = v1.y - v2.y,
+    .z = v1.z - v2.z,
+  };
+}
+Vector3d v3d_mul(Vector3d v1, Vector3d v2){
+  return (Vector3d){
+    .x = v1.x * v2.x,
+    .y = v1.y * v2.y,
+    .z = v1.z * v2.z,
+  };
+}
+Vector3d v3d_div(Vector3d v1, Vector3d v2){
+  return (Vector3d){
+    .x = v1.x / v2.x,
+    .y = v1.y / v2.y,
+    .z = v1.z / v2.z,
+  };
+}
+Vector3d v3d_adds(Vector3d v1, double num){
+  return (Vector3d){
+    .x = v1.x + num,
+    .y = v1.y + num,
+    .z = v1.z + num,
+  };
+}
+Vector3d v3d_subs(Vector3d v1, double num){
+  return (Vector3d){
+    .x = v1.x - num,
+    .y = v1.y - num,
+    .z = v1.z - num,
+  };
+}
+Vector3d v3d_muls(Vector3d v1, double num){
+  return (Vector3d){
+    .x = v1.x * num,
+    .y = v1.y * num,
+    .z = v1.z * num,
+  };
+}
+Vector3d v3d_divs(Vector3d v1, double num){
+  return (Vector3d){
+    .x = v1.x / num,
+    .y = v1.y / num,
+    .z = v1.z / num,
+  };
+}
+float v3d_mag(Vector3d v){
+  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+}
+float v3d_mag2(Vector3d v){
+  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+}
+float v3d_dist(Vector3d v){
+  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+}
+float v3d_dist2(Vector3d v){
+  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+}
+
+// Vector4d --------------------------------------------------
+
+Vector4d v4d_add(Vector4d v1, Vector4d v2){
+  return (Vector4d){
+    .x = v1.x + v2.x,
+    .y = v1.y + v2.y,
+    .z = v1.z + v2.z,
+    .w = v1.w + v2.w,
+  };
+}
+Vector4d v4d_sub(Vector4d v1, Vector4d v2){
+  return (Vector4d){
+    .x = v1.x - v2.x,
+    .y = v1.y - v2.y,
+    .z = v1.z - v2.z,
+    .w = v1.w - v2.w,
+  };
+}
+Vector4d v4d_mul(Vector4d v1, Vector4d v2){
+  return (Vector4d){
+    .x = v1.x * v2.x,
+    .y = v1.y * v2.y,
+    .z = v1.z * v2.z,
+    .w = v1.w * v2.w,
+  };
+}
+Vector4d v4d_div(Vector4d v1, Vector4d v2){
+  return (Vector4d){
+    .x = v1.x / v2.x,
+    .y = v1.y / v2.y,
+    .z = v1.z / v2.z,
+    .w = v1.w / v2.w,
+  };
+}
+Vector4d v4d_adds(Vector4d v1, double num){
+  return (Vector4d){
+    .x = v1.x + num,
+    .y = v1.y + num,
+    .z = v1.z + num,
+    .w = v1.w + num,
+  };
+}
+Vector4d v4d_subs(Vector4d v1, double num){
+  return (Vector4d){
+    .x = v1.x - num,
+    .y = v1.y - num,
+    .z = v1.z - num,
+    .w = v1.w - num,
+  };
+}
+Vector4d v4d_muls(Vector4d v1, double num){
+  return (Vector4d){
+    .x = v1.x * num,
+    .y = v1.y * num,
+    .z = v1.z * num,
+    .w = v1.w * num,
+  };
+}
+Vector4d v4d_divs(Vector4d v1, double num){
+  return (Vector4d){
+    .x = v1.x / num,
+    .y = v1.y / num,
+    .z = v1.z / num,
+    .w = v1.w / num,
+  };
+}
+float v4d_mag(Vector4d v){
+  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+}
+float v4d_mag2(Vector4d v){
+  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+}
+float v4d_dist(Vector4d v){
+  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+}
+float v4d_dist2(Vector4d v){
   return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
 }
 

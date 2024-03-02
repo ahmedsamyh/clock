@@ -1,3 +1,4 @@
+#include "lib_gen.c"
 #define STB_DS_IMPLEMENTATION
 #include <stb_ds.h>
 #define COMMONLIB_IMPLEMENTATION
@@ -8,27 +9,7 @@
 #include <assert.h>
 
 static const char* output_filename = "vector.h";
-
-void prepare_header_guard_begin(void){
-  FILE* out = fopen(output_filename, "w");
-  assert(out != NULL);
-
-  fprintf(out, "#ifndef _VECTOR_H_\n");
-  fprintf(out, "#define _VECTOR_H_\n");
-
-  fclose(out);
-  log_f(LOG_INFO, "Prepared output header!");
-}
-
-void prepare_header_guard_end(void){
-  FILE* out = fopen(output_filename, "a");
-  assert(out != NULL);
-
-  fprintf(out, "\n#endif //_VECTOR_H_\n");
-
-  fclose(out);
-  log_f(LOG_INFO, "Prepared output footer!");
-}
+#define GUARD_NAME "VECTOR_H"
 
 void declare_arithmetic_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name){
   fprintf(out, "%s %s_%s(%s v1, %s v2);\n", return_type, prefix, func, full_name, full_name);
@@ -331,9 +312,10 @@ void define_vector(String_view format){
 }
 
 int main(void){
-  prepare_header_guard_begin();
+  prepare_header_guard_begin(output_filename, GUARD_NAME);
   const char* types[] = {
     "float",
+    "double",
     "int",
   };
 #define buff_size 1024
@@ -343,7 +325,7 @@ int main(void){
     snprintf(buff, buff_size, "Vector3 : %s : {x} {y} {z}", types[i]); declare_vector(SV(buff));
     snprintf(buff, buff_size, "Vector4 : %s : {x|r} {y|g} {z|b} {w|a}", types[i]); declare_vector(SV(buff));
   }
-  prepare_header_guard_end();
+  prepare_header_guard_end(output_filename, GUARD_NAME);
   prepare_source_header();
   for (size_t i = 0; i < ARRAY_LEN(types); ++i){
     snprintf(buff, buff_size, "Vector2 : %s : x y", types[i]); define_vector(SV(buff));
