@@ -6,6 +6,8 @@
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 #include <clock_math.h>
+#include <vector.h>
+#include <clock_vertex.h>
 
 typedef uint32_t u32;
 typedef uint8_t   u8;
@@ -16,48 +18,61 @@ static char tmpbuff[TMP_BUFF_SIZE] = {0};
 #define DEFAULT_WIN_WIDTH 1280
 #define DEFAULT_WIN_HEIGHT 720
 
-static u32 win_width;
-static u32 win_height;
-GLFWwindow* window;
-static const char* win_title;
-
-// Main
-int  clock_init_window(u32 width, u32 height, const char* title);
-void clock_begin_draw(void);
-void clock_end_draw(void);
-
-void clock_quit(GLFWwindow* window, int exit_code);
-
 // Color
-typedef struct {
-  u8 r, g, b, a; // 0..255
-} Color;
-typedef struct {
-  float r, g, b, a; // 0.0..1.0
-} Colorf;
+typedef Vector4f Color; // 0.0..1.0
 
-Colorf Color_normalize(Color color);
-void clear(Color color);
-void clearf(Colorf colorf);
+// Window
+typedef struct {
+  u32 width;
+  u32 height;
+  GLFWwindow* glfw_win;
+  const char* title;
+} Window;
 
-#define COLOR_BLACK (Color){0,0,0,255}
-#define COLOR_RED   (Color){255,0,0,255}
-#define COLOR_GREEN (Color){0,255,0,255}
-#define COLOR_BLUE (Color){0,0,255,255}
+int Window_init(Window* win, u32 width, u32 height, const char* title);
+void Window_display(Window* win);
+void Window_deinit(Window* win);
+void Window_clear(Window* win, Color color);
+
+#define COLOR_BLACK (Color){0.f,0.f,0.f,1.f}
+#define COLOR_RED   (Color){1.f,0.f,0.f,1.f}
+#define COLOR_GREEN (Color){0.f,1.f,0.f,1.f}
+#define COLOR_BLUE (Color){0.f,0.f,1.f,1.f}
+
+
+// Renderer
+typedef struct {
+#define VERTEX_CAP (3)
+  Vertex vertices[VERTEX_CAP];
+#define VAO_COUNT 1
+  GLuint vao[VAO_COUNT];
+#define VBO_COUNT 1
+  GLuint vbo[VBO_COUNT];
+  GLuint current_shader;
+  Window* win;
+} Renderer;
+
+int Renderer_init(Renderer* renderer, Window* win);
+void Renderer_deinit(Renderer* renderer);
+void Render_draw_triangle3(Renderer* renderer, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2);
 
 // Shader
 static const char* default_vert_shader =
   "#version 460\n"
   "layout(location = 0)in vec4 position;\n"
+  "layout(location = 1)in vec4 color;\n"
+  "layout(location = 2)out vec4 out_color;\n"
   "void main(void){\n"
   "  gl_Position = position;\n"
+  "  out_color = color;\n"
   "}\n";
 
 static const char* default_frag_shader =
   "#version 460\n"
-  "out vec4 frag_col;"
+  "layout(location = 2)in vec4 in_col;\n"
+  "out vec4 frag_col;\n"
   "void main(void){\n"
-  "  frag_col = vec4(1.0);\n"
+  "  frag_col = in_col;\n"
   "}\n";
 
 int create_shader(const char* vert_src, const char* frag_src);

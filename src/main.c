@@ -1,59 +1,46 @@
 #include <math.h>
 #include <clock.h>
 #define VECTOR_IMPLEMENTATION
-#include <clock_vector.h>
+#include <vector.h>
+#define COMMONLIB_IMPLEMENTATION
+#include <commonlib.h>
+#include <stddef.h> // offsetof
 
 int main(void){
-  if (init_window(800, 800, "GLFW Window") < 0) return 1;
+  Window win = {0};
 
-  // triangle {x,y,z,w}
-  Vectorf vertices[]  = {
-    {-0.5f, -0.5f, 0.f, 1.f}, // bottom-left
-    { 0.5f, -0.5f, 0.f, 1.f}, // top-middle
-    { 0.f,   0.45f, 0.f, 1.f} // bottom-right
-  };
-  const size_t vertex_count = ARRAY_LEN(vertices);
+  if (Window_init(&win, 800, 800, "GLFW Window") < 0) return 1;
 
-  GLuint vao[1] = {0};
+  float width =  (float)win.width;
+  float height = (float)win.height;
 
-  glGenVertexArrays(1, vao);
-  glBindVertexArray(vao[0]);
+  Renderer ren = {0};
 
-  GLuint vbo[2] = {0};
-
-  // generate VBO and initialize them with vertex data
-  glGenBuffers(1, vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(Vectorf) * vertex_count, vertices, GL_STATIC_DRAW);
-
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vectorf), NULL);
-
-  int shader = create_shader(default_vert_shader, default_frag_shader);
-  if (shader < 0){
-    quit(window, 1);
-  }
-
-  glUseProgram(shader);
+  if (Renderer_init(&ren, &win) < 0) return 1;
 
   // game loop
-  while (!glfwWindowShouldClose(window)){
-    begin_draw();
-    clear(COLOR_BLACK);
+  while (!glfwWindowShouldClose(win.glfw_win)){
+    Window_clear(&win, COLOR_BLACK);
 
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, vertex_count);
+    Vector3f p0 = {0.f, height, 0.f};
+    Vector3f p1 = {width*0.5f, 0.f, 0.f};
+    Vector3f p2 = {width, height, 0.f};
 
-    end_draw();
+    /* Vector3f p0 = {-0.5f, -0.5f, 0.f}; */
+    /* Vector3f p1 = { 0.0f,  0.5f, 0.f}; */
+    /* Vector3f p2 = { 0.5f, -0.5f, 0.f}; */
+
+    Render_draw_triangle3(&ren, p0, p1, p2,
+			   COLOR_RED,
+			   COLOR_GREEN,
+			   COLOR_BLUE);
+    /* quit(window, 0); */
+
+    Window_display(&win);
   }
 
-  glUseProgram(0);
-  glDeleteProgram(shader);
-  glDisableVertexAttribArray(0);
-  glDisableVertexAttribArray(1);
-  glDeleteBuffers(1, vbo);
-  glDeleteVertexArrays(1, vao);
-
-  quit(window, 0);
+  Renderer_deinit(&ren);
+  Window_deinit(&win);
 
   return 0;
 }
