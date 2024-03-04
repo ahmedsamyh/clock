@@ -247,6 +247,14 @@ void Render_texture(Renderer* r, Vector3f pos, Texture* tex){
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
+void Render_rect(Renderer* r, Rect rect, Color color){
+  Vector3f tl = (Vector3f){rect.pos.x, rect.pos.y, 0.f};
+  Vector3f tr = (Vector3f){rect.pos.x + rect.size.x, rect.pos.y, 0.f};
+  Vector3f br = (Vector3f){rect.pos.x + rect.size.x, rect.pos.y + rect.size.y, 0.f};
+  Vector3f bl = (Vector3f){rect.pos.x, rect.pos.y + rect.size.y, 0.f};
+  Render_imm_quad(r, tl, tr, br, bl, color, color, color, color);
+}
+
 // Shader
 
 int create_shader(const char* vert_src, const char* frag_src){

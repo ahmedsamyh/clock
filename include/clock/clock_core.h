@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <clock/clock_vertex.h>
 #include <clock/clock_vector.h>
+#include <clock/clock_rect.h>
 #include <stdbool.h>
 #include <clock/clock_texture.h>
 #include <commonlib.h>
@@ -63,6 +64,7 @@ void Render_imm_triangle(Renderer* renderer, Vector3f p0, Vector3f p1, Vector3f 
 void Render_imm_quad(Renderer* renderer, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
 void Render_imm_box(Renderer* renderer, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
 void Render_texture(Renderer* renderer, Vector3f pos, Texture* texture);
+void Render_rect(Renderer* renderer, Rect rect, Color color);
 
 // Shader
 
