@@ -1,4 +1,4 @@
-#include <clock_math.h>
+#include <clock/clock_math.h>
 
 float deg2rad(float deg){
   return (deg / 360.f)*TWO_PI;

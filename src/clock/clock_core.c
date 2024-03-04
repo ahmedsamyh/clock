@@ -1,8 +1,13 @@
-#include <clock.h>
-#include <stddef.h> // offsetof
+#include <clock/clock_core.h>
+#include <stdlib.h>
+#define MATRIX_IMPLEMENTATION
+#include <clock/clock_matrix.h>
+#define COMMONLIB_IMPLEMENTATION
+#include <commonlib.h>
 
 // Window
-int Window_init(Window* win, u32 width, u32 height, const char* title){
+
+int Window_init(Window* win, unsigned int width, unsigned int height, const char* title){
   win->title = title;
 
   win->width = width == 0 ? DEFAULT_WIN_WIDTH : width;
@@ -23,8 +28,10 @@ int Window_init(Window* win, u32 width, u32 height, const char* title){
   win->glfw_win = glfwCreateWindow(win->width, win->height, win->title, NULL, NULL);
 
   if (win->glfw_win == NULL){
+    char* tmpbuff = (char*)malloc(sizeof(char)*1024);
     glfwGetError((const char**)&tmpbuff);
     log_f(LOG_ERROR, "Could not initialize window: %s", tmpbuff);
+    free(tmpbuff);
     return -1;
   }
   log_f(LOG_INFO, "Window Created!");
@@ -57,9 +64,12 @@ void Window_begin_draw(Window* win){
 
   win->fps = (1.0 / win->delta);
 
-  snprintf(tmpbuff, TMPBUFF_SIZE, "%s | fps: %d | delta: %f", win->title, win->fps, win->delta);
+  char* tmpbuff = (char*)malloc(sizeof(char)*1024);
+  snprintf(tmpbuff, 1024, "%s | fps: %d | delta: %f", win->title, win->fps, win->delta);
 
   glfwSetWindowTitle(win->glfw_win, tmpbuff);
+
+  free(tmpbuff);
 }
 
 void Window_end_draw(Window* win){
@@ -75,49 +85,67 @@ void Window_deinit(Window* win){
 }
 
 void Window_clear(Window* win, Color color){
-  glClearColor(color.r, color.g, color.b, color.a); gl();
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); gl();
+  gl(glClearColor(color.r, color.g, color.b, color.a));
+  gl(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
-
 // Renderer
+
+
 int Renderer_init(Renderer* r, Window* win){
   r->win = win;
 
-  glGenVertexArrays(VAO_COUNT, r->vao);  gl();
-  glBindVertexArray(r->vao[0]);  gl(); // 0 is the default one
+  gl(glGenVertexArrays(VAO_COUNT, r->vao););
+  gl(glBindVertexArray(r->vao[0]););  // 0 is the default one
 
   // vbo
-  glGenBuffers(VBO_COUNT, r->vbo);  gl();
-  glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]);  gl();// 0 is the default one
-  glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * VERTEX_CAP, NULL, GL_STATIC_DRAW); gl();
+  gl(glGenBuffers(VBO_COUNT, r->vbo););
+  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]);); // 0 is the default one
+  gl(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * VERTEX_CAP, NULL, GL_STATIC_DRAW));;
 
   // position
-  glEnableVertexAttribArray(0); gl();
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL); gl(); //;(const GLvoid*)offsetof(Vertex, position));
+  gl(glEnableVertexAttribArray(0));
+  gl(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL)); //;(const GLvoid*)offsetof(Vertex, position));
 
   // color
-  glEnableVertexAttribArray(1); gl();
-  glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, color)); gl();
+  gl(glEnableVertexAttribArray(1));
+  gl(glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, color)));
+
+  // texcoord
+  gl(glEnableVertexAttribArray(2));
+  gl(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, texcoord)));
 
   // create default shader
-  r->current_shader = create_shader(default_vert_shader, default_frag_shader);
-  if (r->current_shader < 0){
+  r->shader = create_shader(default_vert_shader, default_frag_shader);
+  if (r->shader == 0){
     return -1;
   }
+  log_f(LOG_INFO, "Loaded default shader!");
 
-  glUseProgram(r->current_shader); gl();
+  gl(glUseProgram(r->shader));
 
   return 0;
 }
 
 void Renderer_deinit(Renderer* r){
-  glUseProgram(0); gl();
-  glDeleteProgram(r->current_shader); gl();
-  glDisableVertexAttribArray(0); gl();
-  glDisableVertexAttribArray(1); gl();
-  glDeleteBuffers(1, r->vbo); gl();
-  glDeleteVertexArrays(1, r->vao); gl();
+  gl(glUseProgram(0));
+  gl(glDeleteProgram(r->shader));
+  gl(glDisableVertexAttribArray(0));
+  gl(glDisableVertexAttribArray(1));
+  gl(glDeleteBuffers(1, r->vbo));
+  gl(glDeleteVertexArrays(1, r->vao));
+}
+
+bool Renderer_set_shader(Renderer* r, const char* vs, const char* fs){
+  GLuint shader = create_shader(vs, fs);
+  if (shader == 0){
+    return false;
+  }
+
+  r->shader = shader;
+  gl(glUseProgram(r->shader));
+
+  return true;
 }
 
 void Render_imm_triangle(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2){
@@ -148,10 +176,10 @@ void Render_imm_triangle(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Col
     r->vertices[i].color = c;
   }
 
-  glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]); gl();// 0 is the default one
-  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 3, r->vertices); gl();
+  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]));// 0 is the default one
+  gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 3, r->vertices));
 
-  glDrawArrays(GL_TRIANGLES, 0, 3); gl();
+  gl(glDrawArrays(GL_TRIANGLES, 0, 3));
 }
 
 #define IMM_QUAD_BODY(draw_type)					\
@@ -168,8 +196,8 @@ void Render_imm_triangle(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Col
     r->vertices[i].position = pn;					\
     r->vertices[i].color = c;						\
   }									\
-  glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]); gl();			\
-  glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices); gl(); \
+  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]));				\
+  gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices)); \
   glDrawArrays(draw_type, 0, 4)
 
 // TODO: Should we render quads in term of Render_imm_triangle?
@@ -183,94 +211,131 @@ void Render_imm_box(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f
   IMM_QUAD_BODY(GL_LINE_LOOP);
 }
 
+void Render_texture(Renderer* r, Vector3f pos, Texture* tex){
+  Vector3f positions[4] = {
+    v3f_add(pos, (Vector3f){0.f, 0.f, 0.f}),
+    v3f_add(pos, (Vector3f){(float)tex->size.x, 0.f, 0.f}),
+    v3f_add(pos, (Vector3f){(float)tex->size.x, (float)tex->size.y, 0.f}),
+    v3f_add(pos, (Vector3f){0.f, (float)tex->size.y, 0.f}),
+  };
+
+  Vector2f texcoords[] = {
+    (Vector2f){0.f, 0.f},
+    (Vector2f){1.f, 0.f},
+    (Vector2f){1.f, 1.f},
+    (Vector2f){0.f, 1.f}
+  };
+
+  float depth = r->win->height;
+  for (size_t i = 0; i < 4; ++i){
+    Vector3f p = positions[i];
+    Vector4f pn = (Vector4f){
+      .x = (p.x / (float)r->win->width)*2.f - 1.f,
+      .y = (1.f - p.y / (float)r->win->height)*2.f - 1.f,
+      .z = (p.z / (float)depth)*2.f - 1.f, .w = 1.f
+    };
+    r->vertices[i].position = pn;
+    r->vertices[i].color = COLOR_WHITE;
+    r->vertices[i].texcoord = texcoords[i];
+  }
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, tex->id);
+
+  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]));
+  gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices));
+  glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+}
+
 // Shader
+
 int create_shader(const char* vert_src, const char* frag_src){
-  GLuint vert = glCreateShader(GL_VERTEX_SHADER); gl();
+  gl(unsigned int vert = glCreateShader(GL_VERTEX_SHADER));
   if (vert == 0){
     log_f(LOG_ERROR, "Failed to create vertex shader!");
-    return -1;
+    return 0;
   }
-  log_f(LOG_INFO, "Successfully created vertex shader!");
+  /* log_f(LOG_INFO, "Successfully created vertex shader!"); */
 
-  GLuint frag = glCreateShader(GL_FRAGMENT_SHADER); gl();
+  gl(unsigned int frag = glCreateShader(GL_FRAGMENT_SHADER));
   if (frag == 0){
     log_f(LOG_ERROR, "Failed to create fragment shader!");
-    return -1;
+    return 0;
   }
-  log_f(LOG_INFO, "Successfully created fragment shader!");
+  /* log_f(LOG_INFO, "Successfully created fragment shader!"); */
 
-  glShaderSource(vert, 1, (const GLchar**)&vert_src, NULL); gl();
-  glShaderSource(frag, 1, (const GLchar**)&frag_src, NULL); gl();
+  gl(glShaderSource(vert, 1, (const GLchar**)&vert_src, NULL));
+  gl(glShaderSource(frag, 1, (const GLchar**)&frag_src, NULL));
 
-  glCompileShader(vert); gl();
+  gl(glCompileShader(vert));
   int compiled;
-  glGetShaderiv(vert, GL_COMPILE_STATUS, &compiled); gl();
+  gl(glGetShaderiv(vert, GL_COMPILE_STATUS, &compiled));
   if (compiled == GL_FALSE){
     int infolog_len;
-    glGetShaderiv(vert, GL_INFO_LOG_LENGTH, &infolog_len); gl();
+    gl(  glGetShaderiv(vert, GL_INFO_LOG_LENGTH, &infolog_len));
 
     char* infolog = (char*)malloc(sizeof(char)*infolog_len);
 
-    glGetShaderInfoLog(vert, infolog_len, &infolog_len, infolog); gl();
+    gl(glGetShaderInfoLog(vert, infolog_len, &infolog_len, infolog));
 
     log_f(LOG_ERROR, "Failed to compile vertex shader: \n    %s", infolog);
 
     free(infolog);
-    return -1;
+    return 0;
   }
-  log_f(LOG_INFO, "Successfully compiled vertex shader!");
+  /* log_f(LOG_INFO, "Successfully compiled vertex shader!"); */
 
-  glCompileShader(frag); gl();
-  glGetShaderiv(frag, GL_COMPILE_STATUS, &compiled); gl();
+  gl(glCompileShader(frag));
+  gl(glGetShaderiv(frag, GL_COMPILE_STATUS, &compiled));
   if (compiled == GL_FALSE){
     int infolog_len;
-    glGetShaderiv(frag, GL_INFO_LOG_LENGTH, &infolog_len); gl();
+    gl(  glGetShaderiv(frag, GL_INFO_LOG_LENGTH, &infolog_len));
 
     char* infolog = (char*)malloc(sizeof(char)*infolog_len);
 
-    glGetShaderInfoLog(frag, infolog_len, &infolog_len, infolog); gl();
+    gl(glGetShaderInfoLog(frag, infolog_len, &infolog_len, infolog));
 
     log_f(LOG_ERROR, "Failed to compile fragment shader: \n    %s", infolog);
 
     free(infolog);
-    return -1;
+    return 0;
   }
-  log_f(LOG_INFO, "Successfully compiled fragment shader!");
+  /* log_f(LOG_INFO, "Successfully compiled fragment shader!"); */
 
-  GLuint program = glCreateProgram(); gl();
+  gl(unsigned int program = glCreateProgram());
   if (program == GL_FALSE){
     log_f(LOG_ERROR, "Failed to create shader program!");
-    return -1;
+    return 0;
   }
-  log_f(LOG_INFO, "Successfully created shader program!");
+  /* log_f(LOG_INFO, "Successfully created shader program!"); */
 
-  glAttachShader(program, vert); gl();
-  glAttachShader(program, frag); gl();
+  gl(glAttachShader(program, vert));
+  gl(glAttachShader(program, frag));
 
-  glLinkProgram(program); gl();
+  gl(glLinkProgram(program));
 
   int linked;
-  glGetProgramiv(program, GL_LINK_STATUS, &linked); gl();
+  gl(glGetProgramiv(program, GL_LINK_STATUS, &linked));
   if (linked == GL_FALSE){
     int infolog_len;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infolog_len); gl();
+    gl(  glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infolog_len));
 
     char* infolog = (char*)malloc(sizeof(char)*infolog_len);
 
-    glGetProgramInfoLog(program, infolog_len, &infolog_len, infolog); gl();
+    gl(glGetProgramInfoLog(program, infolog_len, &infolog_len, infolog));
 
     log_f(LOG_ERROR, "Failed to link shader program: %s", infolog);
 
     free(infolog);
-    return -1;
+    return 0;
   }
 
-  log_f(LOG_INFO, "Successfully linked shader program!");
+  /* log_f(LOG_INFO, "Successfully linked shader program!"); */
 
-  glDetachShader(program, vert); gl();
-  glDetachShader(program, frag); gl();
-  glDeleteShader(vert); gl();
-  glDeleteShader(frag); gl();
+  gl(glDetachShader(program, vert));
+  gl(glDetachShader(program, frag));
+  gl(glDeleteShader(vert));
+  gl(glDeleteShader(frag));
 
   glValidateProgram(program);
 
@@ -278,24 +343,25 @@ int create_shader(const char* vert_src, const char* frag_src){
   glGetProgramiv(program, GL_VALIDATE_STATUS, &validated);
   if (validated == GL_FALSE){
     int infolog_len;
-    glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infolog_len); gl();
+    gl(  glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infolog_len));
 
     char* infolog = (char*)malloc(sizeof(char)*infolog_len);
 
-    glGetProgramInfoLog(program, infolog_len, &infolog_len, infolog); gl();
+    gl(glGetProgramInfoLog(program, infolog_len, &infolog_len, infolog));
 
     log_f(LOG_ERROR, "Failed to validate shader program: %s", infolog);
 
     free(infolog);
-    return -1;
+    return 0;
   }
-  log_f(LOG_INFO, "Successfully validated shader program!");
+  /* log_f(LOG_INFO, "Successfully validated shader program!"); */
 
   return program;
 }
 
 
 // Utility
+
 const char* gl_error_as_cstr(int e){
   switch (e){
   case GL_NO_ERROR: return "GL_NO_ERROR"; break;

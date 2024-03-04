@@ -8,8 +8,9 @@
 #include <string_view.h>
 #include <assert.h>
 
-static const char* output_filename = "vector.h";
-#define GUARD_NAME "VECTOR_H"
+static const char* header_filename = "clock_vector.h";
+static const char* source_filename = "clock_vector.c";
+#define GUARD_NAME "CLOCK_VECTOR_H"
 
 void declare_arithmetic_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name){
   fprintf(out, "%s %s_%s(%s v1, %s v2);\n", return_type, prefix, func, full_name, full_name);
@@ -181,7 +182,7 @@ void declare_vector(String_view format){
   /* printf("type:    '"SV_FMT"'\n", SV_ARG(type)); */
   /* printf("members: '"SV_FMT"'\n", SV_ARG(members)); */
 
-  FILE* out = fopen(output_filename, "a");
+  FILE* out = fopen(header_filename, "a");
   assert(out != NULL);
 
   fprintf(out, "\n// "SV_FMT"%c --------------------------------------------------\n", SV_ARG(name), *type.data);
@@ -243,27 +244,8 @@ void declare_vector(String_view format){
   fclose(out);
 }
 
-void prepare_source_header(){
-  FILE* out = fopen(output_filename, "a");
-  assert(out != NULL);
-
-  fprintf(out, "//////////////////////////////////////////////////\n");
-  fprintf(out, "#ifdef VECTOR_IMPLEMENTATION\n");
-
-  fclose(out);
-}
-
-void prepare_source_footer(){
-  FILE* out = fopen(output_filename, "a");
-  assert(out != NULL);
-
-  fprintf(out, "#endif // VECTOR_IMPLEMENTATION\n");
-
-  fclose(out);
-}
-
 void define_vector(String_view format){
- String_view name = sv_lpop_until_char(&format, ':');
+  String_view name = sv_lpop_until_char(&format, ':');
   sv_lremove(&format, 1); // remove :
   sv_trim(&format);
   sv_trim(&name);
@@ -280,7 +262,7 @@ void define_vector(String_view format){
   char* full_name = (char*)malloc(sizeof(char)*name.count+2);
   snprintf(full_name, name.count+2, SV_FMT"%c", SV_ARG(name), *type.data);
 
-  FILE* out = fopen(output_filename, "a");
+  FILE* out = fopen(source_filename, "a");
   assert(out != NULL);
 
   fprintf(out, "\n// "SV_FMT"%c --------------------------------------------------\n", SV_ARG(name), *type.data);
@@ -312,7 +294,7 @@ void define_vector(String_view format){
 }
 
 int main(void){
-  prepare_header_guard_begin(output_filename, GUARD_NAME);
+  prepare_header_begin(header_filename, GUARD_NAME);
   const char* types[] = {
     "float",
     "double",
@@ -325,14 +307,16 @@ int main(void){
     snprintf(buff, buff_size, "Vector3 : %s : {x} {y} {z}", types[i]); declare_vector(SV(buff));
     snprintf(buff, buff_size, "Vector4 : %s : {x|r} {y|g} {z|b} {w|a}", types[i]); declare_vector(SV(buff));
   }
-  prepare_header_guard_end(output_filename, GUARD_NAME);
-  prepare_source_header();
+  prepare_header_end(header_filename, GUARD_NAME);
+  prepare_source_header(source_filename, header_filename);
   for (size_t i = 0; i < ARRAY_LEN(types); ++i){
     snprintf(buff, buff_size, "Vector2 : %s : x y", types[i]); define_vector(SV(buff));
     snprintf(buff, buff_size, "Vector3 : %s : x y z", types[i]); define_vector(SV(buff));
     snprintf(buff, buff_size, "Vector4 : %s : x y z w", types[i]); define_vector(SV(buff));
   }
-  prepare_source_footer();
+
+  log_f(LOG_INFO, "Output: -> %s", header_filename);
+  log_f(LOG_INFO, "Output: -> %s", source_filename);
 
   return 0;
 }
