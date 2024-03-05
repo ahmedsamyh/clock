@@ -80,6 +80,8 @@ bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_hei
   ctx->fps = 0;
   ctx->mpos = (Vector2f){0};
 
+  glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &ctx->max_tex_image_count);
+
   return true;
 }
 
