@@ -7,13 +7,17 @@
 #include <clock/clock_vertex.h>
 #include <clock/clock_vector.h>
 #include <clock/clock_rect.h>
-#include <stdbool.h>
 #include <clock/clock_sprite.h>
+#include <clock/clock_key.h>
+#include <stdbool.h>
 #include <commonlib.h>
 
 #define DEFAULT_WIN_WIDTH 1280
 #define DEFAULT_WIN_HEIGHT 720
 
+typedef struct Context Context;
+typedef struct Window Window;
+typedef struct Renderer Renderer;
 
 // Color
 typedef Vector4f Color; // 0.0..1.0
@@ -25,24 +29,42 @@ typedef Vector4f Color; // 0.0..1.0
 #define COLOR_BLUE (Color){0.f,0.f,1.f,1.f}
 
 // Window
-typedef struct {
+struct Window {
   unsigned int width;
   unsigned int height;
   GLFWwindow* glfw_win;
   const char* title;
-  double tp1;
-  double tp2;
-  double delta;
-  int fps;
-  Vector2f mpos;
-} Window;
+};
 
-int Window_init(Window* win, unsigned int width, unsigned int height, const char* title);
-void Window_begin_draw(Window* win);
-void Window_end_draw(Window* win);
+bool Window_init(Window* win, unsigned int width, unsigned int height, const char* title);
 void Window_deinit(Window* win);
-void Window_clear(Window* win, Color color);
 
+// Context / main user api
+
+#define KEYS_COUNT (GLFW_KEY_LAST+GLFW_KEY_SPACE)
+
+struct Context {
+  Window*   win;
+  Renderer* ren;
+  double    tp1;
+  double    tp2;
+  double    delta;
+  int       fps;
+  Vector2f  mpos;
+  Key keys[KEYS_COUNT];
+};
+
+bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title);
+bool clock_should_quit(Context* ctx);
+void clock_update_keys(Context* ctx);
+void clock_begin_draw(Context* ctx);
+void clock_end_draw(Context* ctx);
+void clock_clear(Context* ctx, Color color);
+void clock_deinit(Context* ctx);
+
+// Callbacks
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
 // Renderer
 
@@ -52,7 +74,7 @@ typedef enum {
   CUSTOM_SHADER,
 } SET_SHADER;
 
-typedef struct {
+struct Renderer {
 #define VERTEX_CAP (16)
   Vertex vertices[VERTEX_CAP];
 #define VAO_COUNT 1
@@ -63,7 +85,7 @@ typedef struct {
   GLuint texture_shader;
   GLuint color_shader;
   Window* win;
-} Renderer;
+};
 
 bool Renderer_init(Renderer* renderer, Window* win);
 void Renderer_deinit(Renderer* renderer);

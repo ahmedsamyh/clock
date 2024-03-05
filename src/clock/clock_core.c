@@ -5,10 +5,11 @@
 #define COMMONLIB_IMPLEMENTATION
 #include <commonlib.h>
 #include <assert.h>
+#include <string.h>
 
 // Window
 
-int Window_init(Window* win, unsigned int width, unsigned int height, const char* title){
+bool Window_init(Window* win, unsigned int width, unsigned int height, const char* title){
   win->title = title;
 
   win->width = width == 0 ? DEFAULT_WIN_WIDTH : width;
@@ -17,7 +18,7 @@ int Window_init(Window* win, unsigned int width, unsigned int height, const char
   log_f(LOG_INFO, "Running '%s'", win->title);
   if (!glfwInit()){
     log_f(LOG_ERROR, "GLFW Could not initialize!");
-    return -1;
+    return false;
   }
   log_f(LOG_INFO, "GLFW initialized!");
 
@@ -33,7 +34,7 @@ int Window_init(Window* win, unsigned int width, unsigned int height, const char
     glfwGetError((const char**)&tmpbuff);
     log_f(LOG_ERROR, "Could not initialize window: %s", tmpbuff);
     free(tmpbuff);
-    return -1;
+    return false;
   }
   log_f(LOG_INFO, "Window Created!");
   glfwMakeContextCurrent(win->glfw_win);
@@ -42,44 +43,14 @@ int Window_init(Window* win, unsigned int width, unsigned int height, const char
 
   if (version == 0){
     log_f(LOG_ERROR, "Failed to initialize GLAD Context!");
-    return -1;
+    return false;
   }
 
   log_f(LOG_INFO, "Loaded OpenGL %d.%d!", GLAD_VERSION_MAJOR(version), GLAD_VERSION_MINOR(version));
 
-  win->tp1 = glfwGetTime();
-  win->tp2 = 0.0;
-  win->delta = 0.0;
-  win->fps = 0;
-  win->mpos = (Vector2f){0};
-
-  return 0;
+  return true;
 }
 
-void Window_begin_draw(Window* win){
-  double mx, my;
-  glfwGetCursorPos(win->glfw_win, &mx, &my);
-  win->mpos.x = (float)mx;
-  win->mpos.y = (float)my;
-
-  win->tp2 = glfwGetTime();
-  win->delta = win->tp2 - win->tp1;
-  win->tp1 = win->tp2;
-
-  win->fps = (1.0 / win->delta);
-
-  char* tmpbuff = (char*)malloc(sizeof(char)*1024);
-  snprintf(tmpbuff, 1024, "%s | fps: %d | delta: %f", win->title, win->fps, win->delta);
-
-  glfwSetWindowTitle(win->glfw_win, tmpbuff);
-
-  free(tmpbuff);
-}
-
-void Window_end_draw(Window* win){
-  glfwSwapBuffers(win->glfw_win);
-  glfwPollEvents();
-}
 
 void Window_deinit(Window* win){
   glfwDestroyWindow(win->glfw_win);
@@ -88,13 +59,120 @@ void Window_deinit(Window* win){
   log_f(LOG_INFO, "GLFW Terminated!");
 }
 
-void Window_clear(Window* win, Color color){
+// Context / main user api
+
+bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title){
+  ctx->win = (Window*)malloc(sizeof(Window));
+  ctx->ren = (Renderer*)malloc(sizeof(Renderer));
+  if (!Window_init(ctx->win, window_width, window_height, title)){
+    return false;
+  }
+  if (!Renderer_init(ctx->ren, ctx->win)){
+    return false;
+  }
+
+  glfwSetWindowUserPointer(ctx->win->glfw_win, ctx);
+  glfwSetKeyCallback(ctx->win->glfw_win, key_callback);
+
+  ctx->tp1 = glfwGetTime();
+  ctx->tp2 = 0.0;
+  ctx->delta = 0.0;
+  ctx->fps = 0;
+  ctx->mpos = (Vector2f){0};
+
+  return true;
+}
+
+bool clock_should_quit(Context* ctx){
+  return glfwWindowShouldClose(ctx->win->glfw_win);
+}
+
+void clock_update_keys(Context* ctx){
+  Key* keys   = ctx->keys;
+  Window* win = ctx->win;
+  // update key states
+  for (size_t i = 0; i < KEYS_COUNT; ++i){
+    keys[i].just_pressed = false;
+    keys[i].pressed = false;
+    keys[i].released = false;
+  }
+
+  for (int i = 0; i < KEYS_COUNT; ++i){
+    keys[i].prev_state = keys[i].held;
+    int state = glfwGetKey(win->glfw_win, i);
+    if (state == GLFW_PRESS){
+      keys[i].held = true;
+    } else if (state == GLFW_RELEASE){
+      keys[i].held = false;
+    }
+  }
+
+  for (int i = 0; i < KEYS_COUNT; ++i){
+    if (!keys[i].prev_state && keys[i].held){
+      keys[i].just_pressed = true;
+      keys[i].pressed = true;
+    }
+    if (keys[i].prev_state && !keys[i].held){
+      keys[i].released = true;
+    }
+  }
+}
+
+void clock_begin_draw(Context* ctx){
+  Window* win = ctx->win;
+  Key* keys = ctx->keys;
+  double mx, my;
+  glfwGetCursorPos(win->glfw_win, &mx, &my);
+  ctx->mpos.x = (float)mx;
+  ctx->mpos.y = (float)my;
+
+  ctx->tp2 = glfwGetTime();
+  ctx->delta = ctx->tp2 - ctx->tp1;
+  ctx->tp1 = ctx->tp2;
+
+  ctx->fps = (1.0 / ctx->delta);
+
+  char* tmpbuff = (char*)malloc(sizeof(char)*1024);
+  snprintf(tmpbuff, 1024, "%s | %dfps | %fs", win->title, ctx->fps, ctx->delta);
+
+  glfwSetWindowTitle(win->glfw_win, tmpbuff);
+
+  free(tmpbuff);
+}
+
+void clock_end_draw(Context* ctx){
+  clock_update_keys(ctx);
+  glfwSwapBuffers(ctx->win->glfw_win);
+  glfwPollEvents();
+}
+
+void clock_clear(Context* ctx, Color color){
   gl(glClearColor(color.r, color.g, color.b, color.a));
   gl(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
-// Renderer
 
+void clock_deinit(Context* ctx){
+  Renderer_deinit(ctx->ren);
+  Window_deinit(ctx->win);
+  free(ctx->win);
+  free(ctx->ren);
+}
+
+// Callbacks
+
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+
+  Context* ctx = (Context*)glfwGetWindowUserPointer(window);
+  Key* keys = ctx->keys;
+
+  if (action == GLFW_REPEAT){
+    /* log_f(LOG_INFO, "Key: %d repeat", key); */
+    keys[key].pressed = true;
+  }
+}
+
+// Renderer
 
 bool Renderer_init(Renderer* r, Window* win){
   r->win = win;
