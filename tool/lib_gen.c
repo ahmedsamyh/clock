@@ -26,11 +26,12 @@ void prepare_header_end(const char* header_filename, const char* guard_name){
   log_f(LOG_INFO, "Prepared output footer!");
 }
 
-void prepare_source_header(const char* source_filename, const char* header_filename){
+void prepare_source_header(const char* source_filename, const char* header_path, const char* header_filename){
   FILE* out = fopen(source_filename, "w");
   assert(out != NULL);
 
-  fprintf(out, "#include <%s>\n", header_filename);
+  fprintf(out, "#include <%s/%s>\n", header_path, header_filename);
+  fprintf(out, "#include <math.h>\n");
 
   fclose(out);
   log_f(LOG_INFO, "Prepared source header!");

@@ -25,6 +25,7 @@ float v2f_mag(Vector2f v);
 float v2f_mag2(Vector2f v);
 float v2f_dist(Vector2f v);
 float v2f_dist2(Vector2f v);
+Vector2f v2f_normalize(Vector2f v);
 
 // Vector3f --------------------------------------------------
 typedef struct {
@@ -45,6 +46,7 @@ float v3f_mag(Vector3f v);
 float v3f_mag2(Vector3f v);
 float v3f_dist(Vector3f v);
 float v3f_dist2(Vector3f v);
+Vector3f v3f_normalize(Vector3f v);
 
 // Vector4f --------------------------------------------------
 typedef struct {
@@ -78,6 +80,7 @@ float v4f_mag(Vector4f v);
 float v4f_mag2(Vector4f v);
 float v4f_dist(Vector4f v);
 float v4f_dist2(Vector4f v);
+Vector4f v4f_normalize(Vector4f v);
 
 // Vector2d --------------------------------------------------
 typedef struct {
@@ -103,6 +106,7 @@ float v2d_mag(Vector2d v);
 float v2d_mag2(Vector2d v);
 float v2d_dist(Vector2d v);
 float v2d_dist2(Vector2d v);
+Vector2d v2d_normalize(Vector2d v);
 
 // Vector3d --------------------------------------------------
 typedef struct {
@@ -123,6 +127,7 @@ float v3d_mag(Vector3d v);
 float v3d_mag2(Vector3d v);
 float v3d_dist(Vector3d v);
 float v3d_dist2(Vector3d v);
+Vector3d v3d_normalize(Vector3d v);
 
 // Vector4d --------------------------------------------------
 typedef struct {
@@ -156,6 +161,7 @@ float v4d_mag(Vector4d v);
 float v4d_mag2(Vector4d v);
 float v4d_dist(Vector4d v);
 float v4d_dist2(Vector4d v);
+Vector4d v4d_normalize(Vector4d v);
 
 // Vector2i --------------------------------------------------
 typedef struct {
@@ -181,6 +187,7 @@ float v2i_mag(Vector2i v);
 float v2i_mag2(Vector2i v);
 float v2i_dist(Vector2i v);
 float v2i_dist2(Vector2i v);
+Vector2i v2i_normalize(Vector2i v);
 
 // Vector3i --------------------------------------------------
 typedef struct {
@@ -201,6 +208,7 @@ float v3i_mag(Vector3i v);
 float v3i_mag2(Vector3i v);
 float v3i_dist(Vector3i v);
 float v3i_dist2(Vector3i v);
+Vector3i v3i_normalize(Vector3i v);
 
 // Vector4i --------------------------------------------------
 typedef struct {
@@ -234,5 +242,6 @@ float v4i_mag(Vector4i v);
 float v4i_mag2(Vector4i v);
 float v4i_dist(Vector4i v);
 float v4i_dist2(Vector4i v);
+Vector4i v4i_normalize(Vector4i v);
 
 #endif //_CLOCK_VECTOR_H_

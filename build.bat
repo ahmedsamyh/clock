@@ -22,8 +22,8 @@ if "%1"=="vector_gen" (
   echo.
 
   call shell vector_gen.exe
-  call shell move clock_vector.h .\include\
-  call shell move clock_vector.c .\src\
+  call shell move clock_vector.h .\include\clock\
+  call shell move clock_vector.c .\src\clock\
 ) else if "%1"=="matrix_gen" (
   echo Building matrix_gen.c...
   call shell cl tool\matrix_gen.c /I!INCLUDE_DIRS!

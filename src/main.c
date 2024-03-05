@@ -45,7 +45,7 @@ int main(void){
   if (!Sprite_load(&spr, "resources/gfx/khu_sheet.png", 3, 1)) return 1;
 
   Vector2f vel = {0};
-  const float speed = 100.f;
+  const float speed = 130.f;
 
   // game loop
   while (!glfwWindowShouldClose(win.glfw_win)){
@@ -66,6 +66,8 @@ int main(void){
     if (down){
       dir.y++;
     }
+
+    dir = v2f_normalize(dir);
 
     vel = v2f_muls(v2f_add(v2f_muls(dir, speed), vel), win.delta);
 

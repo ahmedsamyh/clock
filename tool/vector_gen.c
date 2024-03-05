@@ -1,6 +1,6 @@
 #include "lib_gen.c"
 #define STB_DS_IMPLEMENTATION
-#include <stb_ds.h>
+#include <stb/stb_ds.h>
 #define COMMONLIB_IMPLEMENTATION
 #include <commonlib.h>
 #include <stdio.h>
@@ -12,16 +12,35 @@ static const char* header_filename = "clock_vector.h";
 static const char* source_filename = "clock_vector.c";
 #define GUARD_NAME "CLOCK_VECTOR_H"
 
+// x func(vector, vector)
 void declare_arithmetic_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name){
   fprintf(out, "%s %s_%s(%s v1, %s v2);\n", return_type, prefix, func, full_name, full_name);
 }
 
+// x func(vector, scalar)
 void declare_scalar_arithmetic_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type){
   fprintf(out, "%s %s_%ss(%s v, "SV_FMT" num);\n", return_type, prefix, func, full_name, SV_ARG(type));
 }
 
+// x func(vector)
 void declare_getter_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name){
   fprintf(out, "%s %s_%s(%s v);\n", return_type, prefix, func, full_name);
+}
+
+// vector func(vector)
+void declare_modifier_function(FILE* out, const char* prefix, const char* func, const char* full_name){
+  fprintf(out, "%s %s_%s(%s v);\n", full_name, prefix, func, full_name);
+}
+
+void define_normalize_function(FILE* out, const char* prefix, const char* full_name){
+  fprintf(out, "%s %s_normalize(%s v){\n", full_name, prefix, full_name);
+
+  fprintf(out, "  double mag = %s_mag(v);\n", prefix);
+
+  fprintf(out, "  if (mag == 0.f) return v;\n");
+  fprintf(out, "  return %s_divs(v, mag);\n", prefix);
+
+  fprintf(out, "}\n");
 }
 
 void define_arithmetic_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view members, char op){
@@ -239,6 +258,8 @@ void declare_vector(String_view format){
   declare_getter_function(out, "float", prefix, "dist", full_name);
   declare_getter_function(out, "float", prefix, "dist2", full_name);
 
+  declare_modifier_function(out, prefix, "normalize", full_name);
+
   free(full_name);
 
   fclose(out);
@@ -288,6 +309,8 @@ void define_vector(String_view format){
   define_mag_function(out, "float", prefix, "dist", full_name, type, members, false);
   define_mag_function(out, "float", prefix, "dist2", full_name, type, members, true);
 
+  define_normalize_function(out, prefix, full_name);
+
   free(full_name);
 
   fclose(out);
@@ -308,7 +331,7 @@ int main(void){
     snprintf(buff, buff_size, "Vector4 : %s : {x|r} {y|g} {z|b} {w|a}", types[i]); declare_vector(SV(buff));
   }
   prepare_header_end(header_filename, GUARD_NAME);
-  prepare_source_header(source_filename, header_filename);
+  prepare_source_header(source_filename, "clock", header_filename);
   for (size_t i = 0; i < ARRAY_LEN(types); ++i){
     snprintf(buff, buff_size, "Vector2 : %s : x y", types[i]); define_vector(SV(buff));
     snprintf(buff, buff_size, "Vector3 : %s : x y z", types[i]); define_vector(SV(buff));

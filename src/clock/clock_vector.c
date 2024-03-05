@@ -1,4 +1,5 @@
 #include <clock/clock_vector.h>
+#include <math.h>
 
 // Vector2f --------------------------------------------------
 
@@ -61,6 +62,11 @@ float v2f_dist(Vector2f v){
 }
 float v2f_dist2(Vector2f v){
   return ((v.x*v.x) + (v.y*v.y));
+}
+Vector2f v2f_normalize(Vector2f v){
+  double mag = v2f_mag(v);
+  if (mag == 0.f) return v;
+  return v2f_divs(v, mag);
 }
 
 // Vector3f --------------------------------------------------
@@ -132,6 +138,11 @@ float v3f_dist(Vector3f v){
 }
 float v3f_dist2(Vector3f v){
   return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+}
+Vector3f v3f_normalize(Vector3f v){
+  double mag = v3f_mag(v);
+  if (mag == 0.f) return v;
+  return v3f_divs(v, mag);
 }
 
 // Vector4f --------------------------------------------------
@@ -212,6 +223,11 @@ float v4f_dist(Vector4f v){
 float v4f_dist2(Vector4f v){
   return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
 }
+Vector4f v4f_normalize(Vector4f v){
+  double mag = v4f_mag(v);
+  if (mag == 0.f) return v;
+  return v4f_divs(v, mag);
+}
 
 // Vector2d --------------------------------------------------
 
@@ -274,6 +290,11 @@ float v2d_dist(Vector2d v){
 }
 float v2d_dist2(Vector2d v){
   return ((v.x*v.x) + (v.y*v.y));
+}
+Vector2d v2d_normalize(Vector2d v){
+  double mag = v2d_mag(v);
+  if (mag == 0.f) return v;
+  return v2d_divs(v, mag);
 }
 
 // Vector3d --------------------------------------------------
@@ -345,6 +366,11 @@ float v3d_dist(Vector3d v){
 }
 float v3d_dist2(Vector3d v){
   return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+}
+Vector3d v3d_normalize(Vector3d v){
+  double mag = v3d_mag(v);
+  if (mag == 0.f) return v;
+  return v3d_divs(v, mag);
 }
 
 // Vector4d --------------------------------------------------
@@ -425,6 +451,11 @@ float v4d_dist(Vector4d v){
 float v4d_dist2(Vector4d v){
   return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
 }
+Vector4d v4d_normalize(Vector4d v){
+  double mag = v4d_mag(v);
+  if (mag == 0.f) return v;
+  return v4d_divs(v, mag);
+}
 
 // Vector2i --------------------------------------------------
 
@@ -487,6 +518,11 @@ float v2i_dist(Vector2i v){
 }
 float v2i_dist2(Vector2i v){
   return ((v.x*v.x) + (v.y*v.y));
+}
+Vector2i v2i_normalize(Vector2i v){
+  double mag = v2i_mag(v);
+  if (mag == 0.f) return v;
+  return v2i_divs(v, mag);
 }
 
 // Vector3i --------------------------------------------------
@@ -558,6 +594,11 @@ float v3i_dist(Vector3i v){
 }
 float v3i_dist2(Vector3i v){
   return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+}
+Vector3i v3i_normalize(Vector3i v){
+  double mag = v3i_mag(v);
+  if (mag == 0.f) return v;
+  return v3i_divs(v, mag);
 }
 
 // Vector4i --------------------------------------------------
@@ -637,4 +678,9 @@ float v4i_dist(Vector4i v){
 }
 float v4i_dist2(Vector4i v){
   return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+}
+Vector4i v4i_normalize(Vector4i v){
+  double mag = v4i_mag(v);
+  if (mag == 0.f) return v;
+  return v4i_divs(v, mag);
 }
