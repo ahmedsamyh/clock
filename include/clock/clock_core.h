@@ -8,7 +8,7 @@
 #include <clock/clock_vector.h>
 #include <clock/clock_rect.h>
 #include <stdbool.h>
-#include <clock/clock_texture.h>
+#include <clock/clock_sprite.h>
 #include <commonlib.h>
 
 #define DEFAULT_WIN_WIDTH 1280
@@ -34,7 +34,7 @@ typedef struct {
   double tp2;
   double delta;
   int fps;
-  Vector4d mpos;
+  Vector2f mpos;
 } Window;
 
 int Window_init(Window* win, unsigned int width, unsigned int height, const char* title);
@@ -46,6 +46,12 @@ void Window_clear(Window* win, Color color);
 
 // Renderer
 
+typedef enum {
+  TEXTURE_SHADER,
+  COLOR_SHADER,
+  CUSTOM_SHADER,
+} SET_SHADER;
+
 typedef struct {
 #define VERTEX_CAP (16)
   Vertex vertices[VERTEX_CAP];
@@ -53,22 +59,27 @@ typedef struct {
   GLuint vao[VAO_COUNT];
 #define VBO_COUNT 1
   GLuint vbo[VBO_COUNT];
-  GLuint shader;
+  GLuint custom_shader;
+  GLuint texture_shader;
+  GLuint color_shader;
   Window* win;
 } Renderer;
 
-int Renderer_init(Renderer* renderer, Window* win);
+bool Renderer_init(Renderer* renderer, Window* win);
 void Renderer_deinit(Renderer* renderer);
 bool Renderer_set_shader(Renderer* renderer, const char* vs, const char* fs);
+bool Renderer_set_shader_for_texture(Renderer* renderer);
+bool Renderer_set_shader_for_color(Renderer* renderer);
 void Render_imm_triangle(Renderer* renderer, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2);
 void Render_imm_quad(Renderer* renderer, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
 void Render_imm_box(Renderer* renderer, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
-void Render_texture(Renderer* renderer, Vector3f pos, Texture* texture);
+void Render_texture(Renderer* renderer, Vector3f pos, Rect texcoords, Texture* texture);
+void Render_sprite(Renderer* renderer, Sprite* spr);
 void Render_rect(Renderer* renderer, Rect rect, Color color);
 
 // Shader
 
-static const char* default_vert_shader =
+static const char* color_vert_shader =
   "#version 460\n"
   "layout(location = 0)in vec4 position;\n"
   "layout(location = 1)in vec4 color;\n"
@@ -78,7 +89,7 @@ static const char* default_vert_shader =
   "  v_col = color;\n"
   "}\n";
 
-static const char* default_frag_shader =
+static const char* color_frag_shader =
   "#version 460\n"
   "in vec4 v_col;\n"
   "out vec4 frag_col;\n"

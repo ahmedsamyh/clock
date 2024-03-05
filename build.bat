@@ -3,7 +3,7 @@
 set INCLUDE_DIRS=.\include
 set LIB_DIR=.\lib
 set LIBS=user32.lib shell32.lib gdi32.lib kernel32.lib
-set CLOCK_FILES=clock_core clock_math clock_vector clock_matrix clock_texture
+set CLOCK_FILES=clock_core clock_math clock_vector clock_matrix clock_texture clock_sprite clock_rect
 set CLOCK_SRCS=
 set CLOCK_OBJS=
 

@@ -4,6 +4,7 @@
 #include <clock/clock_matrix.h>
 #define COMMONLIB_IMPLEMENTATION
 #include <commonlib.h>
+#include <assert.h>
 
 // Window
 
@@ -50,13 +51,16 @@ int Window_init(Window* win, unsigned int width, unsigned int height, const char
   win->tp2 = 0.0;
   win->delta = 0.0;
   win->fps = 0;
-  win->mpos = (Vector4d){0};
+  win->mpos = (Vector2f){0};
 
   return 0;
 }
 
 void Window_begin_draw(Window* win){
-  glfwGetCursorPos(win->glfw_win, &win->mpos.x, &win->mpos.y);
+  double mx, my;
+  glfwGetCursorPos(win->glfw_win, &mx, &my);
+  win->mpos.x = (float)mx;
+  win->mpos.y = (float)my;
 
   win->tp2 = glfwGetTime();
   win->delta = win->tp2 - win->tp1;
@@ -92,7 +96,7 @@ void Window_clear(Window* win, Color color){
 // Renderer
 
 
-int Renderer_init(Renderer* r, Window* win){
+bool Renderer_init(Renderer* r, Window* win){
   r->win = win;
 
   gl(glGenVertexArrays(VAO_COUNT, r->vao););
@@ -115,37 +119,51 @@ int Renderer_init(Renderer* r, Window* win){
   gl(glEnableVertexAttribArray(2));
   gl(glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, texcoord)));
 
-  // create default shader
-  r->shader = create_shader(default_vert_shader, default_frag_shader);
-  if (r->shader == 0){
-    return -1;
-  }
+  // create shaders
+  r->texture_shader = create_shader(tex_vert_shader, tex_frag_shader);
+  r->color_shader = create_shader(color_vert_shader, color_frag_shader);
+  r->custom_shader = 0;
+
   log_f(LOG_INFO, "Loaded default shader!");
 
-  gl(glUseProgram(r->shader));
-
-  return 0;
+  return true;
 }
 
 void Renderer_deinit(Renderer* r){
   gl(glUseProgram(0));
-  gl(glDeleteProgram(r->shader));
+  if (r->texture_shader != 0)
+    gl(glDeleteProgram(r->texture_shader));
+  if (r->color_shader != 0)
+    gl(glDeleteProgram(r->color_shader));
+  if (r->custom_shader != 0)
+    gl(glDeleteProgram(r->custom_shader));
   gl(glDisableVertexAttribArray(0));
   gl(glDisableVertexAttribArray(1));
   gl(glDeleteBuffers(1, r->vbo));
   gl(glDeleteVertexArrays(1, r->vao));
 }
 
-bool Renderer_set_shader(Renderer* r, const char* vs, const char* fs){
+bool Renderer_create_custom(Renderer* r, const char* vs, const char* fs){
   GLuint shader = create_shader(vs, fs);
   if (shader == 0){
     return false;
   }
 
-  r->shader = shader;
-  gl(glUseProgram(r->shader));
+  r->custom_shader = shader;
 
   return true;
+}
+
+void Renderer_use_texture_shader(Renderer* r){
+  gl(glUseProgram(r->texture_shader));
+}
+
+void Renderer_use_color_shader(Renderer* r){
+  gl(glUseProgram(r->color_shader));
+}
+
+void Renderer_use_custom_shader(Renderer* r){
+  gl(glUseProgram(r->custom_shader));
 }
 
 void Render_imm_triangle(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2){
@@ -176,6 +194,7 @@ void Render_imm_triangle(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Col
     r->vertices[i].color = c;
   }
 
+
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]));// 0 is the default one
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 3, r->vertices));
 
@@ -196,9 +215,11 @@ void Render_imm_triangle(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Col
     r->vertices[i].position = pn;					\
     r->vertices[i].color = c;						\
   }									\
+  Renderer_use_color_shader(r);						\
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]));				\
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices)); \
   glDrawArrays(draw_type, 0, 4)
+
 
 // TODO: Should we render quads in term of Render_imm_triangle?
 // From what i understand rn about opengl, more draw calls -> bad, so by implementing Render_imm_quad
@@ -211,20 +232,31 @@ void Render_imm_box(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f
   IMM_QUAD_BODY(GL_LINE_LOOP);
 }
 
-void Render_texture(Renderer* r, Vector3f pos, Texture* tex){
+void Render_texture(Renderer* r, Vector3f pos, Rect texcoord, Texture* tex){
+  assert(0 && "Unimplemented");
+}
+
+void Render_sprite(Renderer* r, Sprite* spr){
+  Vector3f pos = (Vector3f){spr->pos.x, spr->pos.y, 0.f};
   Vector3f positions[4] = {
     v3f_add(pos, (Vector3f){0.f, 0.f, 0.f}),
-    v3f_add(pos, (Vector3f){(float)tex->size.x, 0.f, 0.f}),
-    v3f_add(pos, (Vector3f){(float)tex->size.x, (float)tex->size.y, 0.f}),
-    v3f_add(pos, (Vector3f){0.f, (float)tex->size.y, 0.f}),
+    v3f_add(pos, (Vector3f){(float)spr->tex_rect.size.x, 0.f, 0.f}),
+    v3f_add(pos, (Vector3f){(float)spr->tex_rect.size.x, (float)spr->tex_rect.size.y, 0.f}),
+    v3f_add(pos, (Vector3f){0.f, (float)spr->tex_rect.size.y, 0.f}),
   };
 
-  Vector2f texcoords[] = {
-    (Vector2f){0.f, 0.f},
-    (Vector2f){1.f, 0.f},
-    (Vector2f){1.f, 1.f},
-    (Vector2f){0.f, 1.f}
+  Vector2f texcoords[4] = {
+    (Vector2f){spr->tex_rect.pos.x, spr->tex_rect.pos.y},
+    (Vector2f){spr->tex_rect.pos.x + spr->tex_rect.size.x, spr->tex_rect.pos.y},
+    (Vector2f){spr->tex_rect.pos.x + spr->tex_rect.size.x, spr->tex_rect.pos.y + spr->tex_rect.size.y},
+    (Vector2f){spr->tex_rect.pos.x, spr->tex_rect.pos.y + spr->tex_rect.size.y},
   };
+
+  // normalize texcoords
+  for (size_t i = 0; i < 4; ++i){
+    texcoords[i].x /= spr->size.x;
+    texcoords[i].y /= spr->size.y;
+  }
 
   float depth = r->win->height;
   for (size_t i = 0; i < 4; ++i){
@@ -239,8 +271,10 @@ void Render_texture(Renderer* r, Vector3f pos, Texture* tex){
     r->vertices[i].texcoord = texcoords[i];
   }
 
+  Renderer_use_texture_shader(r);
+
   glActiveTexture(GL_TEXTURE0);
-  glBindTexture(GL_TEXTURE_2D, tex->id);
+  glBindTexture(GL_TEXTURE_2D, spr->texture.id);
 
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices));
@@ -280,7 +314,7 @@ int create_shader(const char* vert_src, const char* frag_src){
   gl(glGetShaderiv(vert, GL_COMPILE_STATUS, &compiled));
   if (compiled == GL_FALSE){
     int infolog_len;
-    gl(  glGetShaderiv(vert, GL_INFO_LOG_LENGTH, &infolog_len));
+    gl(glGetShaderiv(vert, GL_INFO_LOG_LENGTH, &infolog_len));
 
     char* infolog = (char*)malloc(sizeof(char)*infolog_len);
 
@@ -297,7 +331,7 @@ int create_shader(const char* vert_src, const char* frag_src){
   gl(glGetShaderiv(frag, GL_COMPILE_STATUS, &compiled));
   if (compiled == GL_FALSE){
     int infolog_len;
-    gl(  glGetShaderiv(frag, GL_INFO_LOG_LENGTH, &infolog_len));
+    gl(glGetShaderiv(frag, GL_INFO_LOG_LENGTH, &infolog_len));
 
     char* infolog = (char*)malloc(sizeof(char)*infolog_len);
 
