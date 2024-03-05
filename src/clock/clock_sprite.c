@@ -13,11 +13,16 @@ bool Sprite_load(Sprite* spr, const char* filepath, size_t hframes, size_t vfram
   Sprite_set_hframe(spr, 1);
   Sprite_set_vframe(spr, 0);
 
-  log_f(LOG_INFO, "size: %f, %f", spr->size.x, spr->size.y);
-  log_f(LOG_INFO, "frames: h: %u, v: %u", spr->hframes, spr->vframes);
-  log_f(LOG_INFO, "tex_rect: %f, %f | %f, %f", spr->tex_rect.pos.x, spr->tex_rect.pos.y, spr->tex_rect.size.x, spr->tex_rect.size.y);
-
+  spr->time_per_frame = SPRITE_DEFAULT_TIME_PER_FRAME;
+  spr->accumulated_time = 0.f;
   return true;
+}
+
+void Sprite_update_tex_rect(Sprite *spr){
+  spr->tex_rect = (Rect){
+    .pos  = {spr->tex_rect.size.x * (float)spr->hframe, spr->tex_rect.size.y * (float)spr->vframe},
+    .size = {spr->tex_rect.size.x, spr->tex_rect.size.y}
+  };
 }
 
 void Sprite_set_hframe(Sprite* spr, size_t hframe){
@@ -32,11 +37,12 @@ void Sprite_set_vframe(Sprite* spr, size_t vframe){
   Sprite_update_tex_rect(spr);
 }
 
-void Sprite_update_tex_rect(Sprite *spr){
-  spr->tex_rect = (Rect){
-    .pos  = {spr->tex_rect.size.x * (float)spr->hframe, spr->tex_rect.size.y * (float)spr->vframe},
-    .size = {spr->tex_rect.size.x, spr->tex_rect.size.y}
-  };
+void Sprite_animate_hframe(Sprite* spr, float delta){
+  spr->accumulated_time += delta;
+  if (spr->accumulated_time >= spr->time_per_frame){
+    spr->accumulated_time -= spr->time_per_frame;
+    Sprite_set_hframe(spr, spr->hframe+1);
+  }
 }
 
 void Sprite_deinit(Sprite* spr){

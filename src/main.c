@@ -71,6 +71,7 @@ int main(void){
 
     spr.pos = v2f_add(spr.pos, vel);
 
+    Sprite_animate_hframe(&spr, win.delta);
     Render_sprite(&ren, &spr);
 
     Window_end_draw(&win);
