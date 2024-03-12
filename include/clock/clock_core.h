@@ -93,12 +93,12 @@ void Renderer_deinit(Renderer* renderer);
 bool Renderer_set_shader(Renderer* renderer, const char* vs, const char* fs);
 bool Renderer_set_shader_for_texture(Renderer* renderer);
 bool Renderer_set_shader_for_color(Renderer* renderer);
-void Render_imm_triangle(Renderer* renderer, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2);
-void Render_imm_quad(Renderer* renderer, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
-void Render_imm_box(Renderer* renderer, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
-void Render_texture(Renderer* renderer, Vector3f pos, Rect texcoords, Texture* texture);
-void Render_sprite(Renderer* renderer, Sprite* spr);
-void Render_rect(Renderer* renderer, Rect rect, Color color);
+void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2);
+void draw_imm_quad(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
+void draw_imm_box(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
+void draw_texture(Context* ctx, Vector3f pos, Rect texcoords, Texture* texture);
+void draw_sprite(Context* ctx, Sprite* spr);
+void draw_rect(Context* ctx, Rect rect, Color color);
 
 // Shader
 

@@ -13,7 +13,7 @@ typedef struct {
   Vector2f size;
   Vector2f origin;
   Vector2f scale;
-  float rotation; // in degrees
+  Vector3f rotation; // in degrees
   size_t vframes, hframes;
   size_t vframe, hframe;
   float time_per_frame; // in seconds

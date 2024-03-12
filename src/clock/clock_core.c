@@ -246,7 +246,8 @@ void Renderer_use_custom_shader(Renderer* r){
   gl(glUseProgram(r->custom_shader));
 }
 
-void Render_imm_triangle(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2){
+void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2){
+  Renderer* r = ctx->ren;
   // input postions are from {0..width, 0..height}
   // opengl wants them from {-1.f, 1.f, -1.f, 1.f}
 
@@ -304,19 +305,22 @@ void Render_imm_triangle(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Col
 // TODO: Should we render quads in term of Render_imm_triangle?
 // From what i understand rn about opengl, more draw calls -> bad, so by implementing Render_imm_quad
 // in terms of Render_imm_triangle should me more inefficient than doing manual draw calls (which is i know duplicant code but we want speed rn...)
-void Render_imm_quad(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3){
+void draw_imm_quad(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3){
+  Renderer* r = ctx->ren;
   IMM_QUAD_BODY(GL_TRIANGLE_FAN);
 }
 
-void Render_imm_box(Renderer* r, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3){
+void draw_imm_box(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3){
+    Renderer* r = ctx->ren;
   IMM_QUAD_BODY(GL_LINE_LOOP);
 }
 
-void Render_texture(Renderer* r, Vector3f pos, Rect texcoord, Texture* tex){
+void draw_texture(Context* ctx, Vector3f pos, Rect texcoord, Texture* tex){
   assert(0 && "Unimplemented");
 }
 
-void Render_sprite(Renderer* r, Sprite* spr){
+void draw_sprite(Context* ctx, Sprite* spr){
+  Renderer* r = ctx->ren;
   Vector3f pos = (Vector3f){spr->pos.x, spr->pos.y, 0.f};
   Vector3f positions[4] = {
     (Vector3f){0.f,                         0.f,                         0.f},
@@ -333,7 +337,9 @@ void Render_sprite(Renderer* r, Sprite* spr){
   // rotate
   for (size_t i = 0; i < 4; ++i) {
     Vector3f p = positions[i];
-    Vector4f v4 = Mat4_rotate_z_vector((Vector4f){p.x, p.y, p.z, 1.f}, spr->rotation);
+    Vector4f v4 = Mat4_rotate_x_vector((Vector4f){p.x, p.y, p.z, 1.f}, spr->rotation.x);
+    v4 =          Mat4_rotate_y_vector(v4,                             spr->rotation.y);
+    v4 =          Mat4_rotate_z_vector(v4,                             spr->rotation.z);
     positions[i] = (Vector3f){v4.x, v4.y, v4.z};
   }
 
@@ -378,6 +384,7 @@ void Render_sprite(Renderer* r, Sprite* spr){
 
   Renderer_use_texture_shader(r);
 
+  /* glActiveTexture(GL_TEXTURE0 + (spr->texture.slot % )); */
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, spr->texture.id);
 
@@ -386,12 +393,13 @@ void Render_sprite(Renderer* r, Sprite* spr){
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void Render_rect(Renderer* r, Rect rect, Color color){
+void draw_rect(Context* ctx, Rect rect, Color color){
+  Renderer* r = ctx->ren;
   Vector3f tl = (Vector3f){rect.pos.x, rect.pos.y, 0.f};
   Vector3f tr = (Vector3f){rect.pos.x + rect.size.x, rect.pos.y, 0.f};
   Vector3f br = (Vector3f){rect.pos.x + rect.size.x, rect.pos.y + rect.size.y, 0.f};
   Vector3f bl = (Vector3f){rect.pos.x, rect.pos.y + rect.size.y, 0.f};
-  Render_imm_quad(r, tl, tr, br, bl, color, color, color, color);
+  draw_imm_quad(ctx, tl, tr, br, bl, color, color, color, color);
 }
 
 // Shader
