@@ -319,11 +319,36 @@ void Render_texture(Renderer* r, Vector3f pos, Rect texcoord, Texture* tex){
 void Render_sprite(Renderer* r, Sprite* spr){
   Vector3f pos = (Vector3f){spr->pos.x, spr->pos.y, 0.f};
   Vector3f positions[4] = {
-    v3f_add(pos, (Vector3f){0.f, 0.f, 0.f}),
-    v3f_add(pos, (Vector3f){(float)spr->tex_rect.size.x, 0.f, 0.f}),
-    v3f_add(pos, (Vector3f){(float)spr->tex_rect.size.x, (float)spr->tex_rect.size.y, 0.f}),
-    v3f_add(pos, (Vector3f){0.f, (float)spr->tex_rect.size.y, 0.f}),
+    (Vector3f){0.f,                         0.f,                         0.f},
+    (Vector3f){(float)spr->tex_rect.size.x, 0.f,                         0.f},
+    (Vector3f){(float)spr->tex_rect.size.x, (float)spr->tex_rect.size.y, 0.f},
+    (Vector3f){0.f,                         (float)spr->tex_rect.size.y, 0.f}
   };
+
+  // offset by origin
+  for (size_t i = 0; i < 4; ++i) {
+    positions[i] = v3f_sub(positions[i], (Vector3f){spr->origin.x, spr->origin.y, 0.f});
+  }
+
+  // rotate
+  for (size_t i = 0; i < 4; ++i) {
+    Vector3f p = positions[i];
+    Vector4f v4 = Mat4_rotate_z_vector((Vector4f){p.x, p.y, p.z, 1.f}, spr->rotation);
+    positions[i] = (Vector3f){v4.x, v4.y, v4.z};
+  }
+
+  // scale
+  for (size_t i = 0; i < 4; ++i) {
+    positions[i] = v3f_mul(positions[i], (Vector3f){spr->scale.x, spr->scale.y, 0.f});
+  }
+
+  // translate
+  for (size_t i = 0; i < 4; ++i) {
+    Vector3f p = positions[i];
+    Vector4f v4 = Mat4_translate_vector((Vector4f){p.x, p.y, p.z, 1.f}, pos);
+    positions[i] = (Vector3f){v4.x, v4.y, v4.z};
+  };
+
 
   Vector2f texcoords[4] = {
     (Vector2f){spr->tex_rect.pos.x, spr->tex_rect.pos.y},

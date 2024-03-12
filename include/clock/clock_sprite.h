@@ -11,6 +11,7 @@ typedef struct {
   Rect tex_rect;
   Vector2f pos;
   Vector2f size;
+  Vector2f origin;
   Vector2f scale;
   float rotation; // in degrees
   size_t vframes, hframes;
@@ -23,6 +24,7 @@ bool Sprite_load(Sprite* spr, const char* filepath, size_t hframes, size_t vfram
 void Sprite_update_tex_rect(Sprite *spr);
 void Sprite_set_hframe(Sprite* spr, size_t hframe);
 void Sprite_set_vframe(Sprite* spr, size_t vframe);
+void Sprite_center_origin(Sprite* spr);
 void Sprite_animate_hframe(Sprite* spr, float delta);
 void Sprite_deinit(Sprite* spr);
 
