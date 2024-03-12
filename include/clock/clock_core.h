@@ -52,7 +52,7 @@ struct Context {
   int       fps;
   Vector2f  mpos;
   Key keys[KEYS_COUNT];
-  int max_tex_image_count;
+  //  int max_tex_image_slots;
 };
 
 bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title);

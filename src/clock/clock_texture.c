@@ -4,6 +4,8 @@
 #include <stb/stb_image.h>
 #include <clock/clock_core.h>
 
+// unsigned int last_used_texture_slot = 0;
+
 bool Texture_load_from_file(Texture* t, const char* filename){
   /* stbi_set_flip_vertically_on_load(1); */
 
@@ -21,8 +23,8 @@ bool Texture_load_from_file(Texture* t, const char* filename){
 
   gl(glTextureParameteri(t->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
   gl(glTextureParameteri(t->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-  gl(glTextureParameteri(t->id, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
-  gl(glTextureParameteri(t->id, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+  gl(glTextureParameteri(t->id, GL_TEXTURE_WRAP_S, GL_REPEAT));
+  gl(glTextureParameteri(t->id, GL_TEXTURE_WRAP_T, GL_REPEAT));
 
   gl(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, t->size.x, t->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->local_data));
 
@@ -30,11 +32,14 @@ bool Texture_load_from_file(Texture* t, const char* filename){
 
   stbi_image_free(t->local_data);
 
+  //  t->slot = last_used_texture_slot++;
+
   log_f(LOG_INFO, "Loaded texture '%s' (%dx%d)", filename, t->size.x, t->size.y);
 
   return true;
 }
 
 void Texture_deinit(Texture* t){
+  //  if (last_used_texture_slot > 0) last_used_texture_slot--;
   gl(glDeleteTextures(1, &t->id));
 }

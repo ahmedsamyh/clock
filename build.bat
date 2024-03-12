@@ -49,7 +49,7 @@ if "%1"=="vector_gen" (
   call shell cl /c !CLOCK_SRCS! src\gl\gl.c /I!INCLUDE_DIRS!
   call shell lib !LIB_DIR!\glfw3_mt.lib !CLOCK_OBJS! gl.obj /out:.\lib\clock.lib
 
-  call shell cl src\main.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
+  call shell cl src\main.c /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
 )
 
 echo.

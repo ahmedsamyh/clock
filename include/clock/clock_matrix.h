@@ -15,8 +15,8 @@ typedef struct {
 Matrix4 Mat4_identity(void);
 Vector4f Mat4_translate_vector(Vector4f v, Vector3f by);
 Vector4f Mat4_scale_vector(Vector4f v, Vector3f by);
-Vector4f Mat4_rotate_x_vector(Vector4f v, float deg);
 Vector4f Mat4_rotate_y_vector(Vector4f v, float deg);
+Vector4f Mat4_rotate_x_vector(Vector4f v, float deg);
 Vector4f Mat4_rotate_z_vector(Vector4f v, float deg);
 Vector4f Mat4_mul(Matrix4 m, Vector4f v);
 

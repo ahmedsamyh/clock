@@ -80,7 +80,7 @@ bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_hei
   ctx->fps = 0;
   ctx->mpos = (Vector2f){0};
 
-  glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &ctx->max_tex_image_count);
+  //  glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &ctx->max_tex_image_slots);
 
   return true;
 }
@@ -319,7 +319,7 @@ void draw_texture(Context* ctx, Vector3f pos, Rect texcoord, Texture* tex){
   assert(0 && "Unimplemented");
 }
 
-void draw_sprite(Context* ctx, Sprite* spr){
+void draw_sprite(Context* ctx, Sprite* spr) {
   Renderer* r = ctx->ren;
   Vector3f pos = (Vector3f){spr->pos.x, spr->pos.y, 0.f};
   Vector3f positions[4] = {
@@ -384,7 +384,8 @@ void draw_sprite(Context* ctx, Sprite* spr){
 
   Renderer_use_texture_shader(r);
 
-  /* glActiveTexture(GL_TEXTURE0 + (spr->texture.slot % )); */
+
+  /* glActiveTexture(GL_TEXTURE0 + (spr->texture.slot % ctx->max_tex_image_slots)); */
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, spr->texture.id);
 
