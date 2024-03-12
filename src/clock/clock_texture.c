@@ -4,7 +4,7 @@
 #include <stb/stb_image.h>
 #include <clock/clock_core.h>
 
-// unsigned int last_used_texture_slot = 0;
+unsigned int last_used_texture_slot = 0;
 
 bool Texture_load_from_file(Texture* t, const char* filename){
   /* stbi_set_flip_vertically_on_load(1); */
@@ -32,14 +32,15 @@ bool Texture_load_from_file(Texture* t, const char* filename){
 
   stbi_image_free(t->local_data);
 
-  //  t->slot = last_used_texture_slot++;
+  // TODO: pass Context to texture and mod the slot here instead of when drawing in draw_sprite()
+  t->slot = last_used_texture_slot++;
 
-  log_f(LOG_INFO, "Loaded texture '%s' (%dx%d)", filename, t->size.x, t->size.y);
+  log_f(LOG_INFO, "Loaded texture '%s' (%dx%d) in slot %d", filename, t->size.x, t->size.y, t->slot);
 
   return true;
 }
 
 void Texture_deinit(Texture* t){
-  //  if (last_used_texture_slot > 0) last_used_texture_slot--;
+  if (last_used_texture_slot > 0) last_used_texture_slot--;
   gl(glDeleteTextures(1, &t->id));
 }

@@ -52,7 +52,7 @@ struct Context {
   int       fps;
   Vector2f  mpos;
   Key keys[KEYS_COUNT];
-  //  int max_tex_image_slots;
+  int max_tex_image_slots;
 };
 
 bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title);
@@ -137,7 +137,7 @@ static const char* tex_frag_shader =
   "#version 460\n"
   "in vec4 v_col;\n"
   "in vec2 v_texcoord;\n"
-  "uniform sampler2D tex;\n"
+  "layout(location = 1) uniform sampler2D tex;\n"
   "out vec4 frag_col;\n"
   "void main(void){\n"
   "  frag_col = texture(tex, v_texcoord);//vec4(v_texcoord, 0.0, 1.0);\n"

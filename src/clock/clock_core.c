@@ -61,7 +61,7 @@ void Window_deinit(Window* win){
 
 // Context / main user api
 
-bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title){
+bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title) {
   ctx->win = (Window*)malloc(sizeof(Window));
   ctx->ren = (Renderer*)malloc(sizeof(Renderer));
   if (!Window_init(ctx->win, window_width, window_height, title)){
@@ -80,7 +80,7 @@ bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_hei
   ctx->fps = 0;
   ctx->mpos = (Vector2f){0};
 
-  //  glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &ctx->max_tex_image_slots);
+  glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &ctx->max_tex_image_slots);
 
   return true;
 }
@@ -384,9 +384,8 @@ void draw_sprite(Context* ctx, Sprite* spr) {
 
   Renderer_use_texture_shader(r);
 
-
-  /* glActiveTexture(GL_TEXTURE0 + (spr->texture.slot % ctx->max_tex_image_slots)); */
-  glActiveTexture(GL_TEXTURE0);
+  glActiveTexture(GL_TEXTURE0 + (spr->texture.slot % ctx->max_tex_image_slots));
+  glUniform1i(1, (spr->texture.slot % ctx->max_tex_image_slots));
   glBindTexture(GL_TEXTURE_2D, spr->texture.id);
 
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]));

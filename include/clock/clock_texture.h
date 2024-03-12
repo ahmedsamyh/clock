@@ -4,14 +4,14 @@
 #include <clock/clock_vector.h>
 #include <stdbool.h>
 
-// static unsigned int last_used_texture_slot;
+static unsigned int last_used_texture_slot;
 
 typedef struct {
   unsigned char* local_data;
   unsigned int id;
   Vector2i size;
   int comps;
-  //  int slot;
+  int slot;
 } Texture;
 
 bool Texture_load_from_file(Texture* texture, const char* filename);
