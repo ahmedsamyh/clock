@@ -1,33 +1,26 @@
-#include <clock.h>
+#include <clock/clock.h>
 
 int main(void){
-  Window win = {0};
+  Context ctx = {0};
 
-  if (Window_init(&win, 800, 800, "GLFW Window") < 0) return 1;
+  if (clock_init(&ctx, 800, 800, "GLFW Window") < 0) return 1;
 
-  float width =  (float)win.width;
-  float height = (float)win.height;
-
-  Renderer ren = {0};
-
-  if (Renderer_init(&ren, &win) < 0) return 1;
+  float width =  (float)ctx.win->width;
+  float height = (float)ctx.win->height;
 
   float deg = 0.f;
   float scl = 1.f;
   float a = 0.f;
-
-  // vsync off
-  glfwSwapInterval(0);
 
   const size_t num_quads = 150;
   const float w = 100.f;
   const float h = 100.f;
 
   // game loop
-  while (!glfwWindowShouldClose(win.glfw_win)){
-    Window_begin_draw(&win);
+  while (!clock_should_quit(&ctx)){
+    clock_begin_draw(&ctx);
 
-    Window_clear(&win, COLOR_BLACK);
+    clock_clear(&ctx, COLOR_BLACK);
 
     Vector3f p0 = {-w, -h, 0.f};
     Vector3f p1 = {+w, -h, 0.f};
@@ -53,10 +46,10 @@ int main(void){
     p3_ = Mat4_scale_vector(p3_, (Vector3f){scl, scl, scl});
 
     // translation
-    p0_ = Mat4_translate_vector(p0_, (Vector3f){win.mpos.x, win.mpos.y, 0.f});
-    p1_ = Mat4_translate_vector(p1_, (Vector3f){win.mpos.x, win.mpos.y, 0.f});
-    p2_ = Mat4_translate_vector(p2_, (Vector3f){win.mpos.x, win.mpos.y, 0.f});
-    p3_ = Mat4_translate_vector(p3_, (Vector3f){win.mpos.x, win.mpos.y, 0.f});
+    p0_ = Mat4_translate_vector(p0_, (Vector3f){ctx.mpos.x, ctx.mpos.y, 0.f});
+    p1_ = Mat4_translate_vector(p1_, (Vector3f){ctx.mpos.x, ctx.mpos.y, 0.f});
+    p2_ = Mat4_translate_vector(p2_, (Vector3f){ctx.mpos.x, ctx.mpos.y, 0.f});
+    p3_ = Mat4_translate_vector(p3_, (Vector3f){ctx.mpos.x, ctx.mpos.y, 0.f});
 
     p0 = (Vector3f){p0_.x, p0_.y, p0_.z};
     p1 = (Vector3f){p1_.x, p1_.y, p1_.z};
@@ -64,18 +57,17 @@ int main(void){
     p3 = (Vector3f){p3_.x, p3_.y, p3_.z};
 
 
-    Render_imm_quad(&ren, p0, p1, p2, p3,
+    Render_imm_quad(ctx.ren, p0, p1, p2, p3,
 		    COLOR_RED,
 		    COLOR_GREEN,
 		    COLOR_BLUE,
 		    COLOR_WHITE);
-    deg += 100.f * win.delta;
-    a += win.delta;
+    deg += 100.f * ctx.delta;
+    a += ctx.delta;
 
-    Window_end_draw(&win);
+    clock_end_draw(&ctx);
   }
 
-  Renderer_deinit(&ren);
-  Window_deinit(&win);
+  clock_deinit(&ctx);
   return 0;
 }
