@@ -9,6 +9,7 @@
 #include <clock/clock_rect.h>
 #include <clock/clock_sprite.h>
 #include <clock/clock_key.h>
+#include <clock/clock_resource_manager.h>
 #include <stdbool.h>
 #include <commonlib.h>
 
@@ -53,6 +54,7 @@ struct Context {
   Vector2f  mpos;
   Key keys[KEYS_COUNT];
   int max_tex_image_slots;
+  Resource_manager* resman;
 };
 
 bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title);

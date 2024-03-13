@@ -62,7 +62,7 @@ void Window_deinit(Window* win){
 // Context / main user api
 
 bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title) {
-  ctx->win = (Window*)malloc(sizeof(Window));
+  ctx->win = (Window*)  malloc(sizeof(Window));
   ctx->ren = (Renderer*)malloc(sizeof(Renderer));
   if (!Window_init(ctx->win, window_width, window_height, title)){
     return false;
@@ -70,6 +70,8 @@ bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_hei
   if (!Renderer_init(ctx->ren, ctx->win)){
     return false;
   }
+
+  ctx->resman = (Resource_manager*)calloc(1, sizeof(Resource_manager));
 
   glfwSetWindowUserPointer(ctx->win->glfw_win, ctx);
   glfwSetKeyCallback(ctx->win->glfw_win, key_callback);
@@ -158,6 +160,7 @@ void clock_deinit(Context* ctx){
   Window_deinit(ctx->win);
   free(ctx->win);
   free(ctx->ren);
+  free(ctx->resman);
 }
 
 // Callbacks
@@ -387,10 +390,10 @@ void draw_sprite(Context* ctx, Sprite* spr) {
 
   Renderer_use_texture_shader(r);
 
-  glActiveTexture(GL_TEXTURE0 + (spr->texture.slot % ctx->max_tex_image_slots));
+  glActiveTexture(GL_TEXTURE0 + (spr->texture->slot % ctx->max_tex_image_slots));
   gl(GLuint t = glGetUniformLocation(r->current_shader, "tex"));
-  glUniform1i(t, (spr->texture.slot % ctx->max_tex_image_slots));
-  glBindTexture(GL_TEXTURE_2D, spr->texture.id);
+  glUniform1i(t, (spr->texture->slot % ctx->max_tex_image_slots));
+  glBindTexture(GL_TEXTURE_2D, spr->texture->id);
 
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices));

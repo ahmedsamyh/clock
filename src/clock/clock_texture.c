@@ -23,8 +23,8 @@ bool Texture_load_from_file(Texture* t, const char* filename){
 
   gl(glTextureParameteri(t->id, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
   gl(glTextureParameteri(t->id, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
-  gl(glTextureParameteri(t->id, GL_TEXTURE_WRAP_S, GL_REPEAT));
-  gl(glTextureParameteri(t->id, GL_TEXTURE_WRAP_T, GL_REPEAT));
+  gl(glTextureParameteri(t->id, GL_TEXTURE_WRAP_S,     GL_REPEAT));
+  gl(glTextureParameteri(t->id, GL_TEXTURE_WRAP_T,     GL_REPEAT));
 
   gl(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, t->size.x, t->size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->local_data));
 

@@ -1,13 +1,16 @@
 #include <clock/clock_sprite.h>
 #include <commonlib.h>
+#include <assert.h>
+#include <stdlib.h>
 
-bool Sprite_load(Sprite* spr, const char* filepath, size_t hframes, size_t vframes) {
-  if (!Texture_load_from_file(&spr->texture, filepath)) return false;
+bool Sprite_init(Sprite* spr, Texture* texture, size_t hframes, size_t vframes) {
+  assert(texture != NULL);
+  spr->texture = texture;
   spr->hframes = hframes;
   spr->vframes = vframes;
   spr->pos = (Vector2f) {0.f, 0.f};
-  spr->size.x = (float)spr->texture.size.x;
-  spr->size.y = (float)spr->texture.size.y;
+  spr->size.x = (float)spr->texture->size.x;
+  spr->size.y = (float)spr->texture->size.y;
   spr->scale = (Vector2f) {1.f, 1.f};
   spr->tex_rect.size = (Vector2f) {spr->size.x / (float)spr->hframes, spr->size.y / (float)spr->vframes};
   Sprite_set_hframe(spr, 1);
@@ -52,5 +55,5 @@ void Sprite_animate_hframe(Sprite* spr, float delta) {
 }
 
 void Sprite_deinit(Sprite* spr) {
-  Texture_deinit(&spr->texture);
+  Texture_deinit(spr->texture);
 }
