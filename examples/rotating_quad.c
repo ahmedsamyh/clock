@@ -1,26 +1,26 @@
 #include <clock/clock.h>
+#include <stdlib.h>
 
 int main(void){
-  Context ctx = {0};
+  Context* ctx = (Context*)calloc(1, sizeof(Context));
 
-  if (clock_init(&ctx, 800, 800, "GLFW Window") < 0) return 1;
+  if (clock_init(ctx, 800, 800, "GLFW Window") < 0) return 1;
 
-  float width =  (float)ctx.win->width;
-  float height = (float)ctx.win->height;
+  float width =  (float)ctx->win->width;
+  float height = (float)ctx->win->height;
 
   float deg = 0.f;
   float scl = 1.f;
   float a = 0.f;
 
-  const size_t num_quads = 150;
   const float w = 100.f;
   const float h = 100.f;
 
   // game loop
-  while (!clock_should_quit(&ctx)){
-    clock_begin_draw(&ctx);
+  while (!clock_should_quit(ctx)){
+    clock_begin_draw(ctx);
 
-    clock_clear(&ctx, COLOR_BLACK);
+    clock_clear(ctx, COLOR_BLACK);2
 
     Vector3f p0 = {-w, -h, 0.f};
     Vector3f p1 = {+w, -h, 0.f};
@@ -46,28 +46,27 @@ int main(void){
     p3_ = Mat4_scale_vector(p3_, (Vector3f){scl, scl, scl});
 
     // translation
-    p0_ = Mat4_translate_vector(p0_, (Vector3f){ctx.mpos.x, ctx.mpos.y, 0.f});
-    p1_ = Mat4_translate_vector(p1_, (Vector3f){ctx.mpos.x, ctx.mpos.y, 0.f});
-    p2_ = Mat4_translate_vector(p2_, (Vector3f){ctx.mpos.x, ctx.mpos.y, 0.f});
-    p3_ = Mat4_translate_vector(p3_, (Vector3f){ctx.mpos.x, ctx.mpos.y, 0.f});
+    p0_ = Mat4_translate_vector(p0_, (Vector3f){ctx->mpos.x, ctx->mpos.y, 0.f});
+    p1_ = Mat4_translate_vector(p1_, (Vector3f){ctx->mpos.x, ctx->mpos.y, 0.f});
+    p2_ = Mat4_translate_vector(p2_, (Vector3f){ctx->mpos.x, ctx->mpos.y, 0.f});
+    p3_ = Mat4_translate_vector(p3_, (Vector3f){ctx->mpos.x, ctx->mpos.y, 0.f});
 
     p0 = (Vector3f){p0_.x, p0_.y, p0_.z};
     p1 = (Vector3f){p1_.x, p1_.y, p1_.z};
     p2 = (Vector3f){p2_.x, p2_.y, p2_.z};
     p3 = (Vector3f){p3_.x, p3_.y, p3_.z};
 
-
-    Render_imm_quad(ctx.ren, p0, p1, p2, p3,
+    draw_imm_quad(ctx, p0, p1, p2, p3,
 		    COLOR_RED,
 		    COLOR_GREEN,
 		    COLOR_BLUE,
 		    COLOR_WHITE);
-    deg += 100.f * ctx.delta;
-    a += ctx.delta;
+    deg += 100.f * ctx->delta;
+    a += ctx->delta;
 
-    clock_end_draw(&ctx);
+    clock_end_draw(ctx);
   }
 
-  clock_deinit(&ctx);
+  clock_deinit(ctx);
   return 0;
 }
