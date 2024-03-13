@@ -78,10 +78,9 @@ typedef enum {
 struct Renderer {
 #define VERTEX_CAP (16)
   Vertex vertices[VERTEX_CAP];
-#define VAO_COUNT 1
-  GLuint vao[VAO_COUNT];
-#define VBO_COUNT 1
-  GLuint vbo[VBO_COUNT];
+  GLuint vao;
+  GLuint vbo;
+  GLuint current_shader; // currently using shader do not set manually
   GLuint custom_shader;
   GLuint texture_shader;
   GLuint color_shader;
@@ -90,9 +89,10 @@ struct Renderer {
 
 bool Renderer_init(Renderer* renderer, Window* win);
 void Renderer_deinit(Renderer* renderer);
-bool Renderer_set_shader(Renderer* renderer, const char* vs, const char* fs);
-bool Renderer_set_shader_for_texture(Renderer* renderer);
-bool Renderer_set_shader_for_color(Renderer* renderer);
+void Renderer_use_custom_shader(Renderer* renderer, const char* vs, const char* fs);
+void Renderer_use_color_shader(Renderer* renderer);
+void Renderer_use_texture_shader(Renderer* renderer);
+void Renderer_set_render_target(Renderer* renderer, GLuint target);
 void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2);
 void draw_imm_quad(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
 void draw_imm_box(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
@@ -137,7 +137,7 @@ static const char* tex_frag_shader =
   "#version 460\n"
   "in vec4 v_col;\n"
   "in vec2 v_texcoord;\n"
-  "layout(location = 1) uniform sampler2D tex;\n"
+  "uniform sampler2D tex;\n"
   "out vec4 frag_col;\n"
   "void main(void){\n"
   "  frag_col = texture(tex, v_texcoord);//vec4(v_texcoord, 0.0, 1.0);\n"

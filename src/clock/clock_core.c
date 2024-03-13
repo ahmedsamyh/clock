@@ -153,7 +153,6 @@ void clock_clear(Context* ctx, Color color){
   gl(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
-
 void clock_deinit(Context* ctx){
   Renderer_deinit(ctx->ren);
   Window_deinit(ctx->win);
@@ -176,20 +175,20 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // Renderer
 
-bool Renderer_init(Renderer* r, Window* win){
+bool Renderer_init(Renderer* r, Window* win) {
   r->win = win;
 
-  gl(glGenVertexArrays(VAO_COUNT, r->vao););
-  gl(glBindVertexArray(r->vao[0]););  // 0 is the default one
+  gl(glGenVertexArrays(1, &r->vao););
+  gl(glGenBuffers(1, &r->vbo););
 
-  // vbo
-  gl(glGenBuffers(VBO_COUNT, r->vbo););
-  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]);); // 0 is the default one
+  gl(glBindVertexArray(r->vao););  // 0 is the default one
+
+  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo);); // 0 is the default one
   gl(glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * VERTEX_CAP, NULL, GL_STATIC_DRAW));;
 
   // position
   gl(glEnableVertexAttribArray(0));
-  gl(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), NULL)); //;(const GLvoid*)offsetof(Vertex, position));
+  gl(glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const GLvoid*)offsetof(Vertex, position)));
 
   // color
   gl(glEnableVertexAttribArray(1));
@@ -201,53 +200,53 @@ bool Renderer_init(Renderer* r, Window* win){
 
   // create shaders
   r->texture_shader = create_shader(tex_vert_shader, tex_frag_shader);
-  r->color_shader = create_shader(color_vert_shader, color_frag_shader);
-  r->custom_shader = 0;
+  r->color_shader   = create_shader(color_vert_shader, color_frag_shader);
+  r->custom_shader  = 0;
 
   log_f(LOG_INFO, "Loaded default shader!");
 
   return true;
 }
 
-void Renderer_deinit(Renderer* r){
+void Renderer_deinit(Renderer* r) {
   gl(glUseProgram(0));
-  if (r->texture_shader != 0)
-    gl(glDeleteProgram(r->texture_shader));
-  if (r->color_shader != 0)
-    gl(glDeleteProgram(r->color_shader));
+  gl(glDeleteProgram(r->texture_shader));
+  gl(glDeleteProgram(r->color_shader));
   if (r->custom_shader != 0)
     gl(glDeleteProgram(r->custom_shader));
   gl(glDisableVertexAttribArray(0));
   gl(glDisableVertexAttribArray(1));
-  gl(glDeleteBuffers(1, r->vbo));
-  gl(glDeleteVertexArrays(1, r->vao));
+  gl(glDisableVertexAttribArray(2));
+  gl(glDeleteBuffers(1, &r->vbo));
+  gl(glDeleteVertexArrays(1, &r->vao));
 }
 
-bool Renderer_create_custom(Renderer* r, const char* vs, const char* fs){
-  GLuint shader = create_shader(vs, fs);
-  if (shader == 0){
-    return false;
-  }
-
-  r->custom_shader = shader;
-
-  return true;
-}
-
-void Renderer_use_texture_shader(Renderer* r){
+void Renderer_use_texture_shader(Renderer* r) {
   gl(glUseProgram(r->texture_shader));
+  r->current_shader = r->texture_shader;
 }
 
-void Renderer_use_color_shader(Renderer* r){
+void Renderer_use_color_shader(Renderer* r) {
   gl(glUseProgram(r->color_shader));
+  r->current_shader = r->color_shader;
 }
 
-void Renderer_use_custom_shader(Renderer* r){
+void Renderer_use_custom_shader(Renderer* r, const char* vs, const char* fs) {
+  if (r->custom_shader != 0) {
+    gl(glDeleteProgram(r->custom_shader));
+  }
+  r->custom_shader = create_shader(vs, fs);
   gl(glUseProgram(r->custom_shader));
+  r->current_shader = r->custom_shader;
+}
+
+void Renderer_set_render_target(Renderer* r, GLuint target) {
+  gl(glBindFramebuffer(GL_FRAMEBUFFER, target));
 }
 
 void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2){
   Renderer* r = ctx->ren;
+  // TODO: line 305
   // input postions are from {0..width, 0..height}
   // opengl wants them from {-1.f, 1.f, -1.f, 1.f}
 
@@ -260,8 +259,11 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
   };
 
   // resolution of the z-axis, i dont know what the standard resolution people use in the z-axis.
-  // so we just use the height as the z-axis
+  // so we just use the height as the z-axis (actually it should be {far - near})
   float depth = r->win->height;
+
+  // TODO: we are converting from screen space to clip space here manually in the CPU
+  // but we eventually want to have a transformation matrix and convert them from the GPU
   for (size_t i = 0; i < 3; ++i){
     Vector3f p = positions[i];
     Vector4f pn = (Vector4f){
@@ -275,8 +277,7 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
     r->vertices[i].color = c;
   }
 
-
-  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]));// 0 is the default one
+  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 3, r->vertices));
 
   gl(glDrawArrays(GL_TRIANGLES, 0, 3));
@@ -286,7 +287,7 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
   Vector3f positions[] = {p0, p1, p2, p3};				\
   Vector4f colors[] = {c0, c1, c2, c3};					\
   float depth = r->win->height;						\
-  for (size_t i = 0; i < 4; ++i){					\
+  for (size_t i = 0; i < 4; ++i){/* TODO: line 305*/			\
     Vector3f p = positions[i];						\
     Vector4f pn = (Vector4f){						\
       .x = (p.x / (float)r->win->width)*2.f - 1.f,			\
@@ -297,7 +298,7 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
     r->vertices[i].color = c;						\
   }									\
   Renderer_use_color_shader(r);						\
-  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]));				\
+  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));				\
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices)); \
   glDrawArrays(draw_type, 0, 4)
 
@@ -329,6 +330,7 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     (Vector3f){0.f,                         (float)spr->tex_rect.size.y, 0.f}
   };
 
+  // TODO: factor these transformations into a Transform struct which the Sprite struct will have as a member
   // offset by origin
   for (size_t i = 0; i < 4; ++i) {
     positions[i] = v3f_sub(positions[i], (Vector3f){spr->origin.x, spr->origin.y, 0.f});
@@ -370,6 +372,7 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   }
 
   float depth = r->win->height;
+  // TODO: line 305
   for (size_t i = 0; i < 4; ++i){
     Vector3f p = positions[i];
     Vector4f pn = (Vector4f){
@@ -385,10 +388,11 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   Renderer_use_texture_shader(r);
 
   glActiveTexture(GL_TEXTURE0 + (spr->texture.slot % ctx->max_tex_image_slots));
-  glUniform1i(1, (spr->texture.slot % ctx->max_tex_image_slots));
+  gl(GLuint t = glGetUniformLocation(r->current_shader, "tex"));
+  glUniform1i(t, (spr->texture.slot % ctx->max_tex_image_slots));
   glBindTexture(GL_TEXTURE_2D, spr->texture.id);
 
-  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo[0]));
+  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices));
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }

@@ -14,7 +14,7 @@ int main(void) {
   const float width  = (float)ctx->win->width;
   const float height = (float)ctx->win->height;
 
-  /*  stbtt_fontinfo font = {0};
+  /* stbtt_fontinfo font = {0};
 
   unsigned char* data = (unsigned char*)slurp_file("resources/fonts/WayfarersToyBoxRegular-gxxER.ttf");
 
@@ -63,9 +63,6 @@ int main(void) {
   free(tex_data);
   */
 
-  // vsync
-  /* glfwSwapInterval(0); */
-
   Sprite spr = {0};
   Sprite spr2 = {0};
 
@@ -73,9 +70,9 @@ int main(void) {
   Vector2f dir = {0};
   const float speed = 100.f;
 
-  if (!Sprite_load(&spr, "resources/gfx/khu_sheet.png", 3, 1)) return 1;
-  if (!Sprite_load(&spr2, "resources/gfx/spawn_cmd.png", 1, 1)) return 1;
 
+  if (!Sprite_load(&spr, "resources/gfx/khu_sheet.png", 3, 1))  return 1;
+  if (!Sprite_load(&spr2, "resources/gfx/spawn_cmd.png", 1, 1)) return 1;
 
   spr.scale.x = 4.f;
   spr.scale.y = 4.f;

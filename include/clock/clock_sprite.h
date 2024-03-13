@@ -20,6 +20,7 @@ typedef struct {
   float accumulated_time;
 } Sprite;
 
+// TODO: make a texture hash map and pass the texture to sprite init instead of the filepath
 bool Sprite_load(Sprite* spr, const char* filepath, size_t hframes, size_t vframes);
 void Sprite_update_tex_rect(Sprite *spr);
 void Sprite_set_hframe(Sprite* spr, size_t hframe);
