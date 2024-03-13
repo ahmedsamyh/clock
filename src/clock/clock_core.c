@@ -62,7 +62,7 @@ void Window_deinit(Window* win){
 // Context / main user api
 
 bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title) {
-  ctx->win = (Window*)malloc(sizeof(Window));
+  ctx->win = (Window*)  malloc(sizeof(Window));
   ctx->ren = (Renderer*)malloc(sizeof(Renderer));
   if (!Window_init(ctx->win, window_width, window_height, title)){
     return false;
@@ -70,6 +70,8 @@ bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_hei
   if (!Renderer_init(ctx->ren, ctx->win)){
     return false;
   }
+
+  ctx->resman = (Resource_manager*)calloc(1, sizeof(Resource_manager));
 
   glfwSetWindowUserPointer(ctx->win->glfw_win, ctx);
   glfwSetKeyCallback(ctx->win->glfw_win, key_callback);
@@ -158,6 +160,7 @@ void clock_deinit(Context* ctx){
   Window_deinit(ctx->win);
   free(ctx->win);
   free(ctx->ren);
+  free(ctx->resman);
 }
 
 // Callbacks
@@ -255,7 +258,7 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
   };
 
   Vector4f colors[] = {
-    c0, c1, c2,
+    c0, c1, c2
   };
 
   // resolution of the z-axis, i dont know what the standard resolution people use in the z-axis.
@@ -264,7 +267,7 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
 
   // TODO: we are converting from screen space to clip space here manually in the CPU
   // but we eventually want to have a transformation matrix and convert them from the GPU
-  for (size_t i = 0; i < 3; ++i){
+  for (size_t i = 0; i < 3; ++i) {
     Vector3f p = positions[i];
     Vector4f pn = (Vector4f){
       .x = (p.x / (float)r->win->width)*2.f - 1.f,
@@ -331,6 +334,7 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   };
 
   // TODO: factor these transformations into a Transform struct which the Sprite struct will have as a member
+
   // offset by origin
   for (size_t i = 0; i < 4; ++i) {
     positions[i] = v3f_sub(positions[i], (Vector3f){spr->origin.x, spr->origin.y, 0.f});
@@ -387,10 +391,10 @@ void draw_sprite(Context* ctx, Sprite* spr) {
 
   Renderer_use_texture_shader(r);
 
-  glActiveTexture(GL_TEXTURE0 + (spr->texture.slot % ctx->max_tex_image_slots));
+  glActiveTexture(GL_TEXTURE0 + (spr->texture->slot % ctx->max_tex_image_slots));
   gl(GLuint t = glGetUniformLocation(r->current_shader, "tex"));
-  glUniform1i(t, (spr->texture.slot % ctx->max_tex_image_slots));
-  glBindTexture(GL_TEXTURE_2D, spr->texture.id);
+  glUniform1i(t, (spr->texture->slot % ctx->max_tex_image_slots));
+  glBindTexture(GL_TEXTURE_2D, spr->texture->id);
 
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices));

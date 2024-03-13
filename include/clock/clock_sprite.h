@@ -7,7 +7,7 @@
 #define SPRITE_DEFAULT_TIME_PER_FRAME 0.25f // seconds
 
 typedef struct {
-  Texture texture;
+  Texture* texture;
   Rect tex_rect;
   Vector2f pos;
   Vector2f size;
@@ -20,8 +20,7 @@ typedef struct {
   float accumulated_time;
 } Sprite;
 
-// TODO: make a texture hash map and pass the texture to sprite init instead of the filepath
-bool Sprite_load(Sprite* spr, const char* filepath, size_t hframes, size_t vframes);
+bool Sprite_init(Sprite* spr, Texture* tex, size_t hframes, size_t vframes);
 void Sprite_update_tex_rect(Sprite *spr);
 void Sprite_set_hframe(Sprite* spr, size_t hframe);
 void Sprite_set_vframe(Sprite* spr, size_t vframe);
