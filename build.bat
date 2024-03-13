@@ -36,6 +36,12 @@ if "%1"=="vector_gen" (
   call shell lib !LIB_DIR!\glfw3_mt.lib !CLOCK_OBJS! gl.obj /out:.\lib\clock.lib
 
   call shell cl examples\rotating_quad.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
+) else if "%1"=="drawing_sprite" (
+  echo Building clock_engine.lib...
+  call shell cl /c !CLOCK_SRCS! src\gl\gl.c /I!INCLUDE_DIRS!
+  call shell lib !LIB_DIR!\glfw3_mt.lib !CLOCK_OBJS! gl.obj /out:.\lib\clock.lib
+
+  call shell cl examples\drawing_sprite.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
 ) else if "%1"=="clean" (
   for /f %%i in ('dir /b .') do (
     if "%%~xi"==".exe" (

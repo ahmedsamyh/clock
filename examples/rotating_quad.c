@@ -20,7 +20,7 @@ int main(void){
   while (!clock_should_quit(ctx)){
     clock_begin_draw(ctx);
 
-    clock_clear(ctx, COLOR_BLACK);2
+    clock_clear(ctx, COLOR_BLACK);
 
     Vector3f p0 = {-w, -h, 0.f};
     Vector3f p1 = {+w, -h, 0.f};
