@@ -325,7 +325,7 @@ void draw_texture(Context* ctx, Vector3f pos, Rect texcoord, Texture* tex){
 
 void draw_sprite(Context* ctx, Sprite* spr) {
   Renderer* r = ctx->ren;
-  Vector3f pos = (Vector3f){spr->pos.x, spr->pos.y, 0.f};
+  Vector3f pos  = (Vector3f){spr->pos.x, spr->pos.y, 0.f};
   Vector3f positions[4] = {
     (Vector3f){0.f,                         0.f,                         0.f},
     (Vector3f){(float)spr->tex_rect.size.x, 0.f,                         0.f},
@@ -342,10 +342,10 @@ void draw_sprite(Context* ctx, Sprite* spr) {
 
   // rotate
   for (size_t i = 0; i < 4; ++i) {
-    Vector3f p = positions[i];
-    Vector4f v4 = Mat4_rotate_x_vector((Vector4f){p.x, p.y, p.z, 1.f}, spr->rotation.x);
-    v4 =          Mat4_rotate_y_vector(v4,                             spr->rotation.y);
-    v4 =          Mat4_rotate_z_vector(v4,                             spr->rotation.z);
+    Vector3f p   = positions[i];
+    Vector4f v4  = Mat4_rotate_x_vector((Vector4f){p.x, p.y, p.z, 1.f}, spr->rotation.x);
+    v4           = Mat4_rotate_y_vector(v4,                             spr->rotation.y);
+    v4           = Mat4_rotate_z_vector(v4,                             spr->rotation.z);
     positions[i] = (Vector3f){v4.x, v4.y, v4.z};
   }
 
@@ -357,9 +357,11 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   // translate
   for (size_t i = 0; i < 4; ++i) {
     Vector3f p = positions[i];
-    Vector4f v4 = Mat4_translate_vector((Vector4f){p.x, p.y, p.z, 1.f}, pos);
+    Vector4f v4  = Mat4_translate_vector((Vector4f){p.x, p.y, p.z, 1.f}, pos);
     positions[i] = (Vector3f){v4.x, v4.y, v4.z};
   };
+
+
 
 
   Vector2f texcoords[4] = {

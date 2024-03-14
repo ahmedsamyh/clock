@@ -9,6 +9,97 @@ Matrix4 Mat4_identity(void){
   };
 }
 
+Matrix4 Mat4_translate(Matrix4 mat, Vector3f by) {
+  Matrix4 translation_mat = {
+    .m = {{1.f, 0.f, 0.f, by.x},
+	  {0.f, 1.f, 0.f, by.y},
+	  {0.f, 0.f, 1.f, by.z},
+	  {0.f, 0.f, 0.f, 1.f}}
+  };
+
+  return Mat4_mul(mat, translation_mat);
+}
+
+Matrix4 Mat4_scale(Matrix4 mat, Vector3f by) {
+  Vector4f r = {0};
+
+  Matrix4 translation_mat = {
+    .m = {{by.x, 0.f, 0.f, 0.f},
+	  {0.f, by.y, 0.f, 0.f},
+	  {0.f, 0.f, by.z, 0.f},
+	  {0.f, 0.f, 0.f, 1.f}}
+  };
+
+  return Mat4_mul(mat, translation_mat);
+}
+
+Matrix4 Mat4_rotate_x(Matrix4 mat, float deg) {
+  Vector4f r = {0};
+  float rad = deg2rad(deg);
+
+  Matrix4 m = {
+    .m = {{1, 0,          0        , 0},
+	  {0, cosf(rad), -sinf(rad), 0},
+          {0, sinf(rad),  cosf(rad), 0},
+          {0, 0,          0,         0}}
+  };
+
+  return Mat4_mul(mat, m);
+}
+
+Matrix4 Mat4_rotate_y(Matrix4 mat, float deg) {
+  Vector4f r = {0};
+  float rad = deg2rad(deg);
+
+  Matrix4 m = {
+    .m = {{cosf(rad),  0, sinf(rad), 0},
+	  {0,          1, 0        , 0},
+	  {-sinf(rad), 0, cosf(rad), 0},
+	  {0,          0, 0        , 0}}
+  };
+  return Mat4_mul(mat, m);
+}
+
+Matrix4 Mat4_rotate_z(Matrix4 mat, float deg) {
+  Vector4f r = {0};
+  float rad = deg2rad(deg);
+
+  Matrix4 m = {
+    .m = {{cosf(rad), -sinf(rad), 0, 0},
+	  {sinf(rad),  cosf(rad), 0, 0},
+	  {0,          0,         1, 0},
+	  {0,          0,         0, 0}}
+  };
+  return Mat4_mul(mat, m);
+}
+
+
+// TODO: actually try to understand what is going on, this is from a pseudocode i found online
+Matrix4 Mat4_mul(Matrix4 m1, Matrix4 m2) {
+  Matrix4 res = {0};
+
+  for (size_t i = 0; i < 4; ++i) {
+    for (size_t j = 0; j < 4; ++j) {
+      for (size_t k = 0; k < 4; ++k) {
+	res.m[i][j] += m1.m[i][k] * m2.m[k][j];
+      }
+    }
+  }
+
+  return res;
+}
+
+Matrix4 Mat4_transpose(Matrix4 mat) {
+  Matrix4 res = {0};
+  for (size_t row = 0; row < 4; ++row) {
+    for (size_t col = 0; col < 4; ++col) {
+      res.m[col][row] = mat.m[row][col];
+    }
+  }
+
+  return res;
+}
+
 Vector4f Mat4_translate_vector(Vector4f v, Vector3f by){
   Vector4f r = {0};
 
@@ -19,7 +110,7 @@ Vector4f Mat4_translate_vector(Vector4f v, Vector3f by){
 	  {0.f, 0.f, 0.f, 1.f}}
   };
 
-  return Mat4_mul(translation_mat, v);
+  return Mat4_vector_mul(translation_mat, v);
 }
 
 Vector4f Mat4_scale_vector(Vector4f v, Vector3f by){
@@ -32,8 +123,7 @@ Vector4f Mat4_scale_vector(Vector4f v, Vector3f by){
 	  {0.f, 0.f, 0.f, 1.f}}
   };
 
-  return Mat4_mul(translation_mat, v);
-
+  return Mat4_vector_mul(translation_mat, v);
 }
 
 Vector4f Mat4_rotate_x_vector(Vector4f v, float deg){
@@ -46,7 +136,7 @@ Vector4f Mat4_rotate_x_vector(Vector4f v, float deg){
           {0, sinf(rad),  cosf(rad)}}
   };
 
-  return Mat3_mul(m, v);
+  return Mat3_vector_mul(m, v);
 }
 
 Vector4f Mat4_rotate_y_vector(Vector4f v, float deg){
@@ -58,8 +148,7 @@ Vector4f Mat4_rotate_y_vector(Vector4f v, float deg){
 	  {0,          1, 0        },
 	  {-sinf(rad), 0, cosf(rad)}}
   };
-  return Mat3_mul(m, v);
-
+  return Mat3_vector_mul(m, v);
 }
 
 Vector4f Mat4_rotate_z_vector(Vector4f v, float deg){
@@ -71,12 +160,10 @@ Vector4f Mat4_rotate_z_vector(Vector4f v, float deg){
 	  {sinf(rad),  cosf(rad), 0},
 	  {0,          0,         1}}
   };
-  return Mat3_mul(m, v);
+  return Mat3_vector_mul(m, v);
 }
 
-
-
-Vector4f Mat4_mul(Matrix4 m, Vector4f v){
+Vector4f Mat4_vector_mul(Matrix4 m, Vector4f v){
   Vector4f res = {0};
 
   float vv[4] = {v.x, v.y, v.z, v.w};
@@ -96,7 +183,7 @@ Vector4f Mat4_mul(Matrix4 m, Vector4f v){
   return res;
 }
 
-Vector4f Mat3_mul(Matrix3 m, Vector4f v){
+Vector4f Mat3_vector_mul(Matrix3 m, Vector4f v){
   Vector4f res = {0};
 
   float vv[4] = {v.x, v.y, v.z, v.w};

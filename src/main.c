@@ -1,1 +1,1 @@
-#include "..\examples\drawing_sprite.c"
+#include "../examples/drawing_sprite.c"
