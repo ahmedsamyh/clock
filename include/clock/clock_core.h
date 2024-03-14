@@ -57,7 +57,7 @@ struct Context {
   Resource_manager* resman;
 };
 
-bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title);
+Context* clock_init(unsigned int window_width, unsigned int window_height, const char* title);
 bool clock_should_quit(Context* ctx);
 void clock_update_keys(Context* ctx);
 void clock_begin_draw(Context* ctx);

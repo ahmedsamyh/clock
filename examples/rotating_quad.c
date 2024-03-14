@@ -2,9 +2,9 @@
 #include <stdlib.h>
 
 int main(void){
-  Context* ctx = (Context*)calloc(1, sizeof(Context));
+  Context* ctx = clock_init(800, 800, "GLFW Window");
 
-  if (clock_init(ctx, 800, 800, "GLFW Window") < 0) return 1;
+  if (ctx == NULL) return 1;
 
   float width =  (float)ctx->win->width;
   float height = (float)ctx->win->height;

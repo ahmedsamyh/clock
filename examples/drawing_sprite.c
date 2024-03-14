@@ -2,9 +2,9 @@
 #include <stdlib.h>
 
 int main(void) {
-  Context* ctx = (Context*)calloc(1, sizeof(Context));
+  Context* ctx = clock_init(800, 800, "Drawing Sprites");
 
-  if (!clock_init(ctx, 800, 800, "Drawing Sprites")) {
+  if (ctx == NULL) {
     return 1;
   }
 

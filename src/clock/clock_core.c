@@ -61,14 +61,15 @@ void Window_deinit(Window* win){
 
 // Context / main user api
 
-bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_height, const char* title) {
+Context* clock_init(unsigned int window_width, unsigned int window_height, const char* title) {
+  Context* ctx = (Context*)calloc(1, sizeof(Context));
   ctx->win = (Window*)  malloc(sizeof(Window));
   ctx->ren = (Renderer*)malloc(sizeof(Renderer));
   if (!Window_init(ctx->win, window_width, window_height, title)){
-    return false;
+    return NULL;
   }
   if (!Renderer_init(ctx->ren, ctx->win)){
-    return false;
+    return NULL;
   }
 
   ctx->resman = (Resource_manager*)calloc(1, sizeof(Resource_manager));
@@ -84,7 +85,7 @@ bool clock_init(Context* ctx, unsigned int window_width, unsigned int window_hei
 
   glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &ctx->max_tex_image_slots);
 
-  return true;
+  return ctx;
 }
 
 bool clock_should_quit(Context* ctx){
