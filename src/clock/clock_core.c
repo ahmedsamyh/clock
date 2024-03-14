@@ -159,6 +159,7 @@ void clock_clear(Context* ctx, Color color){
 void clock_deinit(Context* ctx){
   Renderer_deinit(ctx->ren);
   Window_deinit(ctx->win);
+  Resman_unload_every_texture(ctx->resman);
   free(ctx->win);
   free(ctx->ren);
   free(ctx->resman);
