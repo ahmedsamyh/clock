@@ -10,8 +10,9 @@ int main(void) {
 
   Sprite spr = {0};
 
-  // TODO: Sprite_load will change
-  if (!Sprite_load(&spr, "resources/gfx/khu_sheet.png", 3, 1)) {
+  Texture* khu_tex = Resman_load_texture(ctx->resman, "resources/gfx/khu_sheet.png");
+
+  if (!Sprite_init(&spr, khu_tex, 3, 1)) {
     return 1;
   }
 
