@@ -18,7 +18,7 @@ void declare_arithmetic_function(FILE* out, const char* return_type, const char*
 }
 
 // x func(vector, scalar)
-void declare_scalar_arithmetic_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type){
+void declare_scalar_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type){
   fprintf(out, "%s %s_%ss(%s v, "SV_FMT" num);\n", return_type, prefix, func, full_name, SV_ARG(type));
 }
 
@@ -182,7 +182,25 @@ void define_mag_function(FILE* out, const char* return_type, const char* prefix,
   fprintf(out, "}\n");
 }
 
-void declare_vector(String_view format){
+void define_radian_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type, String_view members) {
+  fprintf(out, "%s %s_%s(%s v){\n", return_type, prefix, func, full_name);
+  fprintf(out, "  return ");
+
+  fprintf(out, "(%s)atan2(v.y, v.x);\n", return_type);
+
+  fprintf(out, "}\n");
+}
+
+void define_degree_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type, String_view members) {
+  fprintf(out, "%s %s_%s(%s v){\n", return_type, prefix, func, full_name);
+  fprintf(out, "  return ");
+
+  fprintf(out, "(%s_radian(v) / 6.28318530718f) * 360.f;\n", prefix);
+
+  fprintf(out, "}\n");
+}
+
+void declare_vector(String_view format) {
   String_view name = sv_lpop_until_char(&format, ':');
   sv_lremove(&format, 1); // remove :
   sv_trim(&format);
@@ -201,13 +219,16 @@ void declare_vector(String_view format){
   /* printf("type:    '"SV_FMT"'\n", SV_ARG(type)); */
   /* printf("members: '"SV_FMT"'\n", SV_ARG(members)); */
 
+
   FILE* out = fopen(header_filename, "a");
   assert(out != NULL);
+
+  size_t members_count = 0; // actual number of members not the count of the characters in 'members' sv... eg: Vector2 will have 2 members_count (x, y)
 
   fprintf(out, "\n// "SV_FMT"%c --------------------------------------------------\n", SV_ARG(name), *type.data);
   // struct
   fprintf(out, "typedef struct {\n");
-  while (members_copy.count > 0){
+  while (members_copy.count > 0) {
     String_view member = sv_lpop_until_char(&members_copy, ' ');
     sv_trim(&members_copy);
     sv_lremove(&member, 1);
@@ -227,6 +248,7 @@ void declare_vector(String_view format){
     } else {
       fprintf(out, "  "SV_FMT" "SV_FMT";\n", SV_ARG(type), SV_ARG(member));
     }
+    members_count++;
   }
   fprintf(out, "} "SV_FMT, SV_ARG(name));
   // suffix (suffix with the first character of the type for now)
@@ -248,10 +270,15 @@ void declare_vector(String_view format){
   declare_arithmetic_function(out, full_name, prefix, "mul", full_name);
   declare_arithmetic_function(out, full_name, prefix, "div", full_name);
 
-  declare_scalar_arithmetic_function(out, full_name, prefix, "add", full_name, type);
-  declare_scalar_arithmetic_function(out, full_name, prefix, "sub", full_name, type);
-  declare_scalar_arithmetic_function(out, full_name, prefix, "mul", full_name, type);
-  declare_scalar_arithmetic_function(out, full_name, prefix, "div", full_name, type);
+  declare_scalar_function(out, full_name, prefix, "add", full_name, type);
+  declare_scalar_function(out, full_name, prefix, "sub", full_name, type);
+  declare_scalar_function(out, full_name, prefix, "mul", full_name, type);
+  declare_scalar_function(out, full_name, prefix, "div", full_name, type);
+
+  if (members_count == 2) {
+    declare_getter_function(out, "float", prefix, "degree", full_name);
+    declare_getter_function(out, "float", prefix, "radian", full_name);
+  }
 
   declare_getter_function(out, "float", prefix, "mag", full_name);
   declare_getter_function(out, "float", prefix, "mag2", full_name);
@@ -265,7 +292,7 @@ void declare_vector(String_view format){
   fclose(out);
 }
 
-void define_vector(String_view format){
+void define_vector(String_view format) {
   String_view name = sv_lpop_until_char(&format, ':');
   sv_lremove(&format, 1); // remove :
   sv_trim(&format);
@@ -279,6 +306,14 @@ void define_vector(String_view format){
   sv_lremove(&format, 1); // remove :
   sv_trim(&format);
   sv_trim(&members);
+
+  size_t members_count = 0; // actual number of members not the count of the characters in 'members' sv... eg: Vector2 will have 2 members_count (x, y)
+
+  while (members_copy.count > 0) {
+    String_view member = sv_lpop_until_char(&members_copy, ' ');
+    sv_trim(&members_copy);
+    members_count++;
+  }
 
   char* full_name = (char*)malloc(sizeof(char)*name.count+2);
   snprintf(full_name, name.count+2, SV_FMT"%c", SV_ARG(name), *type.data);
@@ -304,6 +339,12 @@ void define_vector(String_view format){
   define_scalar_arithmetic_function(out, full_name, prefix, "mul", full_name, type, members, '*');
   define_scalar_arithmetic_function(out, full_name, prefix, "div", full_name, type, members, '/');
 
+  if (members_count == 2) {
+    define_radian_function(out, "float", prefix, "radian", full_name, type, members);
+    define_degree_function(out, "float", prefix, "degree", full_name, type, members);
+  }
+
+
   define_mag_function(out, "float", prefix, "mag", full_name, type, members, false);
   define_mag_function(out, "float", prefix, "mag2", full_name, type, members, true);
   define_mag_function(out, "float", prefix, "dist", full_name, type, members, false);
@@ -317,7 +358,11 @@ void define_vector(String_view format){
 }
 
 int main(void){
-  prepare_header_begin(header_filename, GUARD_NAME);
+  const char** include_files = NULL;
+
+  arrput(include_files, "<math.h>");
+
+  prepare_header_begin(header_filename, GUARD_NAME, include_files, arrlenu(include_files));
   const char* types[] = {
     "float",
     "double",
@@ -341,5 +386,8 @@ int main(void){
   log_f(LOG_INFO, "Output: -> %s", header_filename);
   log_f(LOG_INFO, "Output: -> %s", source_filename);
 
+
+  // will get freed by the os
+  //  arrfree(include_files);
   return 0;
 }

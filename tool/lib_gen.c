@@ -5,12 +5,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-void prepare_header_begin(const char* header_filename, const char* guard_name){
+void prepare_header_begin(const char* header_filename, const char* guard_name, const char** include_files, size_t include_files_count){
   FILE* out = fopen(header_filename, "w");
   assert(out != NULL);
 
   fprintf(out, "#ifndef _%s_\n", guard_name);
   fprintf(out, "#define _%s_\n", guard_name);
+
+  for (size_t i = 0; i < include_files_count; ++i) {
+    fprintf(out, "#include %s\n", include_files[i]);
+  }
 
   fclose(out);
   log_f(LOG_INFO, "Prepared output header!");

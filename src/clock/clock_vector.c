@@ -51,6 +51,12 @@ Vector2f v2f_divs(Vector2f v1, float num){
     .y = v1.y / num,
   };
 }
+float v2f_radian(Vector2f v){
+  return (float)atan2(v.y, v.x);
+}
+float v2f_degree(Vector2f v){
+  return (v2f_radian(v) / 6.28318530718f) * 360.f;
+}
 float v2f_mag(Vector2f v){
   return sqrtf((v.x*v.x) + (v.y*v.y));
 }
@@ -279,6 +285,12 @@ Vector2d v2d_divs(Vector2d v1, double num){
     .y = v1.y / num,
   };
 }
+float v2d_radian(Vector2d v){
+  return (float)atan2(v.y, v.x);
+}
+float v2d_degree(Vector2d v){
+  return (v2d_radian(v) / 6.28318530718f) * 360.f;
+}
 float v2d_mag(Vector2d v){
   return sqrtf((v.x*v.x) + (v.y*v.y));
 }
@@ -506,6 +518,12 @@ Vector2i v2i_divs(Vector2i v1, int num){
     .x = v1.x / num,
     .y = v1.y / num,
   };
+}
+float v2i_radian(Vector2i v){
+  return (float)atan2(v.y, v.x);
+}
+float v2i_degree(Vector2i v){
+  return (v2i_radian(v) / 6.28318530718f) * 360.f;
 }
 float v2i_mag(Vector2i v){
   return sqrtf((v.x*v.x) + (v.y*v.y));

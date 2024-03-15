@@ -1,5 +1,6 @@
 #ifndef _CLOCK_VECTOR_H_
 #define _CLOCK_VECTOR_H_
+#include <math.h>
 
 // Vector2f --------------------------------------------------
 typedef struct {
@@ -21,6 +22,8 @@ Vector2f v2f_adds(Vector2f v, float num);
 Vector2f v2f_subs(Vector2f v, float num);
 Vector2f v2f_muls(Vector2f v, float num);
 Vector2f v2f_divs(Vector2f v, float num);
+float v2f_degree(Vector2f v);
+float v2f_radian(Vector2f v);
 float v2f_mag(Vector2f v);
 float v2f_mag2(Vector2f v);
 float v2f_dist(Vector2f v);
@@ -102,6 +105,8 @@ Vector2d v2d_adds(Vector2d v, double num);
 Vector2d v2d_subs(Vector2d v, double num);
 Vector2d v2d_muls(Vector2d v, double num);
 Vector2d v2d_divs(Vector2d v, double num);
+float v2d_degree(Vector2d v);
+float v2d_radian(Vector2d v);
 float v2d_mag(Vector2d v);
 float v2d_mag2(Vector2d v);
 float v2d_dist(Vector2d v);
@@ -183,6 +188,8 @@ Vector2i v2i_adds(Vector2i v, int num);
 Vector2i v2i_subs(Vector2i v, int num);
 Vector2i v2i_muls(Vector2i v, int num);
 Vector2i v2i_divs(Vector2i v, int num);
+float v2i_degree(Vector2i v);
+float v2i_radian(Vector2i v);
 float v2i_mag(Vector2i v);
 float v2i_mag2(Vector2i v);
 float v2i_dist(Vector2i v);
