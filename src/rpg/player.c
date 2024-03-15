@@ -1,23 +1,31 @@
 #include <rpg/player.h>
 #include <assert.h>
 
-bool Player_init(Player* player, Context* ctx, Texture* head_tex, Texture* torso_tex, Texture* arm_tex, Texture* leg_tex) {
-  player->pos = (Vector3f){0.f, 0.f, 0.f};
-  player->vel = (Vector2f){0.f, 0.f};
-  player->acc = (Vector2f){0.f, 0.f};
-  player->hitbox = (Rect){{0.f, 0.f}, {DEFAULT_PLAYER_SIZE, DEFAULT_PLAYER_SIZE}};
-  player->speed = DEFAULT_PLAYER_SPEED;
-  player->max_speed = DEFAULT_PLAYER_MAX_SPEED;
-  player->fric  = 0.8f;
-  player->is_moving = false;
-  player->ctx = ctx;
+bool Player_init(Player* p, Context* ctx, Texture* head_tex, Texture* torso_tex, Texture* arm_tex, Texture* leg_tex) {
+  p->pos = (Vector3f){0.f, 0.f, 0.f};
+  p->vel = (Vector2f){0.f, 0.f};
+  p->acc = (Vector2f){0.f, 0.f};
+  p->hitbox = (Rect){{0.f, 0.f}, {DEFAULT_PLAYER_SIZE, DEFAULT_PLAYER_SIZE}};
+  p->speed = DEFAULT_PLAYER_SPEED;
+  p->max_speed = DEFAULT_PLAYER_MAX_SPEED;
+  p->fric  = 0.8f;
+  p->is_moving = false;
+  p->ctx = ctx;
 
-  if (!Sprite_init(&player->head_spr, head_tex, 1, 1)) return false;
-  if (!Sprite_init(&player->torso_spr, torso_tex, 1, 1)) return false;
+  if (!Sprite_init(&p->head_spr, head_tex, 1, 1)) return false;
+  if (!Sprite_init(&p->torso_spr, torso_tex, 1, 1)) return false;
   for (size_t i = 0; i < 2; ++i) {
-    if (!Sprite_init(&player->arm_spr[i], arm_tex, 1, 1)) return false;
-    if (!Sprite_init(&player->leg_spr[i], leg_tex, 1, 1)) return false;
+    if (!Sprite_init(&p->arm_spr[i], arm_tex, 1, 1)) return false;
+    if (!Sprite_init(&p->leg_spr[i], leg_tex, 1, 1)) return false;
+    Sprite* a = &p->arm_spr[i];
+    a->origin = (Vector2f){a->size.x * 0.5f, 0.f};
+    a = &p->leg_spr[i];
+    a->origin = (Vector2f){a->size.x * 0.5f, 0.f};
   }
+
+  Sprite_center_origin(&p->head_spr);
+  Sprite* t = &p->torso_spr;
+  t->origin = (Vector2f){t->size.x * 0.5f, 0.f};
 
   return true;
 }
@@ -42,8 +50,19 @@ void Player_update(Player* p) {
   }
 
   // update positions
+  const float torso_height = p->torso_spr.tex_rect.size.y * 0.85f;
+  const float head_height  = torso_height + (p->head_spr.tex_rect.size.y * 0.5f);
+  const float arm_height   = torso_height * 0.75f;
+  const float leg_height   = 0.f;//p->leg_spr[LEFT].tex_rect.size.y;
+
   p->hitbox.pos = two_5d_to_2d(p->pos);
-  /* p->spr.pos   = p->pos; */
+  p->head_spr.pos  = (Vector2f){p->pos.x, p->pos.y - head_height};
+  p->torso_spr.pos = (Vector2f){p->pos.x, p->pos.y - torso_height};
+  p->arm_spr[LEFT].pos   = (Vector2f){p->pos.x - (p->torso_spr.tex_rect.size.x * 0.4f), p->pos.y - arm_height};
+  p->arm_spr[RIGHT].pos  = (Vector2f){p->pos.x + (p->torso_spr.tex_rect.size.x * 0.4f), p->pos.y - arm_height};
+  p->leg_spr[LEFT].pos   = (Vector2f){p->pos.x - (p->torso_spr.tex_rect.size.x * 0.4f), p->pos.y - leg_height};
+  p->leg_spr[RIGHT].pos  = (Vector2f){p->pos.x + (p->torso_spr.tex_rect.size.x * 0.4f), p->pos.y - leg_height};
+
 }
 
 void Player_control(Player* p) {
@@ -84,37 +103,25 @@ void Player_control(Player* p) {
   }
 }
 
-void Player_draw(Player* p) {
+void Player_draw(Player* p, bool debug) {
   assert(p->ctx);
 
-  // draw the base (pos at height 0)
-  Vector2f pos = (Vector2f){p->pos.x, p->pos.y};
-  Vector3f p0 = (Vector3f){pos.x,                    pos.y,                    0.f};
-  Vector3f p1 = (Vector3f){pos.x + p->hitbox.size.x, pos.y,                    0.f};
-  Vector3f p2 = (Vector3f){pos.x + p->hitbox.size.x, pos.y + p->hitbox.size.y, 0.f};
-  Vector3f p3 = (Vector3f){pos.x,                    pos.y + p->hitbox.size.y, 0.f};
-  Color col = {0};
+  if (debug && false) {
+    Rect base_hitbox = {(Vector2f){p->pos.x, p->pos.y}, p->hitbox.size};
 
-  // actual pos with height considered
-  pos = two_5d_to_2d(p->pos);
-  Vector3f p0_ = (Vector3f){pos.x,                    pos.y,                    0.f};
-  Vector3f p1_ = (Vector3f){pos.x + p->hitbox.size.x, pos.y,                    0.f};
-  Vector3f p2_ = (Vector3f){pos.x + p->hitbox.size.x, pos.y + p->hitbox.size.y, 0.f};
-  Vector3f p3_ = (Vector3f){pos.x,                    pos.y + p->hitbox.size.y, 0.f};
+    // draw the base (pos at height 0)
+    draw_rect_centered(p->ctx, base_hitbox, COLOR_GREEN);
 
-  col = COLOR_WHITE;
-  draw_imm_line(p->ctx, p0, p0_, col, col);
-  draw_imm_line(p->ctx, p1, p1_, col, col);
+    draw_imm_line(p->ctx, (Vector3f){base_hitbox.pos.x, base_hitbox.pos.y}, (Vector3f){p->hitbox.pos.x, p->hitbox.pos.y}, COLOR_GREEN, COLOR_RED);
 
-  col = COLOR_GREEN;
-  draw_imm_quad(p->ctx, p0, p1, p2, p3, col, col, col, col);
+    // draw actual pos with height considered
+    draw_rect_centered(p->ctx, p->hitbox, COLOR_RED);
+  }
 
-  col = COLOR_RED;
-  draw_imm_quad(p->ctx, p0_, p1_, p2_, p3_, col, col, col, col);
-
-  col = COLOR_WHITE;
-  draw_imm_line(p->ctx, p2, p2_, col, col);
-  draw_imm_line(p->ctx, p3, p3_, col, col);
-
-  /* draw_sprite(p->ctx, &p->spr); */
+  draw_sprite(p->ctx, &p->leg_spr[LEFT]);
+  draw_sprite(p->ctx, &p->leg_spr[RIGHT]);
+  draw_sprite(p->ctx, &p->torso_spr);
+  draw_sprite(p->ctx, &p->arm_spr[LEFT]);
+  draw_sprite(p->ctx, &p->arm_spr[RIGHT]);
+  draw_sprite(p->ctx, &p->head_spr);
 }

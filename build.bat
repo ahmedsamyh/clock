@@ -17,7 +17,6 @@ set CLOCK_SRCS=!CLOCK_SRCS:~1!
 
 set arg=%1
 
-
 rem RPG --------------------------------------------------
 set RPG_SRC_PATH=src\rpg
 set RPG_FILES=rpg player 2.5d
@@ -83,7 +82,7 @@ rem  call shell build clock
 ) else if "!arg!"=="rpg" (
   call shell build clock
 
-  call shell cl !RPG_SRCS! /Fe:rpg /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
+  call shell cl !RPG_SRCS! /Fe:rpg /DDEBUG /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
 ) else (
   echo ERROR: Unknown subcommand '!arg!'...
   exit /b 1

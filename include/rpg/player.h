@@ -17,6 +17,9 @@ typedef struct Player Player;
 #define PLAYER_MOVE_UP_KEY    GLFW_KEY_W
 #define PLAYER_MOVE_DOWN_KEY  GLFW_KEY_S
 
+#define LEFT  0
+#define RIGHT 1
+
 struct Player {
   Vector3f pos;
   Vector2f vel;
@@ -36,6 +39,6 @@ struct Player {
 bool Player_init(Player* player, Context* ctx, Texture* head_tex, Texture* torso_tex, Texture* arm_tex, Texture* leg_tex);
 void Player_update(Player* player);
 void Player_control(Player* player);
-void Player_draw(Player* player);
+void Player_draw(Player* player, bool debug);
 
 #endif /* _PLAYER_H_ */

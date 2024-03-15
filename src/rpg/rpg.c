@@ -27,9 +27,16 @@ int main(void) {
 
   gl(glEnable(GL_BLEND));
 
+  bool DEBUG_DRAW = false;
+#ifdef DEBUG
+  DEBUG_DRAW = true;
+#endif
+
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
     clock_clear(ctx, COLOR_BLACK);
+
+    if (ctx->keys[GLFW_KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
 
     // alpha blending
     gl(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
@@ -37,7 +44,7 @@ int main(void) {
 
     Player_control(&player);
     Player_update (&player);
-    Player_draw   (&player);
+    Player_draw   (&player, DEBUG_DRAW);
 
     clock_end_draw(ctx);
   }
