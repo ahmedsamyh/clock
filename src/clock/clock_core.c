@@ -92,6 +92,8 @@ bool clock_should_quit(Context* ctx){
   return glfwWindowShouldClose(ctx->win->glfw_win);
 }
 
+// TODO: key pressed are ignored when moving the window
+
 void clock_update_keys(Context* ctx){
   Key* keys   = ctx->keys;
   Window* win = ctx->win;
@@ -445,6 +447,14 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 2, r->vertices));
 
   gl(glDrawArrays(GL_LINE_STRIP, 0, 2));
+}
+
+void draw_rect_centered(Context* ctx, Rect rect, Color col) {
+  Vector3f p0 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y - (rect.size.y * 0.5f)};
+  Vector3f p1 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y - (rect.size.y * 0.5f)};
+  Vector3f p2 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
+  Vector3f p3 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
+  draw_imm_quad(ctx, p0, p1, p2, p3, col, col, col, col);
 }
 
 // Shader

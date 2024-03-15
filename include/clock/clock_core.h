@@ -104,6 +104,7 @@ void draw_texture(Context* ctx, Vector3f pos, Rect texcoords, Texture* texture);
 void draw_sprite(Context* ctx, Sprite* spr);
 void draw_rect(Context* ctx, Rect rect, Color color);
 void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1);
+void draw_rect_centered(Context* ctx, Rect rect, Color col);
 
 // Shader
 
