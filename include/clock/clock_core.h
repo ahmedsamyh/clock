@@ -89,6 +89,8 @@ struct Renderer {
   Window* win;
 };
 
+// TODO: Blending
+
 bool Renderer_init(Renderer* renderer, Window* win);
 void Renderer_deinit(Renderer* renderer);
 void Renderer_use_custom_shader(Renderer* renderer, const char* vs, const char* fs);
