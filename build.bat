@@ -17,6 +17,18 @@ set CLOCK_SRCS=!CLOCK_SRCS:~1!
 
 set arg=%1
 
+
+rem RPG --------------------------------------------------
+set RPG_SRC_PATH=src\rpg
+set RPG_FILES=rpg player
+set RPG_SRCS=
+
+for %%i in (!RPG_FILES!) do (
+  set RPG_SRCS=!RPG_SRC_PATH!\%%i.c !RPG_SRCS!
+)
+
+rem RPG --------------------------------------------------
+
 if not defined arg (
   echo ERROR: No subcommand provided...
   exit /b 1
@@ -68,6 +80,10 @@ rem  call shell build clock
   call shell build clock
 
   call shell cl src\main.c /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
+) else if "!arg!"=="rpg" (
+  call shell build clock
+
+  call shell cl !RPG_SRCS! /Fe:rpg /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
 ) else (
   echo ERROR: Unknown subcommand '!arg!'...
   exit /b 1
