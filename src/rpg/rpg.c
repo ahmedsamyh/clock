@@ -1,6 +1,11 @@
 #include <clock/clock.h>
 #include <rpg/player.h>
 
+Texture* load_texture_err_handled(Context* ctx, const char* filepath) {
+  Texture* tex = Resman_load_texture(ctx->resman, filepath);
+  if (tex == NULL) exit(1);
+  return tex;
+}
 int main(void) {
   Context* ctx = clock_init(1280, 960, "RPG");
 
@@ -8,11 +13,14 @@ int main(void) {
     return 1;
   }
 
-  const Texture* player_tex = Resman_load_texture(ctx->resman, "resources/gfx/player.png");
+  Texture* player_head_tex  = load_texture_err_handled(ctx, "resources/gfx/player_head.png");
+  Texture* player_torso_tex = load_texture_err_handled(ctx, "resources/gfx/player_torso.png");
+  Texture* player_arm_tex   = load_texture_err_handled(ctx, "resources/gfx/player_arm.png");
+  Texture* player_leg_tex   = load_texture_err_handled(ctx, "resources/gfx/player_leg.png");
 
   Player player = {0};
 
-  if (!Player_init(&player, ctx, player_tex)) return 1;
+  if (!Player_init(&player, ctx, player_head_tex, player_torso_tex, player_arm_tex, player_leg_tex)) return 1;
 
   // vsync
   /* glfwSwapInterval(1); */
