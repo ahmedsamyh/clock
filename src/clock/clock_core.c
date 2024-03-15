@@ -363,9 +363,6 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     positions[i] = (Vector3f){v4.x, v4.y, v4.z};
   };
 
-
-
-
   Vector2f texcoords[4] = {
     (Vector2f){spr->tex_rect.pos.x, spr->tex_rect.pos.y},
     (Vector2f){spr->tex_rect.pos.x + spr->tex_rect.size.x, spr->tex_rect.pos.y},
@@ -412,6 +409,42 @@ void draw_rect(Context* ctx, Rect rect, Color color){
   Vector3f br = (Vector3f){rect.pos.x + rect.size.x, rect.pos.y + rect.size.y, 0.f};
   Vector3f bl = (Vector3f){rect.pos.x, rect.pos.y + rect.size.y, 0.f};
   draw_imm_quad(ctx, tl, tr, br, bl, color, color, color, color);
+}
+
+void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
+  Renderer* r = ctx->ren;
+
+  Vector3f positions[] = {
+    p0, p1
+  };
+
+  Vector4f colors[] = {
+    c0, c1
+  };
+
+  // resolution of the z-axis, i dont know what the standard resolution people use in the z-axis.
+  // so we just use the height as the z-axis (actually it should be {far - near})
+  float depth = r->win->height;
+
+  // TODO: we are converting from screen space to clip space here manually in the CPU
+  // but we eventually want to have a transformation matrix and convert them from the GPU
+  for (size_t i = 0; i < 2; ++i) {
+    Vector3f p = positions[i];
+    Vector4f pn = (Vector4f){
+      .x = (p.x / (float)r->win->width)*2.f - 1.f,
+      .y = (1.f - p.y / (float)r->win->height)*2.f - 1.f,
+      .z = (p.z / (float)depth)*2.f - 1.f,
+      .w = 1.f,
+    };
+    Vector4f c = colors[i];
+    r->vertices[i].position = pn;
+    r->vertices[i].color = c;
+  }
+
+  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
+  gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 2, r->vertices));
+
+  gl(glDrawArrays(GL_LINE_STRIP, 0, 2));
 }
 
 // Shader
