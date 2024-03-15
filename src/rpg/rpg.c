@@ -8,15 +8,24 @@ int main(void) {
     return 1;
   }
 
+  const Texture* player_tex = Resman_load_texture(ctx->resman, "resources/gfx/player.png");
+
   Player player = {0};
 
-  Player_init(&player, ctx);
+  if (!Player_init(&player, ctx, player_tex)) return 1;
 
+  // vsync
   /* glfwSwapInterval(1); */
+
+  gl(glEnable(GL_BLEND));
 
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
     clock_clear(ctx, COLOR_BLACK);
+
+    // alpha blending
+    gl(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    gl(glBlendEquation(GL_FUNC_ADD));
 
     Player_control(&player);
     Player_update (&player);

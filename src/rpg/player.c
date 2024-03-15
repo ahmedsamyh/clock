@@ -1,7 +1,7 @@
 #include <rpg/player.h>
 #include <assert.h>
 
-void Player_init(Player* player, Context* ctx) {
+bool Player_init(Player* player, Context* ctx, Texture* tex) {
   player->pos = (Vector2f){0.f, 0.f};
   player->vel = (Vector2f){0.f, 0.f};
   player->acc = (Vector2f){0.f, 0.f};
@@ -10,7 +10,11 @@ void Player_init(Player* player, Context* ctx) {
   player->max_speed = DEFAULT_PLAYER_MAX_SPEED;
   player->fric  = 0.8f;
   player->is_moving = false;
-  player->ctx   = ctx;
+  player->ctx = ctx;
+
+  if (!Sprite_init(&player->spr, tex, 1, 1)) return false;
+
+  return true;
 }
 
 void Player_update(Player* p) {
@@ -31,9 +35,12 @@ void Player_update(Player* p) {
     p->vel = v2f_muls(v2f_normalize(p->vel), p->max_speed);
   }
 
-  // update hitbox pos to p->pos
+  // update positions
   p->hitbox.pos = p->pos;
+  p->spr.pos    = p->pos;
 
+  // animate sprite
+  Sprite_animate_hframe(&p->spr, delta);
 }
 
 void Player_control(Player* p) {
@@ -66,11 +73,13 @@ void Player_control(Player* p) {
 void Player_draw(Player* p) {
   assert(p->ctx);
 
-  //draw_imm_quad(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
+  /*
   Vector3f p0 = (Vector3f){p->pos.x,                    p->pos.y,                    0.f};
   Vector3f p1 = (Vector3f){p->pos.x + p->hitbox.size.x, p->pos.y,                    0.f};
   Vector3f p2 = (Vector3f){p->pos.x + p->hitbox.size.x, p->pos.y + p->hitbox.size.y, 0.f};
   Vector3f p3 = (Vector3f){p->pos.x,                    p->pos.y + p->hitbox.size.y, 0.f};
   Color col = COLOR_RED;
   draw_imm_quad(p->ctx, p0, p1, p2, p3, col, col, col, col);
+  */
+  draw_sprite(p->ctx, &p->spr);
 }

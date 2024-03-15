@@ -25,10 +25,11 @@ struct Player {
   float    max_speed;
   float    fric;
   bool     is_moving;
+  Sprite   spr;
   Context* ctx;
 };
 
-void Player_init(Player* player, Context* ctx);
+bool Player_init(Player* player, Context* ctx, Texture* tex);
 void Player_update(Player* player);
 void Player_control(Player* player);
 void Player_draw(Player* player);
