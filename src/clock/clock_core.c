@@ -587,11 +587,11 @@ const char* gl_error_as_cstr(int e){
   return "INVALID!";
 }
 
-void gl_check_and_log_error(int line){
+void gl_check_and_log_error(const char* file, int line){
   int e = glGetError();
 
   if (e != GL_NO_ERROR){
-    log_f(LOG_ERROR, "%s:%u:0: GL error: %s", __FILE__, line, gl_error_as_cstr(e));
+    log_f(LOG_ERROR, "%s:%u:0: GL error: %s", file, line, gl_error_as_cstr(e));
     exit(1); // is it wise to just exit without deinitializing glfw and gl resources?
   }
 

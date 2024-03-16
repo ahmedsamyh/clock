@@ -155,7 +155,7 @@ int create_shader(const char* vert_src, const char* frag_src);
 // Utility
 
 const char* gl_error_as_cstr(int e);
-void gl_check_and_log_error(int line);
-#define gl(...) __VA_ARGS__; gl_check_and_log_error(__LINE__);
+void gl_check_and_log_error(const char* file, int line);
+#define gl(...) __VA_ARGS__; gl_check_and_log_error(__FILE__, __LINE__);
 
 #endif /* _CLOCK_CORE_H_ */
