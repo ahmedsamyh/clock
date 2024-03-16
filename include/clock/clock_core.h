@@ -68,6 +68,9 @@ void clock_end_draw(Context* ctx);
 void clock_clear(Context* ctx, Color color);
 void clock_deinit(Context* ctx);
 
+void clock_begin_scissor(Context* ctx, Rect rect);
+void clock_endn_scissor(Context* ctx);
+
 // Callbacks
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);

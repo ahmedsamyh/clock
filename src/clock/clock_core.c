@@ -168,7 +168,7 @@ void clock_end_draw(Context* ctx) {
   glfwPollEvents();
 }
 
-void clock_clear(Context* ctx, Color color){
+void clock_clear(Context* ctx, Color color) {
 
   // clear the main fbo
   gl(glBindFramebuffer(GL_FRAMEBUFFER, 0));
@@ -181,13 +181,22 @@ void clock_clear(Context* ctx, Color color){
   gl(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
 
-void clock_deinit(Context* ctx){
+void clock_deinit(Context* ctx) {
   Renderer_deinit(ctx->ren);
   Window_deinit(ctx->win);
   Resman_unload_every_texture(ctx->resman);
   free(ctx->win);
   free(ctx->ren);
   free(ctx->resman);
+}
+
+void clock_begin_scissor(Context* ctx, Rect rect) {
+  gl(glEnable(GL_SCISSOR_TEST));
+  gl(glScissor((int)rect.pos.x, ctx->win->height - rect.size.y + rect.pos.y, rect.size.x, ctx->win->height - rect.size.y));
+}
+
+void clock_end_scissor(Context* ctx) {
+  gl(glDisable(GL_SCISSOR_TEST));
 }
 
 // Callbacks
