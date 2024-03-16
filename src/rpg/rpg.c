@@ -8,7 +8,7 @@ Texture* load_texture_err_handled(Context* ctx, const char* filepath) {
 }
 
 int main(void) {
-  Context* ctx = clock_init(1280, 960, "RPG");
+  Context* ctx = clock_init(1280, 960, 1.f, 1.f, "RPG");
 
   float width = (float)ctx->win->width;
   float height = (float)ctx->win->height;
@@ -23,11 +23,6 @@ int main(void) {
   if (!Sprite_init(&spr, flower_tex, 1, 1)) return 1;
   Sprite_center_origin(&spr);
 
-  Render_target ren_tex = {0};
-
-  if (!Rentar_init(&ren_tex, ctx, ctx->win->width / 2, ctx->win->height / 2)) {
-    return 1;
-  }
   Player player = {0};
 
   /* if (!Player_init(&player, ctx, player_head_tex, player_torso_tex, player_arm_tex, player_leg_tex)) return 1; */
@@ -52,6 +47,7 @@ int main(void) {
 
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
+
     clock_clear(ctx, COLOR_BLACK);
 
     if (ctx->keys[GLFW_KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
@@ -71,19 +67,12 @@ int main(void) {
     /* Player_update (&player); */
     /* Player_draw   (&player, DEBUG_DRAW); */
 
-    Rentar_set_to_current(&ren_tex);
-
-    clock_clear(ctx, COLOR_BLACK);
-
     spr.pos = ctx->mpos;
     draw_sprite(ctx, &spr);
-
-    Rentar_blit(&ren_tex);
 
     clock_end_draw(ctx);
   }
 
-  Rentar_deinit(&ren_tex);
   Sprite_deinit(&spr);
   clock_deinit(ctx);
 

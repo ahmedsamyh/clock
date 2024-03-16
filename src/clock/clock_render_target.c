@@ -2,8 +2,8 @@
 #include <clock/clock_core.h>
 #include <assert.h>
 
-bool Rentar_init(Render_target* rt, Context* ctx, unsigned int width, unsigned int height) {
-  rt->ctx = ctx;
+bool Rentar_init(Render_target* rt, Window* win, unsigned int width, unsigned int height) {
+  rt->win = win;
   rt->width = width;
   rt->height = height;
 
@@ -46,12 +46,12 @@ void Rentar_set_to_current(Render_target* rt) {
 }
 
 void Rentar_blit(Render_target* rt) {
-  assert(rt->ctx);
-  Context* ctx = rt->ctx;
+  assert(rt->win);
+  Window* win = rt->win;
   const unsigned int default_fbo = 0;
   gl(glBlitNamedFramebuffer(rt->fbo, default_fbo,
 			    0, 0, rt->width,       rt->height,
-			    0, 0, ctx->win->width, ctx->win->height,
+			    0, 0, win->width, win->height,
 			    GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
 			    GL_NEAREST));
 

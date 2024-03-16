@@ -8,6 +8,7 @@
 #include <clock/clock_vector.h>
 #include <clock/clock_rect.h>
 #include <clock/clock_sprite.h>
+#include <clock/clock_render_target.h>
 #include <clock/clock_key.h>
 #include <clock/clock_resource_manager.h>
 #include <stdbool.h>
@@ -19,6 +20,7 @@
 typedef struct Context Context;
 typedef struct Window Window;
 typedef struct Renderer Renderer;
+typedef struct Render_target Render_target;
 
 // Color
 typedef Vector4f Color; // 0.0..1.0
@@ -33,11 +35,12 @@ typedef Vector4f Color; // 0.0..1.0
 struct Window {
   unsigned int width;
   unsigned int height;
+  float scale_x, scale_y;
   GLFWwindow* glfw_win;
   const char* title;
 };
 
-bool Window_init(Window* win, unsigned int width, unsigned int height, const char* title);
+bool Window_init(Window* win, unsigned int width, unsigned int height, float scl_x, float scl_y, const char* title);
 void Window_deinit(Window* win);
 
 // Context / main user api
@@ -57,7 +60,7 @@ struct Context {
   Resource_manager* resman;
 };
 
-Context* clock_init(unsigned int window_width, unsigned int window_height, const char* title);
+Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title);
 bool clock_should_quit(Context* ctx);
 void clock_update_keys(Context* ctx);
 void clock_begin_draw(Context* ctx);
@@ -86,6 +89,7 @@ struct Renderer {
   GLuint custom_shader;
   GLuint texture_shader;
   GLuint color_shader;
+  Render_target* ren_tex;
   Window* win;
 };
 

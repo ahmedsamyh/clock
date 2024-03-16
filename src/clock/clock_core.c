@@ -9,11 +9,13 @@
 
 // Window
 
-bool Window_init(Window* win, unsigned int width, unsigned int height, const char* title){
+bool Window_init(Window* win, unsigned int width, unsigned int height, float scl_x, float scl_y, const char* title){
   win->title = title;
 
   win->width = width == 0 ? DEFAULT_WIN_WIDTH : width;
   win->height = height == 0 ? DEFAULT_WIN_HEIGHT : height;
+  win->scale_x = scl_x <= 0 ? 1.f : scl_x;
+  win->scale_y = scl_y <= 0 ? 1.f : scl_y;
 
   log_f(LOG_INFO, "Running '%s'", win->title);
   if (!glfwInit()){
@@ -61,11 +63,11 @@ void Window_deinit(Window* win){
 
 // Context / main user api
 
-Context* clock_init(unsigned int window_width, unsigned int window_height, const char* title) {
+Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title) {
   Context* ctx = (Context*)calloc(1, sizeof(Context));
   ctx->win = (Window*)  malloc(sizeof(Window));
   ctx->ren = (Renderer*)malloc(sizeof(Renderer));
-  if (!Window_init(ctx->win, window_width, window_height, title)){
+  if (!Window_init(ctx->win, window_width, window_height, scl_x, scl_y, title)) {
     return NULL;
   }
   if (!Renderer_init(ctx->ren, ctx->win)){
@@ -130,7 +132,9 @@ void clock_begin_draw(Context* ctx){
   Key* keys = ctx->keys;
   double mx, my;
   glfwGetCursorPos(win->glfw_win, &mx, &my);
-  ctx->mpos.x = (float)mx;
+
+  // TODO: fix y position being messed up when scaling (x is fine)
+  ctx->mpos.x = (float)mx / win->scale_x;
   ctx->mpos.y = (float)my;
 
   ctx->tp2 = glfwGetTime();
@@ -139,21 +143,40 @@ void clock_begin_draw(Context* ctx){
 
   ctx->fps = (1.0 / ctx->delta);
 
+  // TODO: (cleanup) have a tmpbuffer directly in Context or in global scope
   char* tmpbuff = (char*)malloc(sizeof(char)*1024);
   snprintf(tmpbuff, 1024, "%s | %dfps | %fs", win->title, ctx->fps, ctx->delta);
 
   glfwSetWindowTitle(win->glfw_win, tmpbuff);
 
   free(tmpbuff);
+  gl(glBindFramebuffer(GL_FRAMEBUFFER, ctx->ren->ren_tex->fbo));
 }
 
-void clock_end_draw(Context* ctx){
+void clock_end_draw(Context* ctx) {
   clock_update_keys(ctx);
+  Render_target* rt = ctx->ren->ren_tex;
+  Window* win = ctx->win;
+  gl(glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->ren->ren_tex->fbo));
+  gl(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
+  gl(glBlitFramebuffer(0, 0, rt->width, rt->height,
+		       0, 0, win->width, win->height,
+		       GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+		       GL_NEAREST));
+  gl(glBindFramebuffer(GL_FRAMEBUFFER, 0));
   glfwSwapBuffers(ctx->win->glfw_win);
   glfwPollEvents();
 }
 
 void clock_clear(Context* ctx, Color color){
+
+  // clear the main fbo
+  gl(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+  gl(glClearColor(color.r, color.g, color.b, color.a));
+  gl(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
+
+  // clear the ren tex's fbo
+  gl(glBindFramebuffer(GL_FRAMEBUFFER, ctx->ren->ren_tex->fbo));
   gl(glClearColor(color.r, color.g, color.b, color.a));
   gl(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
 }
@@ -212,6 +235,13 @@ bool Renderer_init(Renderer* r, Window* win) {
 
   log_f(LOG_INFO, "Loaded default shader!");
 
+  r->ren_tex = (Render_target*)calloc(1, sizeof(Render_target));
+
+  if (!Rentar_init(r->ren_tex, win, win->width / win->scale_x, win->height / win->scale_y)) {
+    free(r->ren_tex);
+    return false;
+  }
+
   return true;
 }
 
@@ -226,6 +256,8 @@ void Renderer_deinit(Renderer* r) {
   gl(glDisableVertexAttribArray(2));
   gl(glDeleteBuffers(1, &r->vbo));
   gl(glDeleteVertexArrays(1, &r->vao));
+  Rentar_deinit(r->ren_tex);
+  free(r->ren_tex);
 }
 
 void Renderer_use_texture_shader(Renderer* r) {
