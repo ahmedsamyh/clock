@@ -151,7 +151,7 @@ void clock_begin_draw(Context* ctx){
 
   // TODO: fix y position being messed up when scaling (x is fine)
   ctx->mpos.x = (float)mx / win->scale_x;
-  ctx->mpos.y = (float)my;
+  ctx->mpos.y = (float)my / win->scale_y;
 
   ctx->tp2 = glfwGetTime();
   ctx->delta = ctx->tp2 - ctx->tp1;
@@ -169,16 +169,20 @@ void clock_begin_draw(Context* ctx){
   gl(glBindFramebuffer(GL_FRAMEBUFFER, ctx->ren->ren_tex->fbo));
 }
 
-void clock_end_draw(Context* ctx) {
-  clock_update_keys(ctx);
+void clock_flush_draw(Context *ctx) {
   Render_target* rt = ctx->ren->ren_tex;
   Window* win = ctx->win;
   gl(glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->ren->ren_tex->fbo));
   gl(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
-  gl(glBlitFramebuffer(0, 0, rt->width,  rt->height,
+  gl(glBlitFramebuffer(0, 0, rt->width, rt->height,
 		       0, 0, win->width, win->height,
 		       GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
 		       GL_NEAREST));
+}
+
+void clock_end_draw(Context* ctx) {
+  clock_update_keys(ctx);
+  clock_flush_draw(ctx);
   gl(glBindFramebuffer(GL_FRAMEBUFFER, 0));
   glfwSwapBuffers(ctx->win->glfw_win);
   glfwPollEvents();
@@ -212,20 +216,15 @@ void clock_set_vsync(bool enable) {
 
 void clock_begin_scissor(Context* ctx, Rect rect) {
   gl(glEnable(GL_SCISSOR_TEST));
-  gl(glScissor((int)rect.pos.x, ctx->win->height - (int)rect.pos.y - rect.size.y, rect.size.x, rect.size.y));
+  gl(glScissor((int)rect.pos.x,
+	       ctx->win->height - (int)rect.pos.y - rect.size.y,
+	       rect.size.x, rect.size.y));
 }
 
 void clock_end_scissor(Context* ctx) {
   gl(glDisable(GL_SCISSOR_TEST));
-  Render_target* rt = ctx->ren->ren_tex;
-  Window* win = ctx->win;
-  gl(glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo));
-  gl(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
-  gl(glBlitFramebuffer(0, 0, rt->width,  rt->height,
-		       0, 0, win->width, win->height,
-		       GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
-		       GL_NEAREST));
-  gl(glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo));
+  clock_flush_draw(ctx);
+  gl(glBindFramebuffer(GL_FRAMEBUFFER, ctx->ren->ren_tex->fbo));
 }
 
 // Callbacks

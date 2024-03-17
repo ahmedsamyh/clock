@@ -69,6 +69,7 @@ bool clock_should_quit(Context* ctx);
 void clock_update_keys(Context* ctx);
 void clock_begin_draw(Context* ctx);
 void clock_end_draw(Context* ctx);
+void clock_flush_draw(Context *ctx);
 void clock_clear(Context* ctx, Color color);
 void clock_deinit(Context* ctx);
 
