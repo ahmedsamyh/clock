@@ -21,6 +21,7 @@ typedef struct Context Context;
 typedef struct Window Window;
 typedef struct Renderer Renderer;
 typedef struct Render_target Render_target;
+typedef enum   Blendmode Blendmode;
 
 // Color
 typedef Vector4f Color; // 0.0..1.0
@@ -71,6 +72,8 @@ void clock_end_draw(Context* ctx);
 void clock_clear(Context* ctx, Color color);
 void clock_deinit(Context* ctx);
 
+void clock_set_vsync(bool enable);
+
 void clock_begin_scissor(Context* ctx, Rect rect);
 void clock_endn_scissor(Context* ctx);
 
@@ -99,8 +102,6 @@ struct Renderer {
   Window* win;
 };
 
-// TODO: Blending
-
 bool Renderer_init(Renderer* renderer, Window* win);
 void Renderer_deinit(Renderer* renderer);
 void Renderer_use_custom_shader(Renderer* renderer, const char* vs, const char* fs);
@@ -115,6 +116,21 @@ void draw_sprite(Context* ctx, Sprite* spr);
 void draw_rect(Context* ctx, Rect rect, Color color);
 void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1);
 void draw_rect_centered(Context* ctx, Rect rect, Color col);
+
+// Blendmode
+
+enum Blendmode {
+  BLENDMODE_NORMAL = 0, // default alpha blending
+  BLENDMODE_ALPHA  = BLENDMODE_NORMAL,
+  BLENDMODE_ADD,        // additive
+  BLENDMODE_SUB,        // subtractive
+  BLENDMODE_MUL,        // multiply
+  BLENDMODE_NONE,       // no blending
+
+  BLENDMODE_COUNT
+};
+
+void set_blend_mode(const Blendmode mode);
 
 // Shader
 

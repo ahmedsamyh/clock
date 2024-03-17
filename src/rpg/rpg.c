@@ -31,31 +31,26 @@ int main(void) {
   player.pos.y = height * 0.5f;
 
   // vsync
-  /* glfwSwapInterval(1); */
-
-  int viewport[4] = {0};
-  gl(glGetIntegerv(GL_VIEWPORT, (int*)&viewport));
-
-  log_f(LOG_INFO, "viewport: (%d, %d) (%d, %d)", viewport[0], viewport[1], viewport[2], viewport[3]);
-
-  gl(glEnable(GL_BLEND));
+  clock_set_vsync(false);
 
   bool DEBUG_DRAW = false;
 #ifdef DEBUG
   DEBUG_DRAW = true;
 #endif
 
+  int current_blendmode = (int)BLENDMODE_NORMAL;
+
   while (!clock_should_quit(ctx)) {
 
     clock_begin_draw(ctx);
 
-    clock_clear(ctx, COLOR_BLACK);
+    clock_clear(ctx, hex_to_color(0xFF141414));
 
     if (ctx->keys[GLFW_KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
 
-    // alpha blending
-    gl(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
-    gl(glBlendEquation(GL_FUNC_ADD));
+    if (ctx->keys[GLFW_KEY_SPACE].pressed) {
+      current_blendmode = (current_blendmode + 1) % BLENDMODE_COUNT;
+    }
 
     /* Player_control(&player); */
 
@@ -68,12 +63,19 @@ int main(void) {
     /* Player_update (&player); */
     /* Player_draw   (&player, DEBUG_DRAW); */
 
+    set_blend_mode(BLENDMODE_ALPHA);
+
+    draw_rect(ctx, (Rect){
+	.pos = {10.f, 100.f},
+	.size = {100.f, 100.f}},
+      COLOR_RED);
+
+    set_blend_mode((Blendmode)current_blendmode);
+
     spr.pos = ctx->mpos;
     draw_sprite(ctx, &spr);
 
     clock_end_draw(ctx);
-
-
   }
 
   Sprite_deinit(&spr);

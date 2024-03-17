@@ -98,6 +98,11 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
 
   glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &ctx->max_tex_image_slots);
 
+  // enable blending
+  gl(glEnable(GL_BLEND));
+
+  set_blend_mode(BLENDMODE_ALPHA);
+
   return ctx;
 }
 
@@ -199,6 +204,10 @@ void clock_deinit(Context* ctx) {
   free(ctx->win);
   free(ctx->ren);
   free(ctx->resman);
+}
+
+void clock_set_vsync(bool enable) {
+  glfwSwapInterval(enable ? 1 : 0);
 }
 
 void clock_begin_scissor(Context* ctx, Rect rect) {
@@ -516,6 +525,36 @@ void draw_rect_centered(Context* ctx, Rect rect, Color col) {
   Vector3f p2 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
   Vector3f p3 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
   draw_imm_quad(ctx, p0, p1, p2, p3, col, col, col, col);
+}
+
+// Blendmode
+
+void set_blend_mode(const Blendmode mode) {
+  switch(mode) {
+  case BLENDMODE_NORMAL: {
+    gl(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+    gl(glBlendEquation(GL_FUNC_ADD));
+  } break;
+  case BLENDMODE_ADD: {
+    gl(glBlendFunc(GL_ONE, GL_ONE));
+    gl(glBlendEquation(GL_FUNC_ADD));
+  } break;
+  case BLENDMODE_SUB: {
+    gl(glBlendFunc(GL_ONE, GL_ONE));
+    gl(glBlendEquation(GL_FUNC_SUBTRACT));
+  } break;
+  case BLENDMODE_MUL: {
+    gl(glBlendFunc(GL_DST_COLOR, GL_ZERO));
+    gl(glBlendEquation(GL_FUNC_ADD));
+  } break;
+  case BLENDMODE_NONE: {
+    gl(glBlendFunc(GL_ONE, GL_ZERO));
+    gl(glBlendEquation(GL_FUNC_ADD));
+  } break;
+  default: {
+    assert(0 && "Unreachable");
+  }
+  }
 }
 
 // Shader
