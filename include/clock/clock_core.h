@@ -31,6 +31,9 @@ typedef Vector4f Color; // 0.0..1.0
 #define COLOR_GREEN (Color){0.f,1.f,0.f,1.f}
 #define COLOR_BLUE (Color){0.f,0.f,1.f,1.f}
 
+// hex should be in format 0xAAGGBBRR
+Color hex_to_color(int color);
+
 // Window
 struct Window {
   unsigned int width;

@@ -7,6 +7,17 @@
 #include <assert.h>
 #include <string.h>
 
+// Color
+
+Color hex_to_color(int color) {
+  return (Color){
+    .r = ((color >> (8 * 0)) & 0xFF) / 255.f,
+    .g = ((color >> (8 * 1)) & 0xFF) / 255.f,
+    .b = ((color >> (8 * 2)) & 0xFF) / 255.f,
+    .a = ((color >> (8 * 3)) & 0xFF) / 255.f,
+  };
+}
+
 // Window
 
 bool Window_init(Window* win, unsigned int width, unsigned int height, float scl_x, float scl_y, const char* title){
@@ -159,7 +170,7 @@ void clock_end_draw(Context* ctx) {
   Window* win = ctx->win;
   gl(glBindFramebuffer(GL_READ_FRAMEBUFFER, ctx->ren->ren_tex->fbo));
   gl(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
-  gl(glBlitFramebuffer(0, 0, rt->width, rt->height,
+  gl(glBlitFramebuffer(0, 0, rt->width,  rt->height,
 		       0, 0, win->width, win->height,
 		       GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
 		       GL_NEAREST));
@@ -192,11 +203,20 @@ void clock_deinit(Context* ctx) {
 
 void clock_begin_scissor(Context* ctx, Rect rect) {
   gl(glEnable(GL_SCISSOR_TEST));
-  gl(glScissor((int)rect.pos.x, ctx->win->height - rect.size.y + rect.pos.y, rect.size.x, ctx->win->height - rect.size.y));
+  gl(glScissor((int)rect.pos.x, ctx->win->height - (int)rect.pos.y - rect.size.y, rect.size.x, rect.size.y));
 }
 
 void clock_end_scissor(Context* ctx) {
   gl(glDisable(GL_SCISSOR_TEST));
+  Render_target* rt = ctx->ren->ren_tex;
+  Window* win = ctx->win;
+  gl(glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo));
+  gl(glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0));
+  gl(glBlitFramebuffer(0, 0, rt->width,  rt->height,
+		       0, 0, win->width, win->height,
+		       GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT,
+		       GL_NEAREST));
+  gl(glBindFramebuffer(GL_FRAMEBUFFER, rt->fbo));
 }
 
 // Callbacks

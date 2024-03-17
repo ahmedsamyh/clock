@@ -53,10 +53,6 @@ int main(void) {
 
     if (ctx->keys[GLFW_KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
 
-    clock_begin_scissor(ctx, (Rect){
-	.pos =  (Vector2f){0.f, 0.f},
-	.size = (Vector2f){100.f, 100.f}});
-
     // alpha blending
     gl(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
     gl(glBlendEquation(GL_FUNC_ADD));
@@ -77,7 +73,7 @@ int main(void) {
 
     clock_end_draw(ctx);
 
-    clock_end_scissor(ctx);
+
   }
 
   Sprite_deinit(&spr);
