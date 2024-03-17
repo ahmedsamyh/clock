@@ -17,15 +17,11 @@ int main(void) {
     return 1;
   }
 
-  Texture* flower_tex = load_texture_err_handled(ctx, "resources/gfx/flower.png");
-
-  Sprite spr = {0};
-  if (!Sprite_init(&spr, flower_tex, 1, 1)) return 1;
-  Sprite_center_origin(&spr);
+  Texture* player_tex = load_texture_err_handled(ctx, "resources/gfx/player.png");
 
   Player player = {0};
 
-  /* if (!Player_init(&player, ctx, player_head_tex, player_torso_tex, player_arm_tex, player_leg_tex)) return 1; */
+  if (!Player_init(&player, ctx, player_tex)) return 1;
 
   player.pos.x = width  * 0.5f;
   player.pos.y = height * 0.5f;
@@ -38,8 +34,6 @@ int main(void) {
   DEBUG_DRAW = true;
 #endif
 
-  int current_blendmode = (int)BLENDMODE_NORMAL;
-
   while (!clock_should_quit(ctx)) {
 
     clock_begin_draw(ctx);
@@ -48,37 +42,14 @@ int main(void) {
 
     if (ctx->keys[GLFW_KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
 
-    if (ctx->keys[GLFW_KEY_SPACE].pressed) {
-      current_blendmode = (current_blendmode + 1) % BLENDMODE_COUNT;
-    }
+    Player_control(&player);
 
-    /* Player_control(&player); */
-
-    /* for (size_t i = 0; i < 2; ++i) { */
-    /*   Vector2f arm_pos = player.arm_spr[i].pos; */
-    /*   Vector2f diff = v2f_sub(arm_pos, ctx->mpos); */
-    /*   player.arm_spr[i].rotation.z = v2f_degree(diff) + 90.f; */
-    /* } */
-
-    /* Player_update (&player); */
-    /* Player_draw   (&player, DEBUG_DRAW); */
-
-    set_blend_mode(BLENDMODE_ALPHA);
-
-    draw_rect(ctx, (Rect){
-	.pos = {10.f, 100.f},
-	.size = {100.f, 100.f}},
-      COLOR_RED);
-
-    set_blend_mode((Blendmode)current_blendmode);
-
-    spr.pos = ctx->mpos;
-    draw_sprite(ctx, &spr);
+    Player_update (&player);
+    Player_draw   (&player, DEBUG_DRAW);
 
     clock_end_draw(ctx);
-  }
+ }
 
-  Sprite_deinit(&spr);
   clock_deinit(ctx);
 
   return 0;

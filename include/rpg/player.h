@@ -4,7 +4,6 @@
 #include <clock/clock_vector.h>
 #include <clock/clock_core.h>
 #include <clock/clock_rect.h>
-#include <rpg/2.5d.h>
 
 typedef struct Player Player;
 
@@ -21,7 +20,7 @@ typedef struct Player Player;
 #define RIGHT 1
 
 struct Player {
-  Vector3f pos;
+  Vector2f pos;
   Vector2f vel;
   Vector2f acc;
   Rect     hitbox;
@@ -29,14 +28,11 @@ struct Player {
   float    max_speed;
   float    fric;
   bool     is_moving;
-  Sprite   head_spr;
-  Sprite   arm_spr[2];
-  Sprite   leg_spr[2];
-  Sprite   torso_spr;
+  Sprite   spr;
   Context* ctx;
 };
 
-bool Player_init(Player* player, Context* ctx, Texture* head_tex, Texture* torso_tex, Texture* arm_tex, Texture* leg_tex);
+bool Player_init(Player* player, Context* ctx, Texture* tex);
 void Player_update(Player* player);
 void Player_control(Player* player);
 void Player_draw(Player* player, bool debug);
