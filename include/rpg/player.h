@@ -30,6 +30,7 @@ struct Player {
   bool     is_moving;
   Sprite   spr;
   Context* ctx;
+  int      last_move_key;
 };
 
 bool Player_init(Player* player, Context* ctx, Texture* tex);

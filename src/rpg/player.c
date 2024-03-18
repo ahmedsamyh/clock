@@ -12,7 +12,10 @@ bool Player_init(Player* p, Context* ctx, Texture* tex) {
   p->is_moving = false;
   p->ctx = ctx;
 
-  if (!Sprite_init(&p->spr, tex, 1, 1)) return false;
+  if (!Sprite_init(&p->spr, tex, 10, 3)) return false;
+
+  p->spr.scale = (Vector2f){2.f, 2.f};
+  p->spr.time_per_frame = 0.1f;
 
   return true;
 }
@@ -38,6 +41,19 @@ void Player_update(Player* p) {
   // update positions
   p->hitbox.pos = p->pos;
   p->spr.pos    = p->pos;
+
+  // animate sprite
+  Sprite_animate_hframe(&p->spr, delta);
+  if (p->is_moving) {
+    Sprite_set_vframe(&p->spr, 1);
+  } else {
+    switch (p->last_move_key) {
+    case PLAYER_MOVE_LEFT_KEY:  Sprite_set_vframe(&p->spr, 2); break;
+    case PLAYER_MOVE_RIGHT_KEY: Sprite_set_vframe(&p->spr, 2); break;
+    case PLAYER_MOVE_UP_KEY:    Sprite_set_vframe(&p->spr, 0); break;
+    case PLAYER_MOVE_DOWN_KEY:  Sprite_set_vframe(&p->spr, 0); break;
+    }
+  }
 }
 
 void Player_control(Player* p) {
@@ -47,18 +63,22 @@ void Player_control(Player* p) {
   Vector2f dir = {0};
   if (keys[PLAYER_MOVE_LEFT_KEY].held) {
     dir.x--;
+    p->last_move_key = PLAYER_MOVE_LEFT_KEY;
   }
 
   if (keys[PLAYER_MOVE_RIGHT_KEY].held) {
     dir.x++;
+    p->last_move_key = PLAYER_MOVE_RIGHT_KEY;
   }
 
   if (keys[PLAYER_MOVE_UP_KEY].held) {
     dir.y--;
+    p->last_move_key = PLAYER_MOVE_UP_KEY;
   }
 
   if (keys[PLAYER_MOVE_DOWN_KEY].held) {
     dir.y++;
+    p->last_move_key = PLAYER_MOVE_DOWN_KEY;
   }
   dir = v2f_normalize(dir);
 
