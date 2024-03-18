@@ -319,9 +319,6 @@ void Renderer_set_render_target(Renderer* r, GLuint target) {
 
 void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2) {
   Renderer* r = ctx->ren;
-  // TODO: line 305
-  // input postions are from {0..width, 0..height}
-  // opengl wants them from {-1.f, 1.f, -1.f, 1.f}
 
   Vector3f positions[] = {
     p0, p1, p2
@@ -331,18 +328,15 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
     c0, c1, c2
   };
 
-  // resolution of the z-axis, i dont know what the standard resolution people use in the z-axis.
-  // so we just use the height as the z-axis (actually it should be {far - near})
-  float depth = r->win->height;
+  Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};
 
-  // TODO: we are converting from screen space to clip space here manually in the CPU
-  // but we eventually want to have a transformation matrix and convert them from the GPU
   for (size_t i = 0; i < 3; ++i) {
-    Vector3f p = positions[i];
+    Vector3f p    = positions[i];
+    Vector3f p_gl = screen_to_gl_space(p, screen_size);
     Vector4f pn = (Vector4f) {
-      .x = (p.x / (float)r->win->width)*2.f - 1.f,
-      .y = (1.f - p.y / (float)r->win->height)*2.f - 1.f,
-      .z = (p.z / (float)depth)*2.f - 1.f,
+      .x = p_gl.x,
+      .y = p_gl.y,
+      .z = p_gl.z,
       .w = 1.f,
     };
     Vector4f c = colors[i];
@@ -444,14 +438,16 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     texcoords[i].y /= spr->size.y;
   }
 
-  float depth = r->win->height;
-  // TODO: line 305
+  Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};
+
   for (size_t i = 0; i < 4; ++i) {
-    Vector3f p = positions[i];
+    Vector3f p    = positions[i];
+    Vector3f p_gl = screen_to_gl_space(p, screen_size);
     Vector4f pn = (Vector4f) {
-      .x = (p.x / (float)r->win->width)*2.f - 1.f,
-      .y = (1.f - p.y / (float)r->win->height)*2.f - 1.f,
-      .z = (p.z / (float)depth)*2.f - 1.f, .w = 1.f
+      .x = p_gl.x,
+      .y = p_gl.y,
+      .z = p_gl.z,
+      .w = 1.f,
     };
     r->vertices[i].position = pn;
     r->vertices[i].color = COLOR_WHITE;
@@ -498,18 +494,15 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
     c0, c1
   };
 
-  // resolution of the z-axis, i dont know what the standard resolution people use in the z-axis.
-  // so we just use the height as the z-axis (actually it should be {far - near})
-  float depth = r->win->height;
+  Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};
 
-  // TODO: we are converting from screen space to clip space here manually in the CPU
-  // but we eventually want to have a transformation matrix and convert them from the GPU
   for (size_t i = 0; i < 2; ++i) {
-    Vector3f p = positions[i];
+    Vector3f p    = positions[i];
+    Vector3f p_gl = screen_to_gl_space(p, screen_size);
     Vector4f pn = (Vector4f) {
-      .x = (p.x / (float)r->win->width)*2.f - 1.f,
-      .y = (1.f - p.y / (float)r->win->height)*2.f - 1.f,
-      .z = (p.z / (float)depth)*2.f - 1.f,
+      .x = p_gl.x,
+      .y = p_gl.y,
+      .z = p_gl.z,
       .w = 1.f,
     };
     Vector4f c = colors[i];
