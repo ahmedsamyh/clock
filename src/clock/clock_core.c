@@ -10,7 +10,7 @@
 // Color
 
 Color hex_to_color(int color) {
-  return (Color){
+  return (Color) {
     .r = ((color >> (8 * 0)) & 0xFF) / 255.f,
     .g = ((color >> (8 * 1)) & 0xFF) / 255.f,
     .b = ((color >> (8 * 2)) & 0xFF) / 255.f,
@@ -20,7 +20,7 @@ Color hex_to_color(int color) {
 
 // Window
 
-bool Window_init(Window* win, unsigned int width, unsigned int height, float scl_x, float scl_y, const char* title){
+bool Window_init(Window* win, unsigned int width, unsigned int height, float scl_x, float scl_y, const char* title) {
   win->title = title;
 
   win->width = width == 0 ? DEFAULT_WIN_WIDTH : width;
@@ -29,7 +29,7 @@ bool Window_init(Window* win, unsigned int width, unsigned int height, float scl
   win->scale_y = scl_y <= 0 ? 1.f : scl_y;
 
   log_f(LOG_INFO, "Running '%s'", win->title);
-  if (!glfwInit()){
+  if (!glfwInit()) {
     log_f(LOG_ERROR, "GLFW Could not initialize!");
     return false;
   }
@@ -42,7 +42,7 @@ bool Window_init(Window* win, unsigned int width, unsigned int height, float scl
 
   win->glfw_win = glfwCreateWindow(win->width, win->height, win->title, NULL, NULL);
 
-  if (win->glfw_win == NULL){
+  if (win->glfw_win == NULL) {
     char* tmpbuff = (char*)malloc(sizeof(char)*1024);
     glfwGetError((const char**)&tmpbuff);
     log_f(LOG_ERROR, "Could not initialize window: %s", tmpbuff);
@@ -54,7 +54,7 @@ bool Window_init(Window* win, unsigned int width, unsigned int height, float scl
 
   int version = gladLoadGL(glfwGetProcAddress);
 
-  if (version == 0){
+  if (version == 0) {
     log_f(LOG_ERROR, "Failed to initialize GLAD Context!");
     return false;
   }
@@ -65,7 +65,7 @@ bool Window_init(Window* win, unsigned int width, unsigned int height, float scl
 }
 
 
-void Window_deinit(Window* win){
+void Window_deinit(Window* win) {
   glfwDestroyWindow(win->glfw_win);
   log_f(LOG_INFO, "Window Destroyed!");
   glfwTerminate();
@@ -81,7 +81,7 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
   if (!Window_init(ctx->win, window_width, window_height, scl_x, scl_y, title)) {
     return NULL;
   }
-  if (!Renderer_init(ctx->ren, ctx->win)){
+  if (!Renderer_init(ctx->ren, ctx->win)) {
     return NULL;
   }
 
@@ -106,44 +106,44 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
   return ctx;
 }
 
-bool clock_should_quit(Context* ctx){
+bool clock_should_quit(Context* ctx) {
   return glfwWindowShouldClose(ctx->win->glfw_win);
 }
 
 // TODO: key pressed are ignored when moving the window
 
-void clock_update_keys(Context* ctx){
+void clock_update_keys(Context* ctx) {
   Key* keys   = ctx->keys;
   Window* win = ctx->win;
   // update key states
-  for (size_t i = 0; i < KEYS_COUNT; ++i){
+  for (size_t i = 0; i < KEYS_COUNT; ++i) {
     keys[i].just_pressed = false;
     keys[i].pressed = false;
     keys[i].released = false;
   }
 
-  for (int i = 0; i < KEYS_COUNT; ++i){
+  for (int i = 0; i < KEYS_COUNT; ++i) {
     keys[i].prev_state = keys[i].held;
     int state = glfwGetKey(win->glfw_win, i);
-    if (state == GLFW_PRESS){
+    if (state == GLFW_PRESS) {
       keys[i].held = true;
-    } else if (state == GLFW_RELEASE){
+    } else if (state == GLFW_RELEASE) {
       keys[i].held = false;
     }
   }
 
-  for (int i = 0; i < KEYS_COUNT; ++i){
-    if (!keys[i].prev_state && keys[i].held){
+  for (int i = 0; i < KEYS_COUNT; ++i) {
+    if (!keys[i].prev_state && keys[i].held) {
       keys[i].just_pressed = true;
       keys[i].pressed = true;
     }
-    if (keys[i].prev_state && !keys[i].held){
+    if (keys[i].prev_state && !keys[i].held) {
       keys[i].released = true;
     }
   }
 }
 
-void clock_begin_draw(Context* ctx){
+void clock_begin_draw(Context* ctx) {
   Window* win = ctx->win;
   Key* keys = ctx->keys;
   double mx, my;
@@ -229,12 +229,12 @@ void clock_end_scissor(Context* ctx) {
 
 // Callbacks
 
-void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods){
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 
   Context* ctx = (Context*)glfwGetWindowUserPointer(window);
   Key* keys = ctx->keys;
 
-  if (action == GLFW_REPEAT){
+  if (action == GLFW_REPEAT) {
     /* log_f(LOG_INFO, "Key: %d repeat", key); */
     keys[key].pressed = true;
   }
@@ -320,7 +320,7 @@ void Renderer_set_render_target(Renderer* r, GLuint target) {
   gl(glBindFramebuffer(GL_FRAMEBUFFER, target));
 }
 
-void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2){
+void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2) {
   Renderer* r = ctx->ren;
   // TODO: line 305
   // input postions are from {0..width, 0..height}
@@ -342,7 +342,7 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
   // but we eventually want to have a transformation matrix and convert them from the GPU
   for (size_t i = 0; i < 3; ++i) {
     Vector3f p = positions[i];
-    Vector4f pn = (Vector4f){
+    Vector4f pn = (Vector4f) {
       .x = (p.x / (float)r->win->width)*2.f - 1.f,
       .y = (1.f - p.y / (float)r->win->height)*2.f - 1.f,
       .z = (p.z / (float)depth)*2.f - 1.f,
@@ -382,17 +382,17 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
 // TODO: Should we render quads in term of Render_imm_triangle?
 // From what i understand rn about opengl, more draw calls -> bad, so by implementing Render_imm_quad
 // in terms of Render_imm_triangle should me more inefficient than doing manual draw calls (which is i know duplicant code but we want speed rn...)
-void draw_imm_quad(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3){
+void draw_imm_quad(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3) {
   Renderer* r = ctx->ren;
   IMM_QUAD_BODY(GL_TRIANGLE_FAN);
 }
 
-void draw_imm_box(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3){
+void draw_imm_box(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3) {
     Renderer* r = ctx->ren;
   IMM_QUAD_BODY(GL_LINE_LOOP);
 }
 
-void draw_texture(Context* ctx, Vector3f pos, Rect texcoord, Texture* tex){
+void draw_texture(Context* ctx, Vector3f pos, Rect texcoord, Texture* tex) {
   assert(0 && "Unimplemented");
 }
 
@@ -442,16 +442,16 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   };
 
   // normalize texcoords
-  for (size_t i = 0; i < 4; ++i){
+  for (size_t i = 0; i < 4; ++i) {
     texcoords[i].x /= spr->size.x;
     texcoords[i].y /= spr->size.y;
   }
 
   float depth = r->win->height;
   // TODO: line 305
-  for (size_t i = 0; i < 4; ++i){
+  for (size_t i = 0; i < 4; ++i) {
     Vector3f p = positions[i];
-    Vector4f pn = (Vector4f){
+    Vector4f pn = (Vector4f) {
       .x = (p.x / (float)r->win->width)*2.f - 1.f,
       .y = (1.f - p.y / (float)r->win->height)*2.f - 1.f,
       .z = (p.z / (float)depth)*2.f - 1.f, .w = 1.f
@@ -464,6 +464,14 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   Renderer_use_texture_shader(r);
 
   glActiveTexture(GL_TEXTURE0 + (spr->texture->slot % ctx->max_tex_image_slots));
+
+  // TODO: ren_tex texture is in texture unit slot 10, make it not hardcoded.
+  /* { */
+  /*   gl(GLuint t = glGetUniformLocation(r->current_shader, "tex2")); */
+  /*   gl(glUniform1i(t, 10)); */
+  /*   gl(glBindTexture(GL_TEXTURE_2D, ctx->ren->ren_tex->color)); */
+  /* } */
+
   gl(GLuint t = glGetUniformLocation(r->current_shader, "tex"));
   glUniform1i(t, (spr->texture->slot % ctx->max_tex_image_slots));
   glBindTexture(GL_TEXTURE_2D, spr->texture->id);
@@ -473,7 +481,7 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
-void draw_rect(Context* ctx, Rect rect, Color color){
+void draw_rect(Context* ctx, Rect rect, Color color) {
   Renderer* r = ctx->ren;
   Vector3f tl = (Vector3f){rect.pos.x, rect.pos.y, 0.f};
   Vector3f tr = (Vector3f){rect.pos.x + rect.size.x, rect.pos.y, 0.f};
@@ -501,7 +509,7 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
   // but we eventually want to have a transformation matrix and convert them from the GPU
   for (size_t i = 0; i < 2; ++i) {
     Vector3f p = positions[i];
-    Vector4f pn = (Vector4f){
+    Vector4f pn = (Vector4f) {
       .x = (p.x / (float)r->win->width)*2.f - 1.f,
       .y = (1.f - p.y / (float)r->win->height)*2.f - 1.f,
       .z = (p.z / (float)depth)*2.f - 1.f,
@@ -558,16 +566,16 @@ void set_blend_mode(const Blendmode mode) {
 
 // Shader
 
-int create_shader(const char* vert_src, const char* frag_src){
+int create_shader(const char* vert_src, const char* frag_src) {
   gl(unsigned int vert = glCreateShader(GL_VERTEX_SHADER));
-  if (vert == 0){
+  if (vert == 0) {
     log_f(LOG_ERROR, "Failed to create vertex shader!");
     return 0;
   }
   /* log_f(LOG_INFO, "Successfully created vertex shader!"); */
 
   gl(unsigned int frag = glCreateShader(GL_FRAGMENT_SHADER));
-  if (frag == 0){
+  if (frag == 0) {
     log_f(LOG_ERROR, "Failed to create fragment shader!");
     return 0;
   }
@@ -579,7 +587,7 @@ int create_shader(const char* vert_src, const char* frag_src){
   gl(glCompileShader(vert));
   int compiled;
   gl(glGetShaderiv(vert, GL_COMPILE_STATUS, &compiled));
-  if (compiled == GL_FALSE){
+  if (compiled == GL_FALSE) {
     int infolog_len;
     gl(glGetShaderiv(vert, GL_INFO_LOG_LENGTH, &infolog_len));
 
@@ -596,7 +604,7 @@ int create_shader(const char* vert_src, const char* frag_src){
 
   gl(glCompileShader(frag));
   gl(glGetShaderiv(frag, GL_COMPILE_STATUS, &compiled));
-  if (compiled == GL_FALSE){
+  if (compiled == GL_FALSE) {
     int infolog_len;
     gl(glGetShaderiv(frag, GL_INFO_LOG_LENGTH, &infolog_len));
 
@@ -612,7 +620,7 @@ int create_shader(const char* vert_src, const char* frag_src){
   /* log_f(LOG_INFO, "Successfully compiled fragment shader!"); */
 
   gl(unsigned int program = glCreateProgram());
-  if (program == GL_FALSE){
+  if (program == GL_FALSE) {
     log_f(LOG_ERROR, "Failed to create shader program!");
     return 0;
   }
@@ -625,7 +633,7 @@ int create_shader(const char* vert_src, const char* frag_src){
 
   int linked;
   gl(glGetProgramiv(program, GL_LINK_STATUS, &linked));
-  if (linked == GL_FALSE){
+  if (linked == GL_FALSE) {
     int infolog_len;
     gl(  glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infolog_len));
 
@@ -650,7 +658,7 @@ int create_shader(const char* vert_src, const char* frag_src){
 
   int validated;
   glGetProgramiv(program, GL_VALIDATE_STATUS, &validated);
-  if (validated == GL_FALSE){
+  if (validated == GL_FALSE) {
     int infolog_len;
     gl(  glGetProgramiv(program, GL_INFO_LOG_LENGTH, &infolog_len));
 
@@ -671,8 +679,8 @@ int create_shader(const char* vert_src, const char* frag_src){
 
 // Utility
 
-const char* gl_error_as_cstr(int e){
-  switch (e){
+const char* gl_error_as_cstr(int e) {
+  switch (e) {
   case GL_NO_ERROR: return "GL_NO_ERROR"; break;
   case GL_INVALID_ENUM: return "GL_INVALID_ENUM"; break;
   case GL_INVALID_VALUE: return "GL_INVALID_VALUE"; break;
@@ -686,12 +694,11 @@ const char* gl_error_as_cstr(int e){
   return "INVALID!";
 }
 
-void gl_check_and_log_error(const char* file, int line){
+void gl_check_and_log_error(const char* file, int line) {
   int e = glGetError();
 
-  if (e != GL_NO_ERROR){
+  if (e != GL_NO_ERROR) {
     log_f(LOG_ERROR, "%s:%u:0: GL error: %s", file, line, gl_error_as_cstr(e));
     exit(1); // is it wise to just exit without deinitializing glfw and gl resources?
   }
-
 }
