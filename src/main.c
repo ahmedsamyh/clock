@@ -1,7 +1,7 @@
 #include <clock/clock.h>
 
 int main(void) {
-  Context* ctx = clock_init(800, 800, "Clock");
+  Context* ctx = clock_init(800, 800, 1.f, 1.f, "Clock");
 
   if (ctx == NULL) {
     return 1;
