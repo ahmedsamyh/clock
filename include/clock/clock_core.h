@@ -62,6 +62,8 @@ struct Context {
   Key keys[KEYS_COUNT];
   int max_tex_image_slots;
   Resource_manager* resman;
+#define TMP_BUFF_SIZE (1024)
+  char tmpbuff[TMP_BUFF_SIZE];
 };
 
 Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title);

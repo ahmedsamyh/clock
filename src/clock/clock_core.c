@@ -159,13 +159,10 @@ void clock_begin_draw(Context* ctx) {
 
   ctx->fps = (1.0 / ctx->delta);
 
-  // TODO: (cleanup) have a tmpbuffer directly in Context or in global scope
-  char* tmpbuff = (char*)malloc(sizeof(char)*1024);
-  snprintf(tmpbuff, 1024, "%s | %dfps | %fs", win->title, ctx->fps, ctx->delta);
+  snprintf(ctx->tmpbuff, TMP_BUFF_SIZE, "%s | %dfps | %fs", win->title, ctx->fps, ctx->delta);
 
-  glfwSetWindowTitle(win->glfw_win, tmpbuff);
+  glfwSetWindowTitle(win->glfw_win, ctx->tmpbuff);
 
-  free(tmpbuff);
   gl(glBindFramebuffer(GL_FRAMEBUFFER, ctx->ren->ren_tex->fbo));
 }
 
