@@ -7,6 +7,24 @@
 #include <assert.h>
 #include <string.h>
 
+//
+// Private functions to this file
+//
+
+
+static void set_matrices(Renderer* r, const Vector2f screen_size) {
+  {
+    gl(GLuint m = glGetUniformLocation(r->current_shader, "model"));
+    Matrix4 identity = Mat4_identity();
+    gl(glUniformMatrix4fv(m, 1, GL_TRUE, &identity.m[0][0]));
+  }
+  {
+    gl(GLuint m = glGetUniformLocation(r->current_shader, "proj"));
+    Matrix4 identity = Mat4_screen_to_clip_projection(screen_size);
+    gl(glUniformMatrix4fv(m, 1, GL_TRUE, &identity.m[0][0]));
+  }
+}
+
 // Color
 
 Color hex_to_color(int color) {
@@ -331,12 +349,11 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
   Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};
 
   for (size_t i = 0; i < 3; ++i) {
-    Vector3f p    = positions[i];
-    Vector3f p_gl = screen_to_gl_space(p, screen_size);
+    Vector3f p  = positions[i];
     Vector4f pn = (Vector4f) {
-      .x = p_gl.x,
-      .y = p_gl.y,
-      .z = p_gl.z,
+      .x = p.x,
+      .y = screen_size.y - p.y,
+      .z = p.z,
       .w = 1.f,
     };
     Vector4f c = colors[i];
@@ -348,6 +365,8 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 3, r->vertices));
 
   gl(glDrawArrays(GL_TRIANGLES, 0, 3));
+
+  set_matrices(r, screen_size);
 }
 
 #define IMM_QUAD_BODY(draw_type)					\
@@ -356,10 +375,9 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
   Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};	\
   for (size_t i = 0; i < 4; ++i){/* TODO: line 305*/			\
     Vector3f p    = positions[i];					\
-    Vector3f p_gl = screen_to_gl_space(p, screen_size);			\
-    Vector4f pn = (Vector4f) {.x = p_gl.x,				\
-			      .y = p_gl.y,				\
-			      .z = p_gl.z,				\
+    Vector4f pn = (Vector4f) {.x = p.x,					\
+			      .y = screen_size.y - p.y,			\
+			      .z = p.z,					\
 			      .w = 1.f,					\
     };									\
     Vector4f c = colors[i];						\
@@ -367,10 +385,10 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
     r->vertices[i].color = c;						\
   }									\
   Renderer_use_color_shader(r);						\
-  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));				\
-  gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices)); \
-  glDrawArrays(draw_type, 0, 4)
-
+  gl(gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo)));			\
+  gl(gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices))); \
+  gl(glDrawArrays(draw_type, 0, 4));					\
+  set_matrices(r, screen_size)
 
 // TODO: Should we render quads in term of Render_imm_triangle?
 // From what i understand rn about opengl, more draw calls -> bad, so by implementing Render_imm_quad
@@ -525,11 +543,10 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
 
   for (size_t i = 0; i < 2; ++i) {
     Vector3f p    = positions[i];
-    Vector3f p_gl = screen_to_gl_space(p, screen_size);
     Vector4f pn = (Vector4f) {
-      .x = p_gl.x,
-      .y = p_gl.y,
-      .z = p_gl.z,
+      .x = p.x,
+      .y = screen_size.y - p.y,
+      .z = p.z,
       .w = 1.f,
     };
     Vector4f c = colors[i];
@@ -539,8 +556,9 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
 
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 2, r->vertices));
-
   gl(glDrawArrays(GL_LINE_STRIP, 0, 2));
+
+  set_matrices(r, screen_size);
 }
 
 void draw_rect_centered(Context* ctx, Rect rect, Color col) {
