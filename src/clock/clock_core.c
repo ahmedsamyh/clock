@@ -96,7 +96,9 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
   ctx->fps = 0;
   ctx->mpos = (Vector2f){0};
 
-  glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &ctx->max_tex_image_slots);
+  int max_tex_image_slots;
+  gl(glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &max_tex_image_slots));
+  ctx->ren_tex_image_slot = max_tex_image_slots - 1;
 
   // enable blending
   gl(glEnable(GL_BLEND));
@@ -266,8 +268,6 @@ bool Renderer_init(Renderer* r, Window* win) {
   r->texture_shader = create_shader(tex_vert_shader, tex_frag_shader);
   r->color_shader   = create_shader(color_vert_shader, color_frag_shader);
   r->custom_shader  = 0;
-
-  log_f(LOG_INFO, "Loaded default shader!");
 
   r->ren_tex = (Render_target*)calloc(1, sizeof(Render_target));
 
@@ -465,8 +465,9 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   /*   gl(glBindTexture(GL_TEXTURE_2D, ctx->ren->ren_tex->color)); */
   /* } */
 
+  glActiveTexture(GL_TEXTURE0 + spr->texture->slot);
   gl(GLuint t = glGetUniformLocation(r->current_shader, "tex"));
-  glUniform1i(t, (spr->texture->slot % ctx->max_tex_image_slots));
+  glUniform1i(t, spr->texture->slot);
   glBindTexture(GL_TEXTURE_2D, spr->texture->id);
 
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));

@@ -32,8 +32,11 @@ bool Texture_load_from_file(Texture* t, const char* filename){
 
   stbi_image_free(t->local_data);
 
-  // TODO: pass Context to texture and mod the slot here instead of when drawing in draw_sprite()
-  t->slot = last_used_texture_slot++;
+  int max_tex_image_slots;
+
+  gl(glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &max_tex_image_slots));
+
+  t->slot = (last_used_texture_slot++ % (max_tex_image_slots-1)); // last slot is used for ren_tex
 
   log_f(LOG_INFO, "Loaded texture '%s' (%dx%d) in slot %d", filename, t->size.x, t->size.y, t->slot);
 
