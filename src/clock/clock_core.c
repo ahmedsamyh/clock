@@ -352,7 +352,7 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
     Vector3f p  = positions[i];
     Vector4f pn = (Vector4f) {
       .x = p.x,
-      .y = screen_size.y - p.y,
+      .y = p.y,
       .z = p.z,
       .w = 1.f,
     };
@@ -376,7 +376,7 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
   for (size_t i = 0; i < 4; ++i){/* TODO: line 305*/			\
     Vector3f p    = positions[i];					\
     Vector4f pn = (Vector4f) {.x = p.x,					\
-			      .y = screen_size.y - p.y,			\
+			      .y = p.y,					\
 			      .z = p.z,					\
 			      .w = 1.f,					\
     };									\
@@ -409,7 +409,6 @@ void draw_texture(Context* ctx, Vector3f pos, Rect texcoord, Texture* tex) {
 
 void draw_sprite(Context* ctx, Sprite* spr) {
   Renderer* r = ctx->ren;
-  Vector3f pos  = (Vector3f){spr->pos.x, spr->pos.y, 0.f};
   Vector3f positions[4] = {
     (Vector3f){0.f,                         0.f,                         0.f},
     (Vector3f){(float)spr->tex_rect.size.x, 0.f,                         0.f},
@@ -417,31 +416,31 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     (Vector3f){0.f,                         (float)spr->tex_rect.size.y, 0.f}
   };
 
-  // offset by origin
-  for (size_t i = 0; i < 4; ++i) {
-    positions[i] = v3f_sub(positions[i], (Vector3f){spr->origin.x, spr->origin.y, 0.f});
-  }
+  /* // offset by origin */
+  /* for (size_t i = 0; i < 4; ++i) { */
+  /*   positions[i] = v3f_sub(positions[i], (Vector3f){spr->origin.x, spr->origin.y, 0.f}); */
+  /* } */
 
-  // rotate
-  for (size_t i = 0; i < 4; ++i) {
-    Vector3f p   = positions[i];
-    Vector4f v4  = Mat4_rotate_x_vector((Vector4f){p.x, p.y, p.z, 1.f}, spr->rotation.x);
-    v4           = Mat4_rotate_y_vector(v4,                             spr->rotation.y);
-    v4           = Mat4_rotate_z_vector(v4,                             spr->rotation.z);
-    positions[i] = (Vector3f){v4.x, v4.y, v4.z};
-  }
+  /* // rotate */
+  /* for (size_t i = 0; i < 4; ++i) { */
+  /*   Vector3f p   = positions[i]; */
+  /*   Vector4f v4  = Mat4_rotate_x_vector((Vector4f){p.x, p.y, p.z, 1.f}, spr->rotation.x); */
+  /*   v4           = Mat4_rotate_y_vector(v4,                             spr->rotation.y); */
+  /*   v4           = Mat4_rotate_z_vector(v4,                             spr->rotation.z); */
+  /*   positions[i] = (Vector3f){v4.x, v4.y, v4.z}; */
+  /* } */
 
-  // scale
-  for (size_t i = 0; i < 4; ++i) {
-    positions[i] = v3f_mul(positions[i], (Vector3f){spr->scale.x, spr->scale.y, 0.f});
-  }
+  /* // scale */
+  /* for (size_t i = 0; i < 4; ++i) { */
+  /*   positions[i] = v3f_mul(positions[i], (Vector3f){spr->scale.x, spr->scale.y, 0.f}); */
+  /* } */
 
-  // translate
-  for (size_t i = 0; i < 4; ++i) {
-    Vector3f p = positions[i];
-    Vector4f v4  = Mat4_translate_vector((Vector4f){p.x, p.y, p.z, 1.f}, pos);
-    positions[i] = (Vector3f){v4.x, v4.y, v4.z};
-  };
+  /* // translate */
+  /* for (size_t i = 0; i < 4; ++i) { */
+  /*   Vector3f p = positions[i]; */
+  /*   Vector4f v4  = Mat4_translate_vector((Vector4f){p.x, p.y, p.z, 1.f}, pos); */
+  /*   positions[i] = (Vector3f){v4.x, v4.y, v4.z}; */
+  /* }; */
 
   Vector2f texcoords[4] = {
     (Vector2f){spr->tex_rect.pos.x, spr->tex_rect.pos.y},
@@ -460,11 +459,10 @@ void draw_sprite(Context* ctx, Sprite* spr) {
 
   for (size_t i = 0; i < 4; ++i) {
     Vector3f p    = positions[i];
-    Vector3f p_gl = p;
     Vector4f pn = (Vector4f) {
-      .x = p_gl.x,
-      .y = screen_size.y - p_gl.y,
-      .z = p_gl.z,
+      .x = p.x,
+      .y = p.y,
+      .z = p.z,
       .w = 1.f,
     };
     r->vertices[i].position = pn;
@@ -490,19 +488,35 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   //
   {
     gl(GLuint m = glGetUniformLocation(r->current_shader, "model"));
-    /* Matrix4 offset    = Mat4_translate(Mat4_identity(), screen_to_gl_space((Vector3f){spr->origin.x, spr->origin.y}, screen_size)); */
-    /* Matrix4 rotate    = Mat4_rotate_x (offset, spr->rotation.x); */
-    /* rotate            = Mat4_rotate_y (rotate, spr->rotation.y); */
-    /* rotate            = Mat4_rotate_z (rotate, spr->rotation.z); */
-    /* Vector3f gl_pos = screen_to_gl_space(pos, screen_size); */
-    /* Matrix4 translate = Mat4_translate(rotate, gl_pos); */
-    Matrix4 identity = Mat4_identity();
-    gl(glUniformMatrix4fv(m, 1, GL_TRUE, &identity.m[0][0]));
+    Matrix4 offset  = Mat4_translate(Mat4_identity(), (Vector3f){-spr->origin.x, -spr->origin.y, 0.f});
+    Matrix4 rotatex = Mat4_rotate_x (offset,  spr->rotation.x);
+    Matrix4 rotatey = Mat4_rotate_y (rotatex, spr->rotation.y);
+    Matrix4 rotatez = Mat4_rotate_z (rotatey, spr->rotation.z);
+    Matrix4 scale   = Mat4_scale    (rotatez, (Vector3f){spr->scale.x, spr->scale.y, 1.f});
+    // NOTE: we have to set these to 1 because the scale factors still remain in the matrix;
+    // we don't want to scale it again when we are translating
+    scale.m[0][0] = 1.f;
+    scale.m[1][1] = 1.f;
+    scale.m[2][2] = 1.f;
+    scale.m[3][3] = 1.f;
+    Vector3f spr_pos  = (Vector3f){spr->pos.x, spr->pos.y, 0.f};
+    Matrix4 translate = Mat4_translate(scale,  spr_pos);
+    gl(glUniformMatrix4fv(m, 1, GL_TRUE, &translate.m[0][0]));
+
+    static int frame = 0;
+    if (frame++ < 100) {
+      printf("Frame: %d\n", frame);
+      printf("--------------------------------------------------\n");
+      printf("offset: "MAT4_FMT"\n", MAT4_ARG(offset));
+      printf("rotatex: "MAT4_FMT"\n", MAT4_ARG(rotatex));
+      printf("rotatey: "MAT4_FMT"\n", MAT4_ARG(rotatey));
+      printf("rotatez: "MAT4_FMT"\n", MAT4_ARG(rotatez));
+      printf("scale: "MAT4_FMT"\n", MAT4_ARG(scale));
+      printf("translate: "MAT4_FMT"\n", MAT4_ARG(translate));
+      printf("--------------------------------------------------\n");
+    }
   }
 
-  //
-  // Projection matrix
-  //
   {
     gl(GLuint m = glGetUniformLocation(r->current_shader, "proj"));
     Matrix4 identity = Mat4_screen_to_clip_projection(screen_size);
@@ -545,7 +559,7 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
     Vector3f p    = positions[i];
     Vector4f pn = (Vector4f) {
       .x = p.x,
-      .y = screen_size.y - p.y,
+      .y = p.y,
       .z = p.z,
       .w = 1.f,
     };

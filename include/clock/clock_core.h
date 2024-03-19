@@ -145,7 +145,9 @@ static const char* color_vert_shader =
   "uniform mat4 proj;\n"
   "out vec4 v_col;\n"
   "void main(void){\n"
-  "  gl_Position = proj * model * position;\n"
+  "  vec4 new_pos = proj * model * position;\n"
+  "  new_pos.y *= -1.f;\n"
+  "  gl_Position = new_pos;\n"
   "  v_col = color;\n"
   "}\n";
 
@@ -167,7 +169,9 @@ static const char* tex_vert_shader =
   "out vec2 v_texcoord;\n"
   "out vec4 v_col;\n"
   "void main(void){\n"
-  "  gl_Position  = proj * model * position;\n"
+  "  vec4 new_pos = proj * model * position;\n"
+  "  new_pos.y   *= -1.f;\n"
+  "  gl_Position  = new_pos;\n"
   "  v_col = color;\n"
   "  v_texcoord = texcoord;\n"
   "}\n";

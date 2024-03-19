@@ -12,10 +12,10 @@ Matrix4 Mat4_identity(void){
 
 Matrix4 Mat4_translate(Matrix4 mat, Vector3f by) {
   Matrix4 translation_mat = {
-    .m = {{1.f, 0.f, 0.f, by.x},
-	  {0.f, 1.f, 0.f, by.y},
-	  {0.f, 0.f, 1.f, by.z},
-	  {0.f, 0.f, 0.f, 1.f}}
+    .m = {{1,   0,   0, by.x},
+	  {0,   1,   0, by.y},
+	  {0,   0,   1, by.z},
+	  {0,   0,   0, 1   }}
   };
 
   return Mat4_mul(mat, translation_mat);
@@ -25,10 +25,10 @@ Matrix4 Mat4_scale(Matrix4 mat, Vector3f by) {
   Vector4f r = {0};
 
   Matrix4 translation_mat = {
-    .m = {{by.x, 0.f, 0.f, 0.f},
-	  {0.f, by.y, 0.f, 0.f},
-	  {0.f, 0.f, by.z, 0.f},
-	  {0.f, 0.f, 0.f, 1.f}}
+    .m = {{by.x, 0,    0,    0},
+	  {0,    by.y, 0,    0},
+	  {0,    0,    by.z, 0},
+	  {0,    0,    0,    1}}
   };
 
   return Mat4_mul(mat, translation_mat);
