@@ -21,14 +21,13 @@ int main(void) {
   spr.scale.x = 4.f;
   spr.scale.y = 4.f;
 
-
   while (!clock_should_quit(ctx)) {
     float delta = ctx->delta;
     clock_begin_draw(ctx);
 
     clock_clear(ctx, COLOR_BLACK);
 
-   // rotation
+    // rotation
     if (ctx->keys[GLFW_KEY_Z].held) spr.rotation.x += 100.f * delta;
     if (ctx->keys[GLFW_KEY_X].held) spr.rotation.y += 100.f * delta;
     if (ctx->keys[GLFW_KEY_C].held) spr.rotation.z += 100.f * delta;
@@ -45,10 +44,9 @@ int main(void) {
       spr.scale.y += S * delta;
     }
 
-    spr.pos = ctx->mpos;
-
     Sprite_animate_hframe(&spr, delta);
 
+    spr.pos = ctx->mpos;
     draw_sprite(ctx, &spr);
 
     clock_end_draw(ctx);

@@ -1,4 +1,5 @@
 #include <clock/clock_matrix.h>
+#include <assert.h>
 
 Matrix4 Mat4_identity(void){
   return (Matrix4){
@@ -98,6 +99,17 @@ Matrix4 Mat4_transpose(Matrix4 mat) {
   }
 
   return res;
+}
+
+Matrix4 Mat4_screen_to_clip_projection(Vector2f size) {
+  assert(size.x > 0.f && size.y > 0.f);
+  Matrix4 m = {
+    .m = {{2.f/size.x, 0,          0, -1},
+	  {0,          2.f/size.y, 0, -1},
+	  {0,          0,          1,  0},
+	  {0,          0,          0,  1}}
+  };
+  return m;
 }
 
 Vector4f Mat4_translate_vector(Vector4f v, Vector3f by){

@@ -8,6 +8,7 @@ float rad2deg(float rad){
  return (rad / TWO_PI)*360.f;
 }
 
+// TODO: This will be deceprated when we use the projection matrix
 Vector3f screen_to_gl_space(Vector3f v, Vector2f screen_size) {
   // avoid divide-by-zero error
   if (screen_size.x == 0) screen_size.x = 1.f;
@@ -15,8 +16,8 @@ Vector3f screen_to_gl_space(Vector3f v, Vector2f screen_size) {
 
   float depth = screen_size.x;
   return (Vector3f) {
-    .x = (v.x / screen_size.x) * 2.f       - 1.f, // -1..+1
-    .y = (1.f - v.y / screen_size.y) * 2.f - 1.f, // +1..-1
-    .z = (v.z / depth) * 2.f               - 1.f, // -1..+1
+    .x = (v.x / screen_size.x)         * 2.f - 1.f, // -1..+1
+    .y = (1.f - (v.y / screen_size.y)) * 2.f - 1.f, // +1..-1
+    .z = (v.z / depth)                 * 2.f - 1.f, // -1..+1
   };
 }

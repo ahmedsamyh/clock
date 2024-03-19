@@ -60,8 +60,8 @@ struct Context {
   int       fps;
   Vector2f  mpos;
   Key keys[KEYS_COUNT];
-  int max_tex_image_slots;
   Resource_manager* resman;
+  int       ren_tex_image_slot;
 #define TMP_BUFF_SIZE (1024)
   char tmpbuff[TMP_BUFF_SIZE];
 };
@@ -160,10 +160,13 @@ static const char* tex_vert_shader =
   "layout(location = 0)in vec4 position;\n"
   "layout(location = 1)in vec4 color;\n"
   "layout(location = 2)in vec2 texcoord;\n"
+  "uniform mat4 model;\n"
+  "uniform mat4 proj;\n"
   "out vec2 v_texcoord;\n"
   "out vec4 v_col;\n"
   "void main(void){\n"
-  "  gl_Position = position;\n"
+  "  vec4 new_pos = proj * model * position;\n"
+  "  gl_Position  = new_pos;\n"
   "  v_col = color;\n"
   "  v_texcoord = texcoord;\n"
   "}\n";

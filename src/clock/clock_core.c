@@ -353,13 +353,15 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
 #define IMM_QUAD_BODY(draw_type)					\
   Vector3f positions[] = {p0, p1, p2, p3};				\
   Vector4f colors[] = {c0, c1, c2, c3};					\
-  float depth = r->win->height;						\
+  Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};	\
   for (size_t i = 0; i < 4; ++i){/* TODO: line 305*/			\
-    Vector3f p = positions[i];						\
-    Vector4f pn = (Vector4f){						\
-      .x = (p.x / (float)r->win->width)*2.f - 1.f,			\
-      .y = (1.f - p.y / (float)r->win->height)*2.f - 1.f,		\
-      .z = (p.z / (float)depth)*2.f - 1.f, .w = 1.f,};			\
+    Vector3f p    = positions[i];					\
+    Vector3f p_gl = screen_to_gl_space(p, screen_size);			\
+    Vector4f pn = (Vector4f) {.x = p_gl.x,				\
+			      .y = p_gl.y,				\
+			      .z = p_gl.z,				\
+			      .w = 1.f,					\
+    };									\
     Vector4f c = colors[i];						\
     r->vertices[i].position = pn;					\
     r->vertices[i].color = c;						\
@@ -396,8 +398,6 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     (Vector3f){(float)spr->tex_rect.size.x, (float)spr->tex_rect.size.y, 0.f},
     (Vector3f){0.f,                         (float)spr->tex_rect.size.y, 0.f}
   };
-
-  // TODO: factor these transformations into a Transform struct which the Sprite struct will have as a member
 
   // offset by origin
   for (size_t i = 0; i < 4; ++i) {
@@ -442,10 +442,10 @@ void draw_sprite(Context* ctx, Sprite* spr) {
 
   for (size_t i = 0; i < 4; ++i) {
     Vector3f p    = positions[i];
-    Vector3f p_gl = screen_to_gl_space(p, screen_size);
+    Vector3f p_gl = p;
     Vector4f pn = (Vector4f) {
       .x = p_gl.x,
-      .y = p_gl.y,
+      .y = screen_size.y - p_gl.y,
       .z = p_gl.z,
       .w = 1.f,
     };
@@ -454,16 +454,42 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     r->vertices[i].texcoord = texcoords[i];
   }
 
-  Renderer_use_texture_shader(r);
+  // We only want to change to texture shader if the user isnt using a custom shader
+  if (r->current_shader != r->custom_shader) {
+    Renderer_use_texture_shader(r);
+  }
 
-  glActiveTexture(GL_TEXTURE0 + (spr->texture->slot % ctx->max_tex_image_slots));
+  if (r->current_shader == r->custom_shader) {
+    glActiveTexture(GL_TEXTURE0 + ctx->ren_tex_image_slot);
+    gl(GLuint t = glGetUniformLocation(r->current_shader, "screen"));
+    gl(glUniform1i(t, ctx->ren_tex_image_slot));
+    gl(glBindTexture(GL_TEXTURE_2D, ctx->ren->ren_tex->color));
+  }
 
-  // TODO: ren_tex texture is in texture unit slot 10, make it not hardcoded.
-  /* { */
-  /*   gl(GLuint t = glGetUniformLocation(r->current_shader, "tex2")); */
-  /*   gl(glUniform1i(t, 10)); */
-  /*   gl(glBindTexture(GL_TEXTURE_2D, ctx->ren->ren_tex->color)); */
-  /* } */
+  //
+  // TODO: Doing matrix multiplication on the shader doesn't seem to work.
+  // it shows the texture is some weird perspective way tho...
+  //
+  {
+    gl(GLuint m = glGetUniformLocation(r->current_shader, "model"));
+    /* Matrix4 offset    = Mat4_translate(Mat4_identity(), screen_to_gl_space((Vector3f){spr->origin.x, spr->origin.y}, screen_size)); */
+    /* Matrix4 rotate    = Mat4_rotate_x (offset, spr->rotation.x); */
+    /* rotate            = Mat4_rotate_y (rotate, spr->rotation.y); */
+    /* rotate            = Mat4_rotate_z (rotate, spr->rotation.z); */
+    /* Vector3f gl_pos = screen_to_gl_space(pos, screen_size); */
+    /* Matrix4 translate = Mat4_translate(rotate, gl_pos); */
+    Matrix4 identity = Mat4_identity();
+    gl(glUniformMatrix4fv(m, 1, GL_TRUE, &identity.m[0][0]));
+  }
+
+  //
+  // Projection matrix
+  //
+  {
+    gl(GLuint m = glGetUniformLocation(r->current_shader, "proj"));
+    Matrix4 identity = Mat4_screen_to_clip_projection(screen_size);
+    gl(glUniformMatrix4fv(m, 1, GL_TRUE, &identity.m[0][0]));
+  }
 
   glActiveTexture(GL_TEXTURE0 + spr->texture->slot);
   gl(GLuint t = glGetUniformLocation(r->current_shader, "tex"));
