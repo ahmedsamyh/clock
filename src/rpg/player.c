@@ -1,20 +1,21 @@
 #include <rpg/player.h>
+#include <rpg/config.h>
 #include <assert.h>
 
 bool Player_init(Player* p, Context* ctx, Texture* tex) {
   p->pos = (Vector2f){0.f, 0.f};
   p->vel = (Vector2f){0.f, 0.f};
   p->acc = (Vector2f){0.f, 0.f};
-  p->hitbox = (Rect){{0.f, 0.f}, {DEFAULT_PLAYER_SIZE, DEFAULT_PLAYER_SIZE}};
-  p->speed = DEFAULT_PLAYER_SPEED;
-  p->max_speed = DEFAULT_PLAYER_MAX_SPEED;
+  p->hitbox = (Rect){{0.f, 0.f}, {PLAYER_SIZE, PLAYER_SIZE}};
+  p->speed = PLAYER_SPEED;
+  p->max_speed = PLAYER_MAX_SPEED;
   p->fric  = 0.8f;
   p->is_moving = false;
   p->ctx = ctx;
 
-  if (!Sprite_init(&p->spr, tex, 10, 3)) return false;
+  if (!Sprite_init(&p->spr, tex, 4, 8)) return false;
 
-  p->spr.scale = (Vector2f){2.f, 2.f};
+  p->spr.scale = (Vector2f){SCALE, SCALE};
   p->spr.time_per_frame = 0.1f;
 
   return true;
@@ -45,13 +46,18 @@ void Player_update(Player* p) {
   // animate sprite
   Sprite_animate_hframe(&p->spr, delta);
   if (p->is_moving) {
-    Sprite_set_vframe(&p->spr, 1);
+    switch (p->last_move_dir) {
+    case MOVE_DIR_RIGHT: Sprite_set_vframe(&p->spr, 4 + 0); break;
+    case MOVE_DIR_DOWN:  Sprite_set_vframe(&p->spr, 4 + 1); break;
+    case MOVE_DIR_LEFT:  Sprite_set_vframe(&p->spr, 4 + 2); break;
+    case MOVE_DIR_UP:    Sprite_set_vframe(&p->spr, 4 + 3); break;
+    }
   } else {
-    switch (p->last_move_key) {
-    case PLAYER_MOVE_LEFT_KEY:  Sprite_set_vframe(&p->spr, 2); break;
-    case PLAYER_MOVE_RIGHT_KEY: Sprite_set_vframe(&p->spr, 2); break;
-    case PLAYER_MOVE_UP_KEY:    Sprite_set_vframe(&p->spr, 0); break;
-    case PLAYER_MOVE_DOWN_KEY:  Sprite_set_vframe(&p->spr, 0); break;
+    switch (p->last_move_dir) {
+    case MOVE_DIR_RIGHT: Sprite_set_vframe(&p->spr, 0); break;
+    case MOVE_DIR_DOWN:  Sprite_set_vframe(&p->spr, 1); break;
+    case MOVE_DIR_LEFT:  Sprite_set_vframe(&p->spr, 2); break;
+    case MOVE_DIR_UP:    Sprite_set_vframe(&p->spr, 3); break;
     }
   }
 }
@@ -63,22 +69,22 @@ void Player_control(Player* p) {
   Vector2f dir = {0};
   if (keys[PLAYER_MOVE_LEFT_KEY].held) {
     dir.x--;
-    p->last_move_key = PLAYER_MOVE_LEFT_KEY;
+    p->last_move_dir = MOVE_DIR_LEFT;
   }
 
   if (keys[PLAYER_MOVE_RIGHT_KEY].held) {
     dir.x++;
-    p->last_move_key = PLAYER_MOVE_RIGHT_KEY;
+    p->last_move_dir = MOVE_DIR_RIGHT;
   }
 
   if (keys[PLAYER_MOVE_UP_KEY].held) {
     dir.y--;
-    p->last_move_key = PLAYER_MOVE_UP_KEY;
+    p->last_move_dir = MOVE_DIR_UP;
   }
 
   if (keys[PLAYER_MOVE_DOWN_KEY].held) {
     dir.y++;
-    p->last_move_key = PLAYER_MOVE_DOWN_KEY;
+    p->last_move_dir = MOVE_DIR_DOWN;
   }
   dir = v2f_normalize(dir);
 
@@ -91,17 +97,9 @@ void Player_control(Player* p) {
 void Player_draw(Player* p, bool debug) {
   assert(p->ctx);
 
-  if (debug && false) {
-    Rect base_hitbox = {(Vector2f){p->pos.x, p->pos.y}, p->hitbox.size};
-
-    // draw the base (pos at height 0)
-    draw_rect_centered(p->ctx, base_hitbox, COLOR_GREEN);
-
-    draw_imm_line(p->ctx, (Vector3f){base_hitbox.pos.x, base_hitbox.pos.y}, (Vector3f){p->hitbox.pos.x, p->hitbox.pos.y}, COLOR_GREEN, COLOR_RED);
-
-    // draw actual pos with height considered
-    draw_rect_centered(p->ctx, p->hitbox, COLOR_RED);
-  }
-
   draw_sprite(p->ctx, &p->spr);
+
+  if (debug) {
+    draw_rect(p->ctx, p->hitbox, color_alpha(COLOR_RED, 0.45f));
+  }
 }

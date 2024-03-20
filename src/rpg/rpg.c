@@ -1,5 +1,6 @@
 #include <clock/clock.h>
 #include <rpg/player.h>
+#include <rpg/enemy.h>
 
 Texture* load_texture_err_handled(Context* ctx, const char* filepath) {
   Texture* tex = Resman_load_texture(ctx->resman, filepath);
@@ -34,21 +35,40 @@ int main(void) {
   DEBUG_DRAW = true;
 #endif
 
+  Enemy* enemies = NULL; // dynamic array
+
   while (!clock_should_quit(ctx)) {
 
     clock_begin_draw(ctx);
 
-    clock_clear(ctx, hex_to_color(0xFF141414));
+    clock_clear(ctx, hex_to_color(0xFF555555));
 
     if (ctx->keys[GLFW_KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
 
     Player_control(&player);
-
     Player_update (&player);
     Player_draw   (&player, DEBUG_DRAW);
 
+    // TEMP
+    if (ctx->keys[GLFW_KEY_SPACE].pressed) {
+      Enemy e = {0};
+      if (!Enemy_init(&e, ctx, player_tex)) return 1;
+      e.pos = ctx->mpos;
+      arrput(enemies, e);
+    }
+
+    for (int i = arrlen(enemies) - 1; i >= 0; --i) {
+      Enemy_update(&enemies[i]);
+    }
+
+    for (int i = arrlen(enemies) - 1; i >= 0; --i) {
+      Enemy_draw(&enemies[i], DEBUG_DRAW);
+    }
+
     clock_end_draw(ctx);
- }
+  }
+
+  arrfree(enemies);
 
   clock_deinit(ctx);
 

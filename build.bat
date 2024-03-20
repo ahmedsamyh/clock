@@ -23,7 +23,7 @@ set arg=%1
 
 rem RPG --------------------------------------------------
 set RPG_SRC_PATH=src\rpg
-set RPG_FILES=rpg player
+set RPG_FILES=rpg player enemy
 set RPG_SRCS=
 
 for %%i in (!RPG_FILES!) do (
