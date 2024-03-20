@@ -6,7 +6,7 @@ bool Player_init(Player* p, Context* ctx, Texture* tex) {
   p->pos = (Vector2f){0.f, 0.f};
   p->vel = (Vector2f){0.f, 0.f};
   p->acc = (Vector2f){0.f, 0.f};
-  p->hitbox = (Rect){{0.f, 0.f}, {PLAYER_SIZE, PLAYER_SIZE}};
+  p->hitbox = (Rect){{0.f, 0.f}, {PLAYER_WIDTH, PLAYER_HEIGHT}};
   p->speed = PLAYER_SPEED;
   p->max_speed = PLAYER_MAX_SPEED;
   p->fric  = 0.8f;
@@ -40,7 +40,11 @@ void Player_update(Player* p) {
   }
 
   // update positions
-  p->hitbox.pos = p->pos;
+  p->hitbox.pos = (Vector2f){
+    p->pos.x + PLAYER_HITBOX_OFFSET_X,
+    p->pos.y + PLAYER_HITBOX_OFFSET_Y,
+  };
+
   p->spr.pos    = p->pos;
 
   // animate sprite
@@ -100,6 +104,14 @@ void Player_draw(Player* p, bool debug) {
   draw_sprite(p->ctx, &p->spr);
 
   if (debug) {
-    draw_rect(p->ctx, p->hitbox, color_alpha(COLOR_RED, 0.45f));
+    Color color = (p->hitting ? COLOR_RED : COLOR_GREEN);
+    draw_rect(p->ctx, p->hitbox, color_alpha(color, 0.45f));
   }
+}
+
+void Player_set_pos_to_hitbox_pos(Player* p) {
+  p->pos = (Vector2f){
+    p->hitbox.pos.x - PLAYER_HITBOX_OFFSET_X,
+    p->hitbox.pos.y - PLAYER_HITBOX_OFFSET_Y,
+  };
 }

@@ -3,6 +3,8 @@
 
 #define SCALE 8.f
 
+#define TILE_SIZE (16.f*SCALE)
+
 typedef enum {
   MOVE_DIR_LEFT,
   MOVE_DIR_RIGHT,
@@ -12,9 +14,12 @@ typedef enum {
 } Move_dir;
 
 // PLAYER
-#define PLAYER_SPEED     100.f
-#define PLAYER_MAX_SPEED 300.f
-#define PLAYER_SIZE      (16.f*SCALE)
+#define PLAYER_SPEED           100.f
+#define PLAYER_MAX_SPEED       400.f
+#define PLAYER_WIDTH           (8.f*SCALE)
+#define PLAYER_HEIGHT          (8.f*SCALE)
+#define PLAYER_HITBOX_OFFSET_X (4.f*SCALE)
+#define PLAYER_HITBOX_OFFSET_Y (8.f*SCALE)
 
 #define PLAYER_MOVE_LEFT_KEY  GLFW_KEY_A
 #define PLAYER_MOVE_RIGHT_KEY GLFW_KEY_D
@@ -27,6 +32,7 @@ typedef enum {
 // ENEMY
 #define ENEMY_SPEED     PLAYER_SPEED
 #define ENEMY_MAX_SPEED PLAYER_MAX_SPEED
-#define ENEMY_SIZE      PLAYER_SIZE
+#define ENEMY_WIDTH      PLAYER_WIDTH
+#define ENEMY_HEIGHT     PLAYER_HEIGHT
 
 #endif /* _CONFIG_H_ */
