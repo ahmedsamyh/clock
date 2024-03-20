@@ -579,6 +579,39 @@ void draw_rect_centered(Context* ctx, Rect rect, Color col) {
   draw_imm_quad(ctx, p0, p1, p2, p3, col, col, col, col);
 }
 
+void draw_point(Context* ctx, Vector3f p, Color col) {
+ Renderer* r = ctx->ren;
+
+  Vector3f positions[] = {
+    p
+  };
+
+  Vector4f colors[] = {
+    col
+  };
+
+  Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};
+
+  for (size_t i = 0; i < 1; ++i) {
+    Vector3f p    = positions[i];
+    Vector4f pn = (Vector4f) {
+      .x = p.x,
+      .y = p.y,
+      .z = p.z,
+      .w = 1.f,
+    };
+    Vector4f c = colors[i];
+    r->vertices[i].position = pn;
+    r->vertices[i].color = c;
+  }
+
+  gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
+  gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 1, r->vertices));
+  gl(glDrawArrays(GL_POINTS, 0, 1));
+
+  set_matrices(r, screen_size);
+}
+
 // Blendmode
 
 void set_blend_mode(const Blendmode mode) {
