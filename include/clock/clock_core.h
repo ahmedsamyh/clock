@@ -10,6 +10,7 @@
 #include <clock/clock_sprite.h>
 #include <clock/clock_render_target.h>
 #include <clock/clock_key.h>
+#include <clock/clock_color.h>
 #include <clock/clock_resource_manager.h>
 #include <stdbool.h>
 #include <commonlib.h>
@@ -22,18 +23,6 @@ typedef struct Window Window;
 typedef struct Renderer Renderer;
 typedef struct Render_target Render_target;
 typedef enum   Blendmode Blendmode;
-
-// Color
-typedef Vector4f Color; // 0.0..1.0
-
-#define COLOR_BLACK (Color){0.f,0.f,0.f,1.f}
-#define COLOR_WHITE (Color){1.f,1.f,1.f,1.f}
-#define COLOR_RED   (Color){1.f,0.f,0.f,1.f}
-#define COLOR_GREEN (Color){0.f,1.f,0.f,1.f}
-#define COLOR_BLUE (Color){0.f,0.f,1.f,1.f}
-
-// hex should be in format 0xAAGGBBRR
-Color hex_to_color(int color);
 
 // Window
 struct Window {

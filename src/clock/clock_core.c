@@ -25,17 +25,6 @@ static void set_matrices(Renderer* r, const Vector2f screen_size) {
   }
 }
 
-// Color
-
-Color hex_to_color(int color) {
-  return (Color) {
-    .r = ((color >> (8 * 0)) & 0xFF) / 255.f,
-    .g = ((color >> (8 * 1)) & 0xFF) / 255.f,
-    .b = ((color >> (8 * 2)) & 0xFF) / 255.f,
-    .a = ((color >> (8 * 3)) & 0xFF) / 255.f,
-  };
-}
-
 // Window
 
 bool Window_init(Window* win, unsigned int width, unsigned int height, float scl_x, float scl_y, const char* title) {
