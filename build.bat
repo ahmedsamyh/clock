@@ -1,11 +1,15 @@
 @echo off
 
+rem for clean.bat
+set CLEAN_QUIET=1
+
 set INCLUDE_DIRS=.\include
 set LIB_DIR=.\lib
 set LIBS=user32.lib shell32.lib gdi32.lib kernel32.lib
 set CLOCK_FILES=clock_core clock_math clock_vector clock_matrix clock_texture clock_sprite clock_rect clock_resource_manager clock_render_target
 set CLOCK_SRCS=
 set CLOCK_OBJS=
+set COMMON_CFLAGS=/Zi
 
 for %%i in (!CLOCK_FILES!) do (
   set CLOCK_SRCS=!CLOCK_SRCS! src\clock\%%i.c
@@ -35,22 +39,13 @@ if not defined arg (
 
 if "!arg!"=="vector_gen" (
   echo Building vector_gen.c...
-  call shell cl tool\vector_gen.c /I!INCLUDE_DIRS!
+  call shell cl !COMMON_CFLAGS! tool\vector_gen.c /I!INCLUDE_DIRS!
   echo.
 
   call shell vector_gen.exe
   call shell move clock_vector.h .\include\clock\
   call shell move clock_vector.c .\src\clock\
-) else if "!arg!"=="matrix_gen" (
-  echo Building matrix_gen.c...
-  call shell cl tool\matrix_gen.c /I!INCLUDE_DIRS!
-  echo.
-
-  call shell matrix_gen.exe
 ) else if "!arg!"=="examples" (
-rem  we don't need to build clock since every example already builds them
-rem  call shell build clock
-
   echo Building examples...
   call shell build rotating_quad
   call shell build drawing_sprite
@@ -58,31 +53,28 @@ rem  call shell build clock
 ) else if "!arg!"=="rotating_quad" (
   call shell build clock
 
-  call shell cl examples\rotating_quad.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\rotating_quad.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
 ) else if "!arg!"=="drawing_sprite" (
   call shell build clock
 
-  call shell cl examples\drawing_sprite.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\drawing_sprite.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
 ) else if "!arg!"=="clean" (
-  for /f %%i in ('dir /b .') do (
-    if "%%~xi"==".exe" (
-      call shell del /f %%i
-    ) else if "%%~xi"==".obj" (
-      call shell del /f %%i
-    )
-  )
+  call shell clean exe
+  call shell clean ilk
+  call shell clean pdb
+  call shell clean obj
 ) else if "!arg!"=="clock" (
   echo Building clock_engine.lib...
-  call shell cl /c !CLOCK_SRCS! src\gl\gl.c /I!INCLUDE_DIRS!
+  call shell cl !COMMON_CFLAGS! /c !CLOCK_SRCS! src\gl\gl.c /I!INCLUDE_DIRS!
   call shell lib !LIB_DIR!\glfw3_mt.lib !CLOCK_OBJS! gl.obj /out:.\lib\clock.lib
 ) else if "!arg!"=="main" (
   call shell build clock
 
-  call shell cl src\main.c /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
+  call shell cl !COMMON_CFLAGS! src\main.c /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
 ) else if "!arg!"=="rpg" (
   call shell build clock
 
-  call shell cl !RPG_SRCS! /Fe:rpg /DDEBUG /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
+  call shell cl !COMMON_CFLAGS! !RPG_SRCS! /Fe:rpg /DDEBUG /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
 ) else (
   echo ERROR: Unknown subcommand '!arg!'...
   exit /b 1

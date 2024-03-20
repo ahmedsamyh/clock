@@ -286,6 +286,7 @@ bool Renderer_init(Renderer* r, Window* win) {
   r->texture_shader = create_shader(tex_vert_shader, tex_frag_shader);
   r->color_shader   = create_shader(color_vert_shader, color_frag_shader);
   r->custom_shader  = 0;
+  r->current_shader = r->texture_shader;
 
   r->ren_tex = (Render_target*)calloc(1, sizeof(Render_target));
 

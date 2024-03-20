@@ -61,8 +61,8 @@ int main(void){
 		    COLOR_GREEN,
 		    COLOR_BLUE,
 		    COLOR_WHITE);
-    deg += 100.f * ctx->delta;
-    a += ctx->delta;
+    deg += 100.f * (float)ctx->delta;
+    a += (float)ctx->delta;
 
     clock_end_draw(ctx);
   }

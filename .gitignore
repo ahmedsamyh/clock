@@ -1,3 +1,7 @@
 *.exe
 *.png
 *.lib
+*.obj
+*.pdb
+*.ilk
+.vs/
