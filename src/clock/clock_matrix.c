@@ -22,16 +22,14 @@ Matrix4 Mat4_translate(Matrix4 mat, Vector3f by) {
 }
 
 Matrix4 Mat4_scale(Matrix4 mat, Vector3f by) {
-  Vector4f r = {0};
-
-  Matrix4 translation_mat = {
+  Matrix4 scale_mat = {
     .m = {{by.x, 0,    0,    0},
 	  {0,    by.y, 0,    0},
 	  {0,    0,    by.z, 0},
 	  {0,    0,    0,    1}}
   };
 
-  return Mat4_mul(mat, translation_mat);
+  return Mat4_mul(mat, scale_mat);
 }
 
 Matrix4 Mat4_rotate_x(Matrix4 mat, float deg) {
@@ -40,9 +38,9 @@ Matrix4 Mat4_rotate_x(Matrix4 mat, float deg) {
 
   Matrix4 m = {
     .m = {{1, 0,          0        , 0},
-	  {0, cosf(rad), -sinf(rad), 0},
-          {0, sinf(rad),  cosf(rad), 0},
-          {0, 0,          0,         0}}
+	  {0, cos(rad), -sin(rad), 0},
+          {0, sin(rad),  cos(rad), 0},
+          {0, 0,          0,         1}}
   };
 
   return Mat4_mul(mat, m);
@@ -53,10 +51,10 @@ Matrix4 Mat4_rotate_y(Matrix4 mat, float deg) {
   float rad = deg2rad(deg);
 
   Matrix4 m = {
-    .m = {{cosf(rad),  0, sinf(rad), 0},
+    .m = {{cos(rad),  0, sin(rad), 0},
 	  {0,          1, 0        , 0},
-	  {-sinf(rad), 0, cosf(rad), 0},
-	  {0,          0, 0        , 0}}
+	  {-sin(rad), 0, cos(rad), 0},
+	  {0,          0, 0        , 1}}
   };
   return Mat4_mul(mat, m);
 }
@@ -66,10 +64,10 @@ Matrix4 Mat4_rotate_z(Matrix4 mat, float deg) {
   float rad = deg2rad(deg);
 
   Matrix4 m = {
-    .m = {{cosf(rad), -sinf(rad), 0, 0},
-	  {sinf(rad),  cosf(rad), 0, 0},
+    .m = {{cos(rad), -sin(rad), 0, 0},
+	  {sin(rad),  cos(rad), 0, 0},
 	  {0,          0,         1, 0},
-	  {0,          0,         0, 0}}
+	  {0,          0,         0, 1}}
   };
   return Mat4_mul(mat, m);
 }
@@ -144,8 +142,8 @@ Vector4f Mat4_rotate_x_vector(Vector4f v, float deg){
 
   Matrix3 m = {
     .m = {{1, 0,          0        },
-	  {0, cosf(rad), -sinf(rad)},
-          {0, sinf(rad),  cosf(rad)}}
+	  {0, cos(rad), -sin(rad)},
+          {0, sin(rad),  cos(rad)}}
   };
 
   return Mat3_vector_mul(m, v);
@@ -156,9 +154,9 @@ Vector4f Mat4_rotate_y_vector(Vector4f v, float deg){
   float rad = deg2rad(deg);
 
   Matrix3 m = {
-    .m = {{cosf(rad),  0, sinf(rad)},
+    .m = {{cos(rad),  0, sin(rad)},
 	  {0,          1, 0        },
-	  {-sinf(rad), 0, cosf(rad)}}
+	  {-sin(rad), 0, cos(rad)}}
   };
   return Mat3_vector_mul(m, v);
 }
@@ -168,8 +166,8 @@ Vector4f Mat4_rotate_z_vector(Vector4f v, float deg){
   float rad = deg2rad(deg);
 
   Matrix3 m = {
-    .m = {{cosf(rad), -sinf(rad), 0},
-	  {sinf(rad),  cosf(rad), 0},
+    .m = {{cos(rad), -sin(rad), 0},
+	  {sin(rad),  cos(rad), 0},
 	  {0,          0,         1}}
   };
   return Mat3_vector_mul(m, v);
