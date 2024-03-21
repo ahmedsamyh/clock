@@ -445,27 +445,6 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     positions[i] = v3f_sub(positions[i], (Vector3f){spr->origin.x, spr->origin.y, 0.f});
   }
 
-  // rotate
-  for (size_t i = 0; i < 4; ++i) {
-    Vector3f p   = positions[i];
-    Vector4f v4  = Mat4_rotate_x_vector((Vector4f){p.x, p.y, p.z, 1.f}, spr->rotation.x);
-    v4           = Mat4_rotate_y_vector(v4,                             spr->rotation.y);
-    v4           = Mat4_rotate_z_vector(v4,                             spr->rotation.z);
-    positions[i] = (Vector3f){v4.x, v4.y, v4.z};
-  }
-
-  // scale
-  for (size_t i = 0; i < 4; ++i) {
-    positions[i] = v3f_mul(positions[i], (Vector3f){spr->scale.x, spr->scale.y, 0.f});
-  }
-
-  // translate
-  for (size_t i = 0; i < 4; ++i) {
-    Vector3f p = positions[i];
-    Vector4f v4  = Mat4_translate_vector((Vector4f){p.x, p.y, p.z, 1.f}, spr_pos);
-    positions[i] = (Vector3f){v4.x, v4.y, v4.z};
-  };
-
   Vector2f texcoords[4] = {
     (Vector2f){spr->tex_rect.pos.x, spr->tex_rect.pos.y},
     (Vector2f){spr->tex_rect.pos.x + spr->tex_rect.size.x, spr->tex_rect.pos.y},
@@ -507,31 +486,25 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   }
 
   //
-  // TODO: model projection's rotation and scale doesn't work...
+  // TODO: only the x and y rotation is messed up now... (might be related to the projection matrix...)
   //
   {
-    // What we want:        scale -> rotate -> translate
-    // What actually works: translate -> rotate -> scale
-    // Actually nah. scratch the statements above...
-    // ...
-    // yea i don't fucking know
+    Matrix4 scale = Mat4_scale(Mat4_identity(), (Vector3f){spr->scale.x, spr->scale.y, 1.f});
 
+    Matrix4 rotatex = Mat4_rotate_x(Mat4_identity(), spr->rotation.x);
+    Matrix4 rotatey = Mat4_rotate_y(Mat4_identity(), spr->rotation.y);
+    Matrix4 rotatez = Mat4_rotate_z(Mat4_identity(), spr->rotation.z);
 
-    /* Matrix4 offset    = Mat4_translate(Mat4_identity(), (Vector3f){-spr->origin.x, -spr->origin.y, 0.f}); */
+    Matrix4 R = Mat4_mul(rotatey, rotatex);
+    Matrix4 rotate = Mat4_mul(rotatez, R);
 
-    /* Matrix4 rotate    = Mat4_rotate_x(Mat4_identity(), spr->rotation.x); */
-    /* rotate            = Mat4_rotate_y(rotate,          spr->rotation.y); */
-    /* rotate            = Mat4_rotate_z(rotate,          spr->rotation.z); */
-
-    /* /\* rotate = Mat4_identity(); *\/ */
-
-    /* Vector3f spr_pos  = (Vector3f){spr->pos.x, spr->pos.y, 0.f}; */
-    /* Matrix4 translate = Mat4_translate(Mat4_identity(),  spr_pos); */
-
-    /* Matrix4 scale     = Mat4_scale(offset, (Vector3f){spr->scale.x, spr->scale.y, 1.f}); */
+    Matrix4 translate = Mat4_translate(Mat4_identity(), (Vector3f){spr_pos.x, spr_pos.y, 0.f});
 
     gl(GLuint m = glGetUniformLocation(r->current_shader, "model"));
-    Matrix4 model     = Mat4_identity();//Mat4_mul(translate, Mat4_mul(rotate, scale));
+
+    Matrix4 t = Mat4_mul(rotate, scale);
+
+    Matrix4 model = Mat4_mul(translate, t);
     gl(glUniformMatrix4fv(m, 1, GL_TRUE, &model.m[0][0]));
   }
 

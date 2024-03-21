@@ -28,18 +28,18 @@ int main(void) {
     clock_clear(ctx, COLOR_BLACK);
 
     // rotation
-    if (ctx->keys[GLFW_KEY_Z].held) spr.rotation.x += 100.f * delta;
-    if (ctx->keys[GLFW_KEY_X].held) spr.rotation.y += 100.f * delta;
-    if (ctx->keys[GLFW_KEY_C].held) spr.rotation.z += 100.f * delta;
+    if (ctx->k[GLFW_KEY_Z].held) spr.rotation.x += 100.f * delta;
+    if (ctx->k[GLFW_KEY_X].held) spr.rotation.y += 100.f * delta;
+    if (ctx->k[GLFW_KEY_C].held) spr.rotation.z += 100.f * delta;
 
     // scaling
     const float S = 10.f;
     const float scale_min = 0.35f;
-    if (ctx->keys[GLFW_KEY_A].held) {
+    if (ctx->k[GLFW_KEY_A].held) {
       spr.scale.x = spr.scale.x <= scale_min ? scale_min : spr.scale.x - S * delta;
       spr.scale.y = spr.scale.y <= scale_min ? scale_min : spr.scale.y - S * delta;
     }
-    if (ctx->keys[GLFW_KEY_S].held) {
+    if (ctx->k[GLFW_KEY_S].held) {
       spr.scale.x += S * delta;
       spr.scale.y += S * delta;
     }
