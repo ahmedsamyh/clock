@@ -9,7 +9,7 @@ set LIBS=user32.lib shell32.lib gdi32.lib kernel32.lib
 set CLOCK_FILES=clock_core clock_math clock_vector clock_matrix clock_texture clock_sprite clock_rect clock_resource_manager clock_render_target clock_color
 set CLOCK_SRCS=
 set CLOCK_OBJS=
-set COMMON_CFLAGS=/Zi
+set COMMON_CFLAGS=/Zi /W1
 
 for %%i in (!CLOCK_FILES!) do (
   set CLOCK_SRCS=!CLOCK_SRCS! src\clock\%%i.c

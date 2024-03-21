@@ -3,7 +3,8 @@
 
 #define SCALE 8.f
 
-#define TILE_SIZE (16.f*SCALE)
+#define UNSCALED_TILE_SIZE 16.f
+#define TILE_SIZE (UNSCALED_TILE_SIZE*SCALE)
 
 typedef enum {
   MOVE_DIR_LEFT,
@@ -17,9 +18,9 @@ typedef enum {
 #define PLAYER_SPEED           100.f
 #define PLAYER_MAX_SPEED       400.f
 #define PLAYER_WIDTH           (8.f*SCALE)
-#define PLAYER_HEIGHT          (8.f*SCALE)
+#define PLAYER_HEIGHT          (7.f*SCALE)
 #define PLAYER_HITBOX_OFFSET_X (4.f*SCALE)
-#define PLAYER_HITBOX_OFFSET_Y (8.f*SCALE)
+#define PLAYER_HITBOX_OFFSET_Y (9.f*SCALE)
 
 #define PLAYER_MOVE_LEFT_KEY  GLFW_KEY_A
 #define PLAYER_MOVE_RIGHT_KEY GLFW_KEY_D

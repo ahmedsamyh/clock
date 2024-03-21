@@ -68,7 +68,7 @@ void Player_update(Player* p) {
 
 void Player_control(Player* p) {
   assert(p->ctx);
-  Key* keys = p->ctx->keys;
+  Key* keys = p->ctx->k;
 
   Vector2f dir = {0};
   if (keys[PLAYER_MOVE_LEFT_KEY].held) {

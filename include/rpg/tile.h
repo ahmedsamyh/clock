@@ -6,17 +6,20 @@
 
 typedef struct Tile Tile;
 
-static size_t tiles_count = 1;
+int tile_rows;
+int tile_cols;
+
+void init_tiles_texture(Texture* texture);
 
 struct Tile {
   Vector2f pos;
   Vector2f size;
   Sprite   spr;
-  int      type;
+  Vector2i type;
   Context* ctx;
 };
 
-bool Tile_init(Tile* tile, int type, Context* ctx, Texture* tex);
+bool Tile_init(Tile* tile, Vector2i type, Context* ctx, Texture* tex);
 void Tile_draw(Tile* tile, bool debug);
 void Tile_update(Tile* tile);
 
