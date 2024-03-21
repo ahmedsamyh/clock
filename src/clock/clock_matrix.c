@@ -137,7 +137,6 @@ Vector4f Mat4_scale_vector(Vector4f v, Vector3f by){
 }
 
 Vector4f Mat4_rotate_x_vector(Vector4f v, float deg){
-  Vector4f r = {0};
   float rad = deg2rad(deg);
 
   Matrix3 m = {
@@ -150,7 +149,6 @@ Vector4f Mat4_rotate_x_vector(Vector4f v, float deg){
 }
 
 Vector4f Mat4_rotate_y_vector(Vector4f v, float deg){
-  Vector4f r = {0};
   float rad = deg2rad(deg);
 
   Matrix3 m = {

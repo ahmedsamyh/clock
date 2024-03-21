@@ -10,6 +10,7 @@
 #include <clock/clock_sprite.h>
 #include <clock/clock_render_target.h>
 #include <clock/clock_key.h>
+#include <clock/clock_mouse.h>
 #include <clock/clock_color.h>
 #include <clock/clock_resource_manager.h>
 #include <stdbool.h>
@@ -38,17 +39,16 @@ void Window_deinit(Window* win);
 
 // Context / main user api
 
-#define KEYS_COUNT (GLFW_KEY_LAST+GLFW_KEY_SPACE)
-
 struct Context {
   Window*   win;
   Renderer* ren;
   double    tp1;
   double    tp2;
-  double    delta;
+  float     delta;
   int       fps;
   Vector2f  mpos;
-  Key keys[KEYS_COUNT];
+  Key k[KEYS_COUNT];
+  Mouse m[MOUSE_BUTTONS_COUNT];
   Resource_manager* resman;
   int       ren_tex_image_slot;
 #define TMP_BUFF_SIZE (1024)
@@ -58,6 +58,7 @@ struct Context {
 Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title);
 bool clock_should_quit(Context* ctx);
 void clock_update_keys(Context* ctx);
+void clock_update_mouse(Context* ctx);
 void clock_begin_draw(Context* ctx);
 void clock_end_draw(Context* ctx);
 void clock_flush_draw(Context *ctx);

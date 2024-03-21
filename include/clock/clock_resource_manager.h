@@ -8,8 +8,8 @@ typedef struct Resource_manager Resource_manager;
 typedef struct Texture_KV Texture_KV;
 
 struct Texture_KV {
-  const char* key;
-  Texture*    value;
+  char*    key;
+  Texture* value;
 };
 
 struct Resource_manager {

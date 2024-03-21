@@ -122,7 +122,7 @@ bool clock_should_quit(Context* ctx) {
 // TODO: key pressed are ignored when moving the window
 
 void clock_update_keys(Context* ctx) {
-  Key* keys   = ctx->keys;
+  Key* keys   = ctx->k;
   Window* win = ctx->win;
   // update key states
   for (size_t i = 0; i < KEYS_COUNT; ++i) {
@@ -152,9 +152,9 @@ void clock_update_keys(Context* ctx) {
   }
 }
 
-void clock_begin_draw(Context* ctx) {
+void clock_update_mouse(Context* ctx) {
   Window* win = ctx->win;
-  Key* keys = ctx->keys;
+  Mouse* m = ctx->m;
   double mx, my;
   glfwGetCursorPos(win->glfw_win, &mx, &my);
 
@@ -162,11 +162,45 @@ void clock_begin_draw(Context* ctx) {
   ctx->mpos.x = (float)mx / win->scale_x;
   ctx->mpos.y = (float)my / win->scale_y;
 
+
+  for (size_t i = 0; i < MOUSE_BUTTONS_COUNT; ++i) {
+    m[i].just_pressed = false;
+    m[i].pressed = false;
+    m[i].released = false;
+  }
+
+  for (int i = 0; i < MOUSE_BUTTONS_COUNT; ++i) {
+    m[i].prev_state = m[i].held;
+    int state = glfwGetMouseButton(win->glfw_win, i + GLFW_MOUSE_BUTTON_LEFT);
+    if (state == GLFW_PRESS) {
+      m[i].held = true;
+    } else if (state == GLFW_RELEASE) {
+      m[i].held = false;
+    }
+  }
+
+  for (int i = 0; i < MOUSE_BUTTONS_COUNT; ++i) {
+    if (!m[i].prev_state && m[i].held) {
+      m[i].just_pressed = true;
+      m[i].pressed = true;
+    }
+    if (m[i].prev_state && !m[i].held) {
+      m[i].released = true;
+    }
+  }
+}
+
+void clock_begin_draw(Context* ctx) {
+  Window* win = ctx->win;
+
+  clock_update_keys(ctx);
+  clock_update_mouse(ctx);
+
   ctx->tp2 = glfwGetTime();
   ctx->delta = ctx->tp2 - ctx->tp1;
   ctx->tp1 = ctx->tp2;
 
-  ctx->fps = (1.0 / ctx->delta);
+  ctx->fps = (int)(1.0f / ctx->delta);
 
   snprintf(ctx->tmpbuff, TMP_BUFF_SIZE, "%s | %dfps | %fs", win->title, ctx->fps, ctx->delta);
 
@@ -187,7 +221,6 @@ void clock_flush_draw(Context *ctx) {
 }
 
 void clock_end_draw(Context* ctx) {
-  clock_update_keys(ctx);
   clock_flush_draw(ctx);
   gl(glBindFramebuffer(GL_FRAMEBUFFER, 0));
   glfwSwapBuffers(ctx->win->glfw_win);
@@ -223,8 +256,8 @@ void clock_set_vsync(bool enable) {
 void clock_begin_scissor(Context* ctx, Rect rect) {
   gl(glEnable(GL_SCISSOR_TEST));
   gl(glScissor((int)rect.pos.x,
-	       ctx->win->height - (int)rect.pos.y - rect.size.y,
-	       rect.size.x, rect.size.y));
+	       (int)ctx->win->height - (int)rect.pos.y - (int)rect.size.y,
+	       (int)rect.size.x, (int)rect.size.y));
 }
 
 void clock_end_scissor(Context* ctx) {
@@ -236,9 +269,8 @@ void clock_end_scissor(Context* ctx) {
 // Callbacks
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-
   Context* ctx = (Context*)glfwGetWindowUserPointer(window);
-  Key* keys = ctx->keys;
+  Key* keys = ctx->k;
 
   if (action == GLFW_REPEAT) {
     /* log_f(LOG_INFO, "Key: %d repeat", key); */
@@ -322,6 +354,7 @@ void Renderer_use_custom_shader(Renderer* r, const char* vs, const char* fs) {
 }
 
 void Renderer_set_render_target(Renderer* r, GLuint target) {
+  (void)r;
   gl(glBindFramebuffer(GL_FRAMEBUFFER, target));
 }
 

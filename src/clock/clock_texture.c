@@ -38,8 +38,6 @@ bool Texture_load_from_file(Texture* t, const char* filename){
 
   t->slot = (last_used_texture_slot++ % (max_tex_image_slots-1)); // last slot is used for ren_tex
 
-  log_f(LOG_INFO, "Loaded texture '%s' (%dx%d) in slot %d", filename, t->size.x, t->size.y, t->slot);
-
   return true;
 }
 
