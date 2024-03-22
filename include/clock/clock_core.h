@@ -47,6 +47,7 @@ struct Context {
   float     delta;
   int       fps;
   Vector2f  mpos;
+  Vector3f  camera;
   Key k[KEYS_COUNT];
   Mouse m[MOUSE_BUTTONS_COUNT];
   Resource_manager* resman;
@@ -133,10 +134,11 @@ static const char* color_vert_shader =
   "layout(location = 0)in vec4 position;\n"
   "layout(location = 1)in vec4 color;\n"
   "uniform mat4 model;\n"
+  "uniform mat4 view;\n"
   "uniform mat4 proj;\n"
   "out vec4 v_col;\n"
   "void main(void){\n"
-  "  vec4 new_pos = proj * model * position;\n"
+  "  vec4 new_pos = proj * view * model * position;\n"
   "  new_pos.y *= -1.f;\n"
   "  gl_Position = new_pos;\n"
   "  v_col = color;\n"
@@ -156,11 +158,12 @@ static const char* tex_vert_shader =
   "layout(location = 1)in vec4 color;\n"
   "layout(location = 2)in vec2 texcoord;\n"
   "uniform mat4 model;\n"
+  "uniform mat4 view;\n"
   "uniform mat4 proj;\n"
   "out vec2 v_texcoord;\n"
   "out vec4 v_col;\n"
   "void main(void){\n"
-  "  vec4 new_pos = proj * model * position;\n"
+  "  vec4 new_pos = proj * view * model * position;\n"
   "  new_pos.y   *= -1.f;\n"
   "  gl_Position  = new_pos;\n"
   "  v_col = color;\n"

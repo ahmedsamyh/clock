@@ -122,6 +122,9 @@ int main(void) {
       Player_control(&player);
       Player_update (&player);
 
+      ctx->camera.x = width/2.f -  player.pos.x;
+      ctx->camera.y = height/2.f - player.pos.y;
+
       for (int i = arrlen(enemies) - 1; i >= 0; --i) {
 	Enemy_update(&enemies[i]);
       }

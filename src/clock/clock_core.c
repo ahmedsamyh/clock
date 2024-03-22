@@ -11,13 +11,27 @@
 // Private functions to this file
 //
 
+static void set_view_matrix(Context* ctx) {
+  gl(GLuint m = glGetUniformLocation(ctx->ren->current_shader, "view"));
+  // TODO: Do we have to flip the y-axis of the camera here?
+  Vector3f camera_flipped = {
+    ctx->camera.x,
+    ctx->camera.y,
+    ctx->camera.z,
+  };
+  Matrix4 translate = Mat4_translate(Mat4_identity(), camera_flipped);
+  gl(glUniformMatrix4fv(m, 1, GL_TRUE, &translate.m[0][0]));
 
-static void set_matrices(Renderer* r, const Vector2f screen_size) {
+}
+
+static void set_matrices(Context* ctx, const Vector2f screen_size) {
+  Renderer* r = ctx->ren;
   {
     gl(GLuint m = glGetUniformLocation(r->current_shader, "model"));
     Matrix4 identity = Mat4_identity();
     gl(glUniformMatrix4fv(m, 1, GL_TRUE, &identity.m[0][0]));
   }
+  set_view_matrix(ctx);
   {
     gl(GLuint m = glGetUniformLocation(r->current_shader, "proj"));
     Matrix4 identity = Mat4_screen_to_clip_projection(screen_size);
@@ -161,7 +175,6 @@ void clock_update_mouse(Context* ctx) {
   // TODO: fix y position being messed up when scaling (x is fine)
   ctx->mpos.x = (float)mx / win->scale_x;
   ctx->mpos.y = (float)my / win->scale_y;
-
 
   for (size_t i = 0; i < MOUSE_BUTTONS_COUNT; ++i) {
     m[i].just_pressed = false;
@@ -389,7 +402,7 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
 
   gl(glDrawArrays(GL_TRIANGLES, 0, 3));
 
-  set_matrices(r, screen_size);
+  set_matrices(ctx, screen_size);
 }
 
 #define IMM_QUAD_BODY(draw_type)					\
@@ -411,7 +424,7 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
   gl(gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo)));			\
   gl(gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices))); \
   gl(glDrawArrays(draw_type, 0, 4));					\
-  set_matrices(r, screen_size)
+  set_matrices(ctx, screen_size)
 
 // TODO: Should we render quads in term of Render_imm_triangle?
 // From what i understand rn about opengl, more draw calls -> bad, so by implementing Render_imm_quad
@@ -505,6 +518,8 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     gl(glUniformMatrix4fv(m, 1, GL_TRUE, &model.m[0][0]));
   }
 
+  set_view_matrix(ctx);
+
   {
     gl(GLuint m = glGetUniformLocation(r->current_shader, "proj"));
     Matrix4 identity = Mat4_screen_to_clip_projection(screen_size);
@@ -560,7 +575,7 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 2, r->vertices));
   gl(glDrawArrays(GL_LINE_STRIP, 0, 2));
 
-  set_matrices(r, screen_size);
+  set_matrices(ctx, screen_size);
 }
 
 void draw_rect_centered(Context* ctx, Rect rect, Color col) {
@@ -601,7 +616,7 @@ void draw_point(Context* ctx, Vector3f p, Color col) {
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 1, r->vertices));
   gl(glDrawArrays(GL_POINTS, 0, 1));
 
-  set_matrices(r, screen_size);
+  set_matrices(ctx, screen_size);
 }
 
 // Blendmode
