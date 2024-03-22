@@ -485,9 +485,6 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     gl(glBindTexture(GL_TEXTURE_2D, ctx->ren->ren_tex->color));
   }
 
-  //
-  // TODO: only the x and y rotation is messed up now... (might be related to the projection matrix...)
-  //
   {
     Matrix4 scale = Mat4_scale(Mat4_identity(), (Vector3f){spr->scale.x, spr->scale.y, 1.f});
 
