@@ -18,7 +18,8 @@ struct Resource_manager {
   const char** texture_names;
 };
 
-Texture* Resman_load_texture(Resource_manager* res_man, const char* filepath);
+Texture* Resman_load_texture_from_file(Resource_manager* res_man, const char* filepath);
+Texture* Resman_load_texture_uninitialized(Resource_manager* res_man, const char* filepath);
 void     Resman_unload_texture(Resource_manager* res_man, const char* filepath);
 void     Resman_unload_every_texture(Resource_manager* res_man);
 

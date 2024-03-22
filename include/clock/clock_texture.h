@@ -14,7 +14,9 @@ typedef struct {
   int slot;
 } Texture;
 
+void Texture_load_empty(Texture* texture, int width, int height);
 bool Texture_load_from_file(Texture* texture, const char* filename);
+bool Texture_load_from_memory(Texture* texture, unsigned char* data);
 void Texture_deinit(Texture* texture);
 
 #endif /* _CLOCK_TEXTURE_H_ */

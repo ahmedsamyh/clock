@@ -193,7 +193,6 @@ void clock_update_mouse(Context* ctx) {
 void clock_begin_draw(Context* ctx) {
   Window* win = ctx->win;
 
-  clock_update_keys(ctx);
   clock_update_mouse(ctx);
 
   ctx->tp2 = glfwGetTime();
@@ -222,6 +221,7 @@ void clock_flush_draw(Context *ctx) {
 
 void clock_end_draw(Context* ctx) {
   clock_flush_draw(ctx);
+  clock_update_keys(ctx);
   gl(glBindFramebuffer(GL_FRAMEBUFFER, 0));
   glfwSwapBuffers(ctx->win->glfw_win);
   glfwPollEvents();

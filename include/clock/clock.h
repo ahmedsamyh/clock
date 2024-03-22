@@ -4,6 +4,7 @@
 #include <clock/clock_math.h>
 #include <clock/clock_matrix.h>
 #include <clock/clock_core.h>
+#include <clock/clock_font.h>
 #include <clock/clock_render_target.h>
 
 #endif /* _CLOCK_H_ */
