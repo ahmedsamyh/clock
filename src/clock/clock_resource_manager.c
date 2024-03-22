@@ -5,7 +5,7 @@
 #include <assert.h>
 #include <commonlib.h>
 
-Texture* Resman_load_texture(Resource_manager* res_man, const char* filepath) {
+Texture* Resman_load_texture_from_file(Resource_manager* res_man, const char* filepath) {
   Texture_KV* tex_kv = shgetp_null(res_man->texture_map, filepath);
 
   if (tex_kv != NULL) return tex_kv->value;

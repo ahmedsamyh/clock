@@ -6,7 +6,7 @@
 #include <assert.h>
 
 Texture* load_texture_err_handled(Context* ctx, const char* filepath) {
-  Texture* tex = Resman_load_texture(ctx->resman, filepath);
+  Texture* tex = Resman_load_texture_from_file(ctx->resman, filepath);
   if (tex == NULL) exit(1);
   return tex;
 }
