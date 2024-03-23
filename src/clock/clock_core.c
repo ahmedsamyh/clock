@@ -491,11 +491,10 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     Renderer_use_texture_shader(r);
   }
 
-  if (r->current_shader == r->custom_shader) {
-    glActiveTexture(GL_TEXTURE0 + ctx->ren_tex_image_slot);
-    gl(GLuint t = glGetUniformLocation(r->current_shader, "screen"));
-    gl(glUniform1i(t, ctx->ren_tex_image_slot));
-    gl(glBindTexture(GL_TEXTURE_2D, ctx->ren->ren_tex->color));
+  // Send sprite tint to the shader
+  {
+    gl(GLuint u = glGetUniformLocation(r->current_shader, "tex_tint"));
+    gl(glUniform4f(u, spr->tint.r, spr->tint.g, spr->tint.b, spr->tint.a));
   }
 
   {

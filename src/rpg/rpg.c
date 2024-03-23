@@ -110,11 +110,10 @@ int main(void) {
   Sprite state_spr = {0};
 
   float state_show_timer = 0.f;
-  float state_show_time  = 1.f; // seconds
+  float state_show_time  = 4.f; // seconds
 
   State current_state;
   if (!change_state(ctx, &current_state, STATE_PLAY, &state_spr, &state_show_timer, state_show_time)) return 1;
-
 
   // Edit
   Vector2i tile_type          = {0};
@@ -252,6 +251,7 @@ int main(void) {
     }
 
     if (state_show_timer > 0.f) {
+      state_spr.tint.a = (state_show_timer / state_show_time);
       draw_sprite(ctx, &state_spr);
       state_show_timer -= ctx->delta;
     }

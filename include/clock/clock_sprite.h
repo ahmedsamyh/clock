@@ -2,6 +2,7 @@
 #define _CLOCK_SPRITE_H_
 
 #include <clock/clock_texture.h>
+#include <clock/clock_color.h>
 #include <clock/clock_rect.h>
 
 #define SPRITE_DEFAULT_TIME_PER_FRAME 0.25f // seconds
@@ -18,6 +19,7 @@ typedef struct {
   size_t vframe, hframe;
   float time_per_frame; // in seconds
   float accumulated_time;
+  Color tint;
 } Sprite;
 
 bool Sprite_init(Sprite* spr, Texture* tex, size_t hframes, size_t vframes);

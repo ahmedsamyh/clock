@@ -16,6 +16,7 @@ bool Sprite_init(Sprite* spr, Texture* texture, size_t hframes, size_t vframes) 
   spr->tex_rect.size = (Vector2f) {spr->size.x / (float)spr->hframes, spr->size.y / (float)spr->vframes};
   Sprite_set_hframe(spr, 1);
   Sprite_set_vframe(spr, 0);
+  spr->tint = COLOR_WHITE;
 
   spr->time_per_frame = SPRITE_DEFAULT_TIME_PER_FRAME;
   spr->accumulated_time = 0.f;

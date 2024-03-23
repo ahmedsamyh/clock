@@ -175,9 +175,10 @@ static const char* tex_frag_shader =
   "in vec4 v_col;\n"
   "in vec2 v_texcoord;\n"
   "uniform sampler2D tex;\n"
+  "uniform vec4 tex_tint;\n"
   "out vec4 frag_col;\n"
   "void main(void){\n"
-  "  frag_col = texture(tex, v_texcoord);\n"
+  "  frag_col = texture(tex, v_texcoord) * tex_tint;\n"
   "}\n";
 
 
