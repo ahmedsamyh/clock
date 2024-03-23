@@ -72,3 +72,15 @@ bool Rect_resolve_rect_collision(Rect* rect1, const Rect rect2) {
   }
   return false;
 }
+
+void Rect_get_points(Rect rect, Vector3f* p0, Vector3f* p1, Vector3f* p2, Vector3f* p3) {
+  Vector2f p0_ = v2f_add(rect.pos, (Vector2f){0.f, 0.f});
+  Vector2f p1_ = v2f_add(rect.pos, (Vector2f){rect.size.x, 0.f});
+  Vector2f p2_ = v2f_add(rect.pos, (Vector2f){rect.size.x, rect.size.y});
+  Vector2f p3_ = v2f_add(rect.pos, (Vector2f){0.f, rect.size.y});
+
+  *p0 = (Vector3f){p0_.x, p0_.y, 0.f};
+  *p1 = (Vector3f){p1_.x, p1_.y, 0.f};
+  *p2 = (Vector3f){p2_.x, p2_.y, 0.f};
+  *p3 = (Vector3f){p3_.x, p3_.y, 0.f};
+}

@@ -223,15 +223,9 @@ int main(void) {
 
 	draw_sprite(ctx, &tiles_spr);
 	Color color = COLOR_RED;
-	// TODO (recfactor): make helper function that takes Rect and gives back 4 Vector3fs.
-	Vector3f p0 = (Vector3f){0.f, 0.f, 0.f};
-	Vector3f p1 = (Vector3f){tiles_spr.size.x * tiles_spr.scale.x, 0.f, 0.f};
-	Vector3f p2 = (Vector3f){tiles_spr.size.x * tiles_spr.scale.x, tiles_spr.size.y * tiles_spr.scale.y, 0.f};
-	Vector3f p3 = (Vector3f){0.f, tiles_spr.size.y * tiles_spr.scale.y, 0.f};
-	p0 = v3f_add(p0, (Vector3f){tiles_spr.pos.x, tiles_spr.pos.y, 0.f});
-	p1 = v3f_add(p1, (Vector3f){tiles_spr.pos.x, tiles_spr.pos.y, 0.f});
-	p2 = v3f_add(p2, (Vector3f){tiles_spr.pos.x, tiles_spr.pos.y, 0.f});
-	p3 = v3f_add(p3, (Vector3f){tiles_spr.pos.x, tiles_spr.pos.y, 0.f});
+
+	Vector3f p0, p1, p2, p3;
+	Rect_get_points((Rect){tiles_spr.pos, v2f_mul(tiles_spr.size, tiles_spr.scale)}, &p0, &p1, &p2, &p3);
 	draw_imm_box(ctx, p0, p1, p2, p3, color, color, color, color);
 
 	Rect r = {
