@@ -23,7 +23,6 @@ Matrix4 Mat4_mul(Matrix4 m1, Matrix4 m2);
 Matrix4 Mat4_transpose(Matrix4 mat);
 Matrix4 Mat4_screen_to_clip_projection(Vector2f size);
 
-// TODO: cleanup Mat4_XX_vector()s Mat4_XX() will replace them
 Vector4f Mat4_translate_vector(Vector4f v, Vector3f by);
 Vector4f Mat4_scale_vector(Vector4f v, Vector3f by);
 Vector4f Mat4_rotate_x_vector(Vector4f v, float deg);
