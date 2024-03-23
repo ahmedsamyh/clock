@@ -56,6 +56,23 @@ typedef enum {
   STATE_COUNT
 } State;
 
+bool change_state(Context* ctx, State* current_state, State next_state, Sprite* state_spr, float* state_show_timer, float state_show_time) {
+  switch (next_state) {
+  case STATE_PLAY: {
+    if (!Sprite_init_scaled(state_spr, load_texture_err_handled(ctx, "resources/gfx/play_state.png"), 1, 1)) return false;
+  } break;
+  case STATE_EDIT: {
+    if (!Sprite_init_scaled(state_spr, load_texture_err_handled(ctx, "resources/gfx/edit_state.png"), 1, 1)) return false;
+  } break;
+  default: assert(0 && "Unreachable");
+  }
+
+  *current_state = next_state;
+  *state_show_timer = state_show_time;
+
+  return true;
+}
+
 int main(void) {
   Context* ctx = clock_init(1280, 960, 1.f, 1.f, "RPG");
 
@@ -69,6 +86,8 @@ int main(void) {
 
   Texture* player_tex = load_texture_err_handled(ctx, "resources/gfx/player.png");
   Texture* tiles_tex  = load_texture_err_handled(ctx, "resources/gfx/tiles.png");
+  Texture* edit_state_tex = load_texture_err_handled(ctx, "resources/gfx/edit_state.png");
+  Texture* play_state_tex = load_texture_err_handled(ctx, "resources/gfx/play_state.png");
 
   Player player = {0};
 
@@ -88,15 +107,20 @@ int main(void) {
   Enemy* enemies = NULL; // dynamic array
   Tile*  tiles   = NULL; // dynamic array
 
-  State current_state = STATE_PLAY;
+  Sprite state_spr = {0};
+
+  float state_show_timer = 0.f;
+  float state_show_time  = 1.f; // seconds
+
+  State current_state;
+  if (!change_state(ctx, &current_state, STATE_PLAY, &state_spr, &state_show_timer, state_show_time)) return 1;
+
 
   // Edit
   Vector2i tile_type          = {0};
   Vector2i hovering_tile_type = {0};
   Sprite tiles_spr = {0};
-  if (!Sprite_init(&tiles_spr, tiles_tex, 1, 1)) return 1;
-  tiles_spr.scale.x = SCALE;
-  tiles_spr.scale.y = SCALE;
+  if (!Sprite_init_scaled(&tiles_spr, tiles_tex, 1, 1)) return 1;
 
   Rect tiles_rect = {
     .pos  = tiles_spr.pos,
@@ -115,15 +139,17 @@ int main(void) {
     // Update
     //
     if (ctx->k[KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
-    if (ctx->k[KEY_TAB].pressed) current_state = (current_state + 1) % STATE_COUNT;
+    if (ctx->k[KEY_TAB].pressed) {
+      if (!change_state(ctx, &current_state, (current_state + 1) % STATE_COUNT, &state_spr, &state_show_timer, state_show_time)) return 1;
+    }
 
     switch (current_state) {
     case STATE_PLAY: {
       Player_control(&player);
       Player_update (&player);
 
-      ctx->camera.x = width/2.f -  player.pos.x;
-      ctx->camera.y = height/2.f - player.pos.y;
+      /* ctx->camera.x = width/2.f -  player.pos.x; */
+      /* ctx->camera.y = height/2.f - player.pos.y; */
 
       for (int i = arrlen(enemies) - 1; i >= 0; --i) {
 	Enemy_update(&enemies[i]);
@@ -219,8 +245,15 @@ int main(void) {
 	draw_rect(ctx, r, color_alpha(COLOR_RED, 0.1f));
       }
 
+      Player_draw(&player, DEBUG_DRAW);
+
     } break;
     default: assert(0 && "Unreachable");
+    }
+
+    if (state_show_timer > 0.f) {
+      draw_sprite(ctx, &state_spr);
+      state_show_timer -= ctx->delta;
     }
 
     clock_end_draw(ctx);
