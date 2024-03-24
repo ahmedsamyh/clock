@@ -22,3 +22,27 @@ Texture* load_texture_err_handled(Context* ctx, const char* filepath) {
   if (tex == NULL) exit(1);
   return tex;
 }
+
+static int32 get_index_of_char(cstr str, char ch) {
+  int32 idx = 0;
+  while (*str != '\0') {
+    if (*str++ == ch) {
+      return idx;
+    }
+    idx++;
+  }
+  return -1;
+}
+
+void draw_spr_text(Context* ctx, Sprite* spr_font, cstr text, Vector2f pos, Color color, cstr font_map) {
+  while (*text != '\0') {
+    char ch = *text++;
+
+    Sprite_set_hframe(spr_font, get_index_of_char(font_map, ch));
+    spr_font->tint = color;
+
+    spr_font->pos = pos;
+    draw_sprite(ctx, spr_font);
+    pos.x += spr_font->tex_rect.size.x * spr_font->scale.x;
+  }
+}

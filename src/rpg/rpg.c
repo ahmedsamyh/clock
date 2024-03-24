@@ -44,6 +44,12 @@ int main(void) {
   Texture* tiles_tex  = load_texture_err_handled(ctx, "resources/gfx/tiles.png");
   Texture* edit_state_tex = load_texture_err_handled(ctx, "resources/gfx/edit_state.png");
   Texture* play_state_tex = load_texture_err_handled(ctx, "resources/gfx/play_state.png");
+  Texture* font_tex = load_texture_err_handled(ctx, "resources/gfx/spr_font.png");
+
+  Sprite font_spr = {0};
+  if (!Sprite_init_scaled(&font_spr, font_tex, 95, 1)) return 1;
+  cstr font_map = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^ _`abcdefghijklmnopqrstuvwxyz{|}~";
+  Vector2f p = {0};
 
   Player player = {0};
 
@@ -107,6 +113,21 @@ int main(void) {
       /* ctx->camera.x = width/2.f -  player.pos.x; */
       /* ctx->camera.y = height/2.f - player.pos.y; */
 
+      // TEMP:
+      const float speed = 400.f;
+      if (ctx->k[KEY_LEFT].held) {
+	p.x -= speed * ctx->delta;
+      }
+      if (ctx->k[KEY_RIGHT].held) {
+	p.x += speed * ctx->delta;
+      }
+      if (ctx->k[KEY_UP].held) {
+	p.y -= speed * ctx->delta;
+      }
+      if (ctx->k[KEY_DOWN].held) {
+	p.y += speed * ctx->delta;
+      }
+
       for (int i = arrlen(enemies) - 1; i >= 0; --i) {
 	Enemy_update(&enemies[i]);
       }
@@ -162,6 +183,9 @@ int main(void) {
       }
 
       Player_draw(&player, DEBUG_DRAW);
+
+      draw_spr_text(ctx, &font_spr, "Hello, World", p, COLOR_WHITE, font_map);
+
     } break;
     case STATE_EDIT: {
       clock_clear(ctx, hex_to_color(0xFF5555AA));
