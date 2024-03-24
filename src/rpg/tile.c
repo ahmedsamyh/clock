@@ -1,5 +1,6 @@
 #include <rpg/tile.h>
 #include <rpg/config.h>
+#include <rpg/common.h>
 #include <assert.h>
 
 void init_tiles_texture(Texture* t) {
@@ -46,7 +47,6 @@ void Tile_update(Tile* t) {
 }
 
 void Tile_draw(Tile* t, bool debug) {
-  assert(t->ctx);
 
   draw_sprite(t->ctx, &t->spr);
 
@@ -54,4 +54,13 @@ void Tile_draw(Tile* t, bool debug) {
     // draw debug
     draw_rect(t->ctx, (Rect){t->pos, t->size}, color_alpha(COLOR_BLUE, 0.45f));
   }
+}
+
+const char* Tile_serialize(Tile* tile) {
+  const char* res;
+
+  temp_sprint(res, "%f,%f|%f,%f|%p|%d,%d", tile->pos.x, tile->pos.y,
+	      tile->size.x, tile->size.y, tile->spr.texture, tile->type.x, tile->type.y);
+
+  return res;
 }

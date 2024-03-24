@@ -16,3 +16,9 @@ bool Sprite_init_scaled(Sprite* spr, Texture* tex, int hframes, int vframes) {
 
   return true;
 }
+
+Texture* load_texture_err_handled(Context* ctx, const char* filepath) {
+  Texture* tex = Resman_load_texture_from_file(ctx->resman, filepath);
+  if (tex == NULL) exit(1);
+  return tex;
+}

@@ -1,54 +1,10 @@
 #include <clock/clock.h>
 #include <rpg/player.h>
+#include <rpg/stage.h>
 #include <rpg/enemy.h>
 #include <rpg/tile.h>
 #include <rpg/common.h>
 #include <assert.h>
-
-Texture* load_texture_err_handled(Context* ctx, const char* filepath) {
-  Texture* tex = Resman_load_texture_from_file(ctx->resman, filepath);
-  if (tex == NULL) exit(1);
-  return tex;
-}
-
-#define add_tile(type)							\
-  bool contains = false;						\
-  for (size_t i = 0; i < arrlenu(tiles); ++i) {				\
-    Rect tile_rect = (Rect) {						\
-      .pos = tiles[i].pos,						\
-      .size = tiles[i].size,						\
-    };									\
-    if (Rect_contains_point(tile_rect, ctx->mpos)) {			\
-      contains = true;							\
-      break;								\
-    }									\
-  }									\
-  Texture* tiles_tex = load_texture_err_handled(ctx, "resources/gfx/tiles.png"); \
-  if (!contains) {							\
-    Tile t = {0};							\
-    if (!Tile_init(&t, type, ctx, tiles_tex)) return false;		\
-    t.pos = pos_in_tile_space(ctx->mpos);				\
-    arrput(tiles, t);							\
-    log_f(LOG_INFO, "Tile added!");					\
-  }
-
-#define remove_tile() \
-  bool contains = false;						\
-  size_t containing_idx = 0;						\
-  for (size_t i = 0; i < arrlenu(tiles); ++i) {				\
-    Rect tile_rect = (Rect) {						\
-      .pos = tiles[i].pos,						\
-      .size = tiles[i].size,						\
-    };									\
-    if (Rect_contains_point(tile_rect, ctx->mpos)) {			\
-      contains = true;							\
-      containing_idx = i;						\
-      break;								\
-    }									\
-  }									\
-  if (contains) {							\
-    arrdel(tiles, containing_idx);					\
-  }
 
 typedef enum {
   STATE_PLAY,
@@ -105,7 +61,8 @@ int main(void) {
 #endif
 
   Enemy* enemies = NULL; // dynamic array
-  Tile*  tiles   = NULL; // dynamic array
+  Stage stage = {0};
+  Stage_init(&stage, ctx, "stage 1");
 
   Sprite state_spr = {0};
 
@@ -132,7 +89,7 @@ int main(void) {
 
     clock_begin_draw(ctx);
 
-    clock_clear(ctx, hex_to_color(0xFF555555));
+    clock_clear(ctx, COLOR_BLACK);
 
     //
     // Update
@@ -154,25 +111,11 @@ int main(void) {
 	Enemy_update(&enemies[i]);
       }
 
-      player.hitting = false;
-      for (int i = arrlen(tiles) - 1; i >= 0; --i) {
-	Rect tile_rect = (Rect) {
-	  .pos = tiles[i].pos,
-	  .size = tiles[i].size,
-	};
+      Stage_update(&stage, &player);
 
-	if (Rect_resolve_rect_collision(&player.hitbox, tile_rect)) {
-	  Player_set_pos_to_hitbox_pos(&player);
-	  player.hitting = true;
-	}
-
-	Tile_update(&tiles[i]);
-      }
     } break;
     case STATE_EDIT: {
-      for (int i = arrlen(tiles) - 1; i >= 0; --i) {
-	Tile_update(&tiles[i]);
-      }
+      Stage_update(&stage, NULL);
 
       if (ctx->k[KEY_LEFT_SHIFT].held) {
 	if (Rect_contains_point(tiles_rect, ctx->mpos)) {
@@ -185,12 +128,20 @@ int main(void) {
 	}
       } else {
 	if (ctx->m[MOUSE_BUTTON_LEFT].pressed) {
-	  add_tile(tile_type);
+	  Stage_add_tile(&stage, tile_type);
 	}
 
 	if (ctx->m[MOUSE_BUTTON_RIGHT].pressed) {
-	  remove_tile();
+	  Stage_remove_tile(&stage);
 	}
+      }
+
+      if (ctx->k[KEY_LEFT_CONTROL].held && ctx->k[KEY_S].pressed) {
+	if (!Stage_save_to_file(&stage)) return 1;
+      }
+
+      if (ctx->k[KEY_LEFT_CONTROL].held && ctx->k[KEY_L].pressed) {
+	if (!Stage_load_from_file(&stage)) return 1;
       }
 
     } break;
@@ -203,20 +154,18 @@ int main(void) {
 
     switch (current_state) {
     case STATE_PLAY: {
+      clock_clear(ctx, hex_to_color(0xFF555555));
+      Stage_draw(&stage, DEBUG_DRAW);
+
       for (int i = arrlen(enemies) - 1; i >= 0; --i) {
 	Enemy_draw(&enemies[i], DEBUG_DRAW);
-      }
-
-      for (int i = arrlen(tiles) - 1; i >= 0; --i) {
-	Tile_draw(&tiles[i], DEBUG_DRAW);
       }
 
       Player_draw(&player, DEBUG_DRAW);
     } break;
     case STATE_EDIT: {
-      for (int i = arrlen(tiles) - 1; i >= 0; --i) {
-	Tile_draw(&tiles[i], DEBUG_DRAW);
-      }
+      clock_clear(ctx, hex_to_color(0xFF5555AA));
+      Stage_draw(&stage, DEBUG_DRAW);
 
       if (ctx->k[KEY_LEFT_SHIFT].held) {
 	draw_rect(ctx, (Rect){(Vector2f){0.f, 0.f}, screen_size}, color_alpha(COLOR_BLACK, 0.8f));
@@ -254,7 +203,6 @@ int main(void) {
   }
 
   arrfree(enemies);
-  arrfree(tiles);
 
   clock_deinit(ctx);
 
