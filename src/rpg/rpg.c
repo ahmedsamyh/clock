@@ -197,9 +197,9 @@ int main(void) {
 	draw_sprite(ctx, &tiles_spr);
 	Color color = COLOR_RED;
 
-	Vector3f p0, p1, p2, p3;
+	Vector2f p0, p1, p2, p3;
 	Rect_get_points((Rect){tiles_spr.pos, v2f_mul(tiles_spr.size, tiles_spr.scale)}, &p0, &p1, &p2, &p3);
-	draw_imm_box_3d(ctx, p0, p1, p2, p3, color, color, color, color);
+	draw_imm_box(ctx, p0, p1, p2, p3, color, color, color, color);
 
 	Rect r = {
 	  .pos =  v2f_muls((Vector2f){tile_type.x, tile_type.y}, TILE_SIZE),

@@ -99,7 +99,7 @@ Matrix4 Mat4_transpose(Matrix4 mat) {
   return res;
 }
 
-Matrix4 Mat4_screen_to_clip_projection(Vector2f size) {
+Matrix4 Mat4_screen_to_clip_projection_orthographic(Vector2f size) {
   assert(size.x > 0.f && size.y > 0.f);
   float depth = size.x;
   Matrix4 m = {
@@ -111,7 +111,19 @@ Matrix4 Mat4_screen_to_clip_projection(Vector2f size) {
   return m;
 }
 
-Vector4f Mat4_translate_vector(Vector4f v, Vector3f by){
+Matrix4 Mat4_screen_to_clip_projection_perspective(float fov, float aspect_ratio, float n, float f) {
+
+  float s = 1.f / tan(fov/2.f);
+  Matrix4 m = {
+    .m = {{s, 0,  0, 0},
+	  {0, s,  0, 0},
+	  {0, 0,  -f / (f - n),  -1},
+	  {0, 0,  -f*n / (f - n),  0}}
+  };
+  return m;
+}
+
+Vector4f Mat4_translate_vector(Vector4f v, Vector3f by) {
   Vector4f r = {0};
 
   Matrix4 translation_mat = {

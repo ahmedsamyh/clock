@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <clock/clock_vertex.h>
 #include <clock/clock_vector.h>
+#include <clock/clock_matrix.h>
 #include <clock/clock_rect.h>
 #include <clock/clock_sprite.h>
 #include <clock/clock_render_target.h>
@@ -94,6 +95,7 @@ struct Renderer {
   GLuint color_shader;
   Render_target* ren_tex;
   Window* win;
+  Matrix4 proj;
 };
 
 bool Renderer_init(Renderer* renderer, Window* win);

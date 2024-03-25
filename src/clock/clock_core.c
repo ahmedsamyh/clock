@@ -21,7 +21,6 @@ static void set_view_matrix(Context* ctx) {
   };
   Matrix4 translate = Mat4_translate(Mat4_identity(), camera_flipped);
   gl(glUniformMatrix4fv(m, 1, GL_TRUE, &translate.m[0][0]));
-
 }
 
 static void set_matrices(Context* ctx, const Vector2f screen_size) {
@@ -34,8 +33,7 @@ static void set_matrices(Context* ctx, const Vector2f screen_size) {
   set_view_matrix(ctx);
   {
     gl(GLuint m = glGetUniformLocation(r->current_shader, "proj"));
-    Matrix4 identity = Mat4_screen_to_clip_projection(screen_size);
-    gl(glUniformMatrix4fv(m, 1, GL_TRUE, &identity.m[0][0]));
+    gl(glUniformMatrix4fv(m, 1, GL_TRUE, &ctx->ren->proj.m[0][0]));
   }
 }
 
@@ -329,6 +327,10 @@ bool Renderer_init(Renderer* r, Window* win) {
     return false;
   }
 
+  Vector2f screen_size = {r->win->width, r->win->height};
+  r->proj = Mat4_screen_to_clip_projection_orthographic(screen_size);
+  /* r->proj = Mat4_screen_to_clip_projection_perspective(90.f, (float)r->win->width/(float)r->win->height, 1.f, 1000.f); */
+
   return true;
 }
 
@@ -529,8 +531,7 @@ void draw_sprite(Context* ctx, Sprite* spr) {
 
   {
     gl(GLuint m = glGetUniformLocation(r->current_shader, "proj"));
-    Matrix4 identity = Mat4_screen_to_clip_projection(screen_size);
-    gl(glUniformMatrix4fv(m, 1, GL_TRUE, &identity.m[0][0]));
+    gl(glUniformMatrix4fv(m, 1, GL_TRUE, &ctx->ren->proj.m[0][0]));
   }
 
   glActiveTexture(GL_TEXTURE0 + spr->texture->slot);

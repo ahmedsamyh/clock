@@ -21,7 +21,8 @@ Matrix4 Mat4_rotate_y(Matrix4 mat, float deg);
 Matrix4 Mat4_rotate_z(Matrix4 mat, float deg);
 Matrix4 Mat4_mul(Matrix4 m1, Matrix4 m2);
 Matrix4 Mat4_transpose(Matrix4 mat);
-Matrix4 Mat4_screen_to_clip_projection(Vector2f size);
+Matrix4 Mat4_screen_to_clip_projection_orthographic(Vector2f size);
+Matrix4 Mat4_screen_to_clip_projection_perspective(float fov, float aspect_ratio, float near, float far);
 
 Vector4f Mat4_translate_vector(Vector4f v, Vector3f by);
 Vector4f Mat4_scale_vector(Vector4f v, Vector3f by);
