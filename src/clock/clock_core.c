@@ -371,7 +371,7 @@ void Renderer_set_render_target(Renderer* r, GLuint target) {
   gl(glBindFramebuffer(GL_FRAMEBUFFER, target));
 }
 
-void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2) {
+void draw_imm_triangle_3d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2) {
   Renderer* r = ctx->ren;
 
   Vector3f positions[] = {
@@ -405,6 +405,10 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
   set_matrices(ctx, screen_size);
 }
 
+void draw_imm_triangle(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Color c0, Color c1, Color c2) {
+  draw_imm_triangle_3d(ctx, (Vector3f){p0.x, p0.y, 0.f}, (Vector3f){p1.x, p1.y, 0.f}, (Vector3f){p2.x, p2.y, 0.f}, c0, c1, c2);
+}
+
 #define IMM_QUAD_BODY(draw_type)					\
   Vector3f positions[] = {p0, p1, p2, p3};				\
   Vector4f colors[] = {c0, c1, c2, c3};					\
@@ -429,18 +433,22 @@ void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Colo
 // TODO: Should we render quads in term of Render_imm_triangle?
 // From what i understand rn about opengl, more draw calls -> bad, so by implementing Render_imm_quad
 // in terms of Render_imm_triangle should me more inefficient than doing manual draw calls (which is i know duplicant code but we want speed rn...)
-void draw_imm_quad(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3) {
+void draw_imm_quad_3d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3) {
   Renderer* r = ctx->ren;
   IMM_QUAD_BODY(GL_TRIANGLE_FAN);
 }
 
-void draw_imm_box(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3) {
+void draw_imm_quad(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, Color c0, Color c1, Color c2, Color c3) {
+  draw_imm_quad_3d(ctx, (Vector3f){p0.x, p0.y, 0.f}, (Vector3f){p1.x, p1.y, 0.f}, (Vector3f){p2.x, p2.y, 0.f}, (Vector3f){p3.x, p3.y, 0.f}, c0, c1, c2, c3);
+}
+
+void draw_imm_box_3d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3) {
     Renderer* r = ctx->ren;
   IMM_QUAD_BODY(GL_LINE_LOOP);
 }
 
-void draw_texture(Context* ctx, Vector3f pos, Rect texcoord, Texture* tex) {
-  assert(0 && "Unimplemented");
+void draw_imm_box(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, Color c0, Color c1, Color c2, Color c3) {
+  draw_imm_box_3d(ctx, (Vector3f){p0.x, p0.y, 0.f}, (Vector3f){p1.x, p1.y, 0.f}, (Vector3f){p2.x, p2.y, 0.f}, (Vector3f){p3.x, p3.y, 0.f}, c0, c1, c2, c3);
 }
 
 void draw_sprite(Context* ctx, Sprite* spr) {
@@ -537,10 +545,10 @@ void draw_sprite(Context* ctx, Sprite* spr) {
 
 void draw_rect(Context* ctx, Rect rect, Color color) {
   Renderer* r = ctx->ren;
-  Vector3f tl = (Vector3f){rect.pos.x, rect.pos.y, 0.f};
-  Vector3f tr = (Vector3f){rect.pos.x + rect.size.x, rect.pos.y, 0.f};
-  Vector3f br = (Vector3f){rect.pos.x + rect.size.x, rect.pos.y + rect.size.y, 0.f};
-  Vector3f bl = (Vector3f){rect.pos.x, rect.pos.y + rect.size.y, 0.f};
+  Vector2f tl = (Vector2f){rect.pos.x, rect.pos.y};
+  Vector2f tr = (Vector2f){rect.pos.x + rect.size.x, rect.pos.y};
+  Vector2f br = (Vector2f){rect.pos.x + rect.size.x, rect.pos.y + rect.size.y};
+  Vector2f bl = (Vector2f){rect.pos.x, rect.pos.y + rect.size.y};
   draw_imm_quad(ctx, tl, tr, br, bl, color, color, color, color);
 }
 
@@ -578,14 +586,14 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
 }
 
 void draw_rect_centered(Context* ctx, Rect rect, Color col) {
-  Vector3f p0 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y - (rect.size.y * 0.5f)};
-  Vector3f p1 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y - (rect.size.y * 0.5f)};
-  Vector3f p2 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
-  Vector3f p3 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
+  Vector2f p0 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y - (rect.size.y * 0.5f)};
+  Vector2f p1 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y - (rect.size.y * 0.5f)};
+  Vector2f p2 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
+  Vector2f p3 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
   draw_imm_quad(ctx, p0, p1, p2, p3, col, col, col, col);
 }
 
-void draw_point(Context* ctx, Vector3f p, Color col) {
+void draw_point_3d(Context* ctx, Vector3f p, Color col) {
  Renderer* r = ctx->ren;
 
   Vector3f positions[] = {
@@ -616,6 +624,10 @@ void draw_point(Context* ctx, Vector3f p, Color col) {
   gl(glDrawArrays(GL_POINTS, 0, 1));
 
   set_matrices(ctx, screen_size);
+}
+
+void draw_point(Context* ctx, Vector2f p, Color col) {
+  draw_point_3d(ctx, (Vector3f){p.x, p.y, 0.f}, col);
 }
 
 // Blendmode

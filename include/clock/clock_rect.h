@@ -9,6 +9,7 @@ typedef struct {
   Vector2f size;
 } Rect;
 
+
 bool Rect_contains_point(Rect r1, Vector2f p);
 bool Rect_contains_rect(Rect r1, Rect r2);
 bool Rect_intersects_rect(Rect r1, Rect r2);

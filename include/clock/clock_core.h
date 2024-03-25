@@ -102,15 +102,18 @@ void Renderer_use_custom_shader(Renderer* renderer, const char* vs, const char* 
 void Renderer_use_color_shader(Renderer* renderer);
 void Renderer_use_texture_shader(Renderer* renderer);
 void Renderer_set_render_target(Renderer* renderer, GLuint target);
-void draw_imm_triangle(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2);
-void draw_imm_quad(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
-void draw_imm_box(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
-void draw_texture(Context* ctx, Vector3f pos, Rect texcoords, Texture* texture);
+void draw_imm_triangle_3d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Color c0, Color c1, Color c2);
+void draw_imm_triangle(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Color c0, Color c1, Color c2);
+void draw_imm_quad_3d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
+void draw_imm_quad(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, Color c0, Color c1, Color c2, Color c3);
+void draw_imm_box_2d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
+void draw_imm_box(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, Color c0, Color c1, Color c2, Color c3);
 void draw_sprite(Context* ctx, Sprite* spr);
 void draw_rect(Context* ctx, Rect rect, Color color);
 void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1);
 void draw_rect_centered(Context* ctx, Rect rect, Color col);
-void draw_point(Context* ctx, Vector3f p, Color col);
+void draw_point_3d(Context* ctx, Vector3f p, Color col);
+void draw_point(Context* ctx, Vector2f p, Color col);
 
 // Blendmode
 
