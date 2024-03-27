@@ -13,8 +13,6 @@ struct Enemy {
 
 bool Enemy_init(Enemy* enemy, Context* ctx, Texture* tex);
 void Enemy_update(Enemy* enemy);
-void Enemy_control(Enemy* enemy);
 void Enemy_draw(Enemy* enemy, bool debug);
-
 
 #endif /* _ENEMY_H_ */

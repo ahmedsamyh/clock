@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 int main(void) {
-  Context* ctx = clock_init(800, 800, 1.f, 1.f, "Drawing Sprites");
+  Context* ctx = clock_init(800, 800, 1.f, 1.f, "Drawing Sprites", RENDER_MODE_2D);
 
   if (ctx == NULL) {
     return 1;

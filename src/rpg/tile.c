@@ -11,6 +11,19 @@ void init_tiles_texture(Texture* t) {
   log_f(LOG_INFO, "tile_cols: %d", tile_cols);
 }
 
+cstr Warp_info_serialize(Warp_info* wi) {
+  cstr res;
+
+  if (!wi->active) {
+    res = "INACTIVE_WARP_INFO";
+  } else {
+    temp_sprint(res, "%d|%s|%f,%f|%f,%f", wi->active, wi->stage_name,
+		wi->in_pos.x, wi->in_pos.y, wi->out_pos.x, wi->out_pos.y);
+  }
+
+  return res;
+}
+
 bool Tile_init(Tile* t, Vector2i type, Context* ctx, Texture* tex) {
   assert(tile_cols > 0);
   assert(tile_rows > 0);
@@ -52,15 +65,16 @@ void Tile_draw(Tile* t, bool debug) {
 
   if (debug) {
     // draw debug
-    draw_rect(t->ctx, (Rect){t->pos, t->size}, color_alpha(COLOR_BLUE, 0.45f));
+    Color color = color_alpha(COLOR_BLUE, (t->collidable ? 0.45f : 0.1f));
+    draw_rect(t->ctx, (Rect){t->pos, t->size}, color);
   }
 }
 
 const char* Tile_serialize(Tile* tile) {
   const char* res;
 
-  temp_sprint(res, "%f,%f|%f,%f|%p|%d,%d", tile->pos.x, tile->pos.y,
-	      tile->size.x, tile->size.y, tile->spr.texture, tile->type.x, tile->type.y);
+  temp_sprint(res, "%f,%f|%f,%f|%d,%d|%d|%s", tile->pos.x, tile->pos.y,
+	      tile->size.x, tile->size.y, tile->type.x, tile->type.y, tile->collidable, Warp_info_serialize(&tile->warp_info));
 
   return res;
 }

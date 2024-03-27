@@ -12,19 +12,21 @@ void Stage_init(Stage* stage, Context* ctx, const char* name){
 void Stage_update(Stage* stage, Player* player) {
   bool will_check_collision = player != NULL;
   if (will_check_collision) player->hitting = false;
+  // TODO: Maybe store an array of collidable tiles and loop over those instead
   for (int i = arrlen(stage->tiles) - 1; i >= 0; --i) {
-    if (will_check_collision) {
-      Rect tile_rect = (Rect) {
-	.pos = stage->tiles[i].pos,
-	.size = stage->tiles[i].size,
-      };
+    if (stage->tiles[i].collidable) {
+      if (will_check_collision) {
+	Rect tile_rect = (Rect) {
+	  .pos = stage->tiles[i].pos,
+	  .size = stage->tiles[i].size,
+	};
 
-      if (Rect_resolve_rect_collision(&player->hitbox, tile_rect)) {
-	Player_set_pos_to_hitbox_pos(player);
-	player->hitting = true;
+	if (Rect_resolve_rect_collision(&player->hitbox, tile_rect)) {
+	  Player_set_pos_to_hitbox_pos(player);
+	  player->hitting = true;
+	}
       }
     }
-
     Tile_update(&stage->tiles[i]);
   }
 }
@@ -35,7 +37,7 @@ void Stage_draw(Stage* stage, bool debug) {
   }
 }
 
-bool Stage_add_tile(Stage* stage, Vector2i type) {
+bool Stage_add_tile(Stage* stage, Vector2i type, bool collidable, Vector2f pos) {
   Context* ctx = stage->ctx;
   bool contains = false;
   for (size_t i = 0; i < arrlenu(stage->tiles); ++i) {
@@ -43,7 +45,7 @@ bool Stage_add_tile(Stage* stage, Vector2i type) {
       .pos = stage->tiles[i].pos,
       .size = stage->tiles[i].size,
     };
-    if (Rect_contains_point(tile_rect, ctx->mpos)) {
+    if (Rect_contains_point(tile_rect, pos)) {
       contains = true;
       break;
     }
@@ -52,7 +54,8 @@ bool Stage_add_tile(Stage* stage, Vector2i type) {
   if (!contains) {
     Tile t = {0};
     if (!Tile_init(&t, type, ctx, tiles_tex)) return false;
-    t.pos = pos_in_tile_space(ctx->mpos);
+    t.pos = pos_in_tile_space(pos);
+    t.collidable = collidable;
     arrput(stage->tiles, t);
     log_f(LOG_INFO, "Tile added!");
   }
@@ -60,7 +63,7 @@ bool Stage_add_tile(Stage* stage, Vector2i type) {
   return true;
 }
 
-void Stage_remove_tile(Stage* stage) {
+void Stage_remove_tile(Stage* stage, Vector2f pos) {
   Context* ctx = stage->ctx;
   bool contains = false;
   size_t containing_idx = 0;
@@ -69,7 +72,7 @@ void Stage_remove_tile(Stage* stage) {
       .pos = stage->tiles[i].pos,
       .size = stage->tiles[i].size,
     };
-    if (Rect_contains_point(tile_rect, ctx->mpos)) {
+    if (Rect_contains_point(tile_rect, pos)) {
       contains = true;
       containing_idx = i;
       break;
@@ -90,7 +93,7 @@ void Stage_deinit(Stage* stage) {
 bool Stage_save_to_file(Stage* stage) {
   // TODO: Check if the file already exists and choose to whether overwrite or not...
   const char* filename;
-  temp_sprint(filename, "resources/stages/%s.lvl", stage->name);
+  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
   FILE* f = fopen(filename, "wb");
 
@@ -104,7 +107,7 @@ bool Stage_save_to_file(Stage* stage) {
     fprintf(f, "(%s)", Tile_serialize(&stage->tiles[i]));
   }
 
-  temp_sprint(filename, "resources/stages/%s.lvl", stage->name);
+  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
   log_f(LOG_INFO, "Stage '%s' saved to file '%s'!", stage->name, filename);
 
@@ -114,7 +117,7 @@ bool Stage_save_to_file(Stage* stage) {
 
 bool Stage_load_from_file(Stage* stage) {
   const char* filename;
-  temp_sprint(filename, "resources/stages/%s.lvl", stage->name);
+  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
   const char* file = slurp_file(filename);
 
@@ -159,11 +162,6 @@ bool Stage_load_from_file(Stage* stage) {
     size.x = sv_to_float(size_x_sv);
     size.y = sv_to_float(size_y_sv);
 
-    // TODO: Actually we don't need this
-    String_view texture_ptr_sv = sv_lpop_until_char(&tile_sv, '|');
-    sv_lremove(&tile_sv, 1);
-    Texture* texture_ptr = (Texture*)sv_to_ptr(texture_ptr_sv);
-
     String_view type_x_sv = sv_lpop_until_char(&tile_sv, ',');
     sv_lremove(&tile_sv, 1);
     String_view type_y_sv = sv_lpop_until_char(&tile_sv, '|');
@@ -181,6 +179,10 @@ bool Stage_load_from_file(Stage* stage) {
 
     t.pos = pos;
     t.size = size;
+
+    String_view collidable_sv = sv_lpop_until_char(&tile_sv, '|');
+    sv_lremove(&tile_sv, 1);
+    t.collidable = (bool)sv_to_int(collidable_sv);
 
     assert(loading_tiles != NULL);
     loading_tiles[i] = t;
@@ -203,5 +205,17 @@ bool Stage_load_from_file(Stage* stage) {
 
   log_f(LOG_INFO, "Stage '%s' loaded from file '%s'!", stage->name, filename);
 
+  return true;
+}
+
+bool Stage_was_saved(Stage* stage) {
+  const char* filename;
+  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
+  FILE* f = fopen(filename, "r");
+  if (f == NULL && errno == ENOENT) {
+    return false;
+  }
+
+  fclose(f);
   return true;
 }

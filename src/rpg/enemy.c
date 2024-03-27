@@ -62,7 +62,6 @@ void Enemy_update(Enemy* e) {
   }
 }
 
-
 void Enemy_draw(Enemy* e, bool debug) {
   assert(e->ctx);
 

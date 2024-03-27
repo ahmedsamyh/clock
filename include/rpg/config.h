@@ -1,7 +1,7 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
-#define SCALE 8.f
+#define SCALE 4.f
 
 #define UNSCALED_TILE_SIZE 16.f
 #define TILE_SIZE (UNSCALED_TILE_SIZE*SCALE)
@@ -16,7 +16,7 @@ typedef enum {
 
 // PLAYER
 #define PLAYER_SPEED           100.f
-#define PLAYER_MAX_SPEED       400.f
+#define PLAYER_MAX_SPEED       300.f
 #define PLAYER_WIDTH           (8.f*SCALE)
 #define PLAYER_HEIGHT          (7.f*SCALE)
 #define PLAYER_HITBOX_OFFSET_X (4.f*SCALE)

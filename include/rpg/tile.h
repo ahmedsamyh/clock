@@ -5,30 +5,46 @@
 #include <clock/clock_core.h>
 
 typedef struct Tile Tile;
+typedef struct Warp_info Warp_info;
 
 int tile_rows;
 int tile_cols;
 
+#define WARP_INFO_TEXTURE_TYPE (Vector2f) {0.f, 3.f}
+
 void init_tiles_texture(Texture* texture);
+
+struct Warp_info {
+  bool active;
+  cstr stage_name;
+  Vector2f in_pos;
+  Vector2f out_pos;
+};
+
+/* fmt:
+   active|stage_name|in_pos.x,in_pos.y|out_pos.x,out_pos.y.
+*/
+cstr Warp_info_serialize(Warp_info* warp_info);
 
 struct Tile {
   Vector2f pos;
   Vector2f size;
   Sprite   spr;
+  // type is just a vector offset to the texture map of tiles
   Vector2i type;
+  bool     collidable;
   Context* ctx;
+  Warp_info warp_info;
 };
 
 bool Tile_init(Tile* tile, Vector2i type, Context* ctx, Texture* tex);
 void Tile_draw(Tile* tile, bool debug);
 void Tile_update(Tile* tile);
 
-
 /* fmt:
-// TODO: we don't need to store the texture as well... we know the type so just reinit the sprite using that?
 // TODO: do we need to store the size? since they all will be essentially the same size... (TILE_SIZE, TILE_SIZE)
-   pos.x,pos.y|size.x,size.y|texture_ptr|type.x,type.y -- ctx_ptr{omitted} --
+   pos.x,pos.y|size.x,size.y|type.x,type.y|collidable|warp_info
 */
-const char* Tile_serialize(Tile* tile);
+cstr Tile_serialize(Tile* tile);
 
 #endif /* _TILE_H_ */
