@@ -20,6 +20,25 @@ rem remove preceding space
 set CLOCK_SRCS=!CLOCK_SRCS:~1!
 
 set arg=%1
+set config=%2
+
+if "!config!" == "" (
+  set config=Debug
+)
+
+if "!config!" NEQ "Debug" (
+if "!config!" NEQ "Release" (
+  echo ERROR: Invalid config '!config!'...
+  exit /b 1
+))
+
+echo Build configured for !config!...
+echo.
+
+
+if "!config!" == "Release" (
+  set COMMON_CFLAGS=/O2
+)
 
 rem RPG --------------------------------------------------
 set RPG_SRC_PATH=src\rpg
@@ -51,11 +70,11 @@ if "!arg!"=="vector_gen" (
   call shell build drawing_sprite
 
 ) else if "!arg!"=="rotating_quad" (
-  call shell build clock
+  call shell build clock !config!
 
   call shell cl !COMMON_CFLAGS! examples\rotating_quad.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
 ) else if "!arg!"=="drawing_sprite" (
-  call shell build clock
+  call shell build clock !config!
 
   call shell cl !COMMON_CFLAGS! examples\drawing_sprite.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
 ) else if "!arg!"=="clean" (
@@ -68,11 +87,11 @@ if "!arg!"=="vector_gen" (
   call shell cl !COMMON_CFLAGS! /c !CLOCK_SRCS! src\gl\gl.c /I!INCLUDE_DIRS!
   call shell lib !LIB_DIR!\glfw3_mt.lib !CLOCK_OBJS! gl.obj /out:.\lib\clock.lib
 ) else if "!arg!"=="main" (
-  call shell build clock
+  call shell build clock !config!
 
   call shell cl !COMMON_CFLAGS! src\main.c /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
 ) else if "!arg!"=="rpg" (
-  call shell build clock
+  call shell build clock !config!
 
   call shell cl !COMMON_CFLAGS! !RPG_SRCS! /Fe:rpg /DDEBUG /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
 ) else (
