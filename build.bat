@@ -68,6 +68,7 @@ if "!arg!"=="vector_gen" (
   echo Building examples...
   call shell build rotating_quad
   call shell build drawing_sprite
+  call shell build text
 
 ) else if "!arg!"=="rotating_quad" (
   call shell build clock !config!
@@ -77,6 +78,10 @@ if "!arg!"=="vector_gen" (
   call shell build clock !config!
 
   call shell cl !COMMON_CFLAGS! examples\drawing_sprite.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
+) else if "!arg!"=="text" (
+  call shell build clock !config!
+
+  call shell cl !COMMON_CFLAGS! examples\text.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
 ) else if "!arg!"=="clean" (
   call shell clean exe
   call shell clean ilk

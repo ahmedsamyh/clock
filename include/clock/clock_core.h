@@ -13,6 +13,7 @@
 #include <clock/clock_key.h>
 #include <clock/clock_mouse.h>
 #include <clock/clock_color.h>
+#include <clock/clock_font.h>
 #include <clock/clock_resource_manager.h>
 #include <stdbool.h>
 #include <commonlib.h>
@@ -130,6 +131,8 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1);
 void draw_rect_centered(Context* ctx, Rect rect, Color col);
 void draw_point_3d(Context* ctx, Vector3f p, Color col);
 void draw_point(Context* ctx, Vector2f p, Color col);
+// TODO: do we want a 3d version for draw_text()?
+void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color);
 
 // Blendmode
 

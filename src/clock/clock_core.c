@@ -694,6 +694,46 @@ void draw_point(Context* ctx, Vector2f p, Color col) {
   draw_point_3d(ctx, (Vector3f){p.x, p.y, 0.f}, col);
 }
 
+void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color) {
+  Sprite spr = {0};
+  if (font->current_character_size != char_size) {
+    Font_generate_atlas_tex(font, char_size);
+  }
+  if (!Sprite_init(&spr, font->texture, 1, 1)) {
+    log_f(LOG_ERROR, "Could not initialize text sprite");
+    // TODO: close program
+  }
+  spr.tint = color;
+
+  Vector2f codepoint_pos = pos;
+  while (*text != '\0') {
+
+    int codepoint = *text;
+
+    float sf = stbtt_ScaleForPixelHeight(&font->font, font->current_character_size);
+    int x0, y0, x1, y1;
+
+    stbtt_GetCodepointBox(&font->font, codepoint, &x0, &y0, &x1, &y1);
+
+    // TODO: Maybe don't assert and do some error handling, lazy ass?
+    Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
+    assert(kv != NULL);
+    Rect rect = kv->value.rect;
+
+    spr.tex_rect = rect;
+    spr.pos.y = pos.y + kv->value.offset.y;
+    spr.pos.x = codepoint_pos.x + kv->value.offset.x;
+    draw_sprite(ctx, &spr);
+
+    int adv, lsb;
+    stbtt_GetCodepointHMetrics(&font->font, codepoint, &adv, &lsb);
+    codepoint_pos.x += (adv * sf) + (lsb * sf);
+    *text++;
+  }
+
+
+}
+
 // Blendmode
 
 void set_blend_mode(const Blendmode mode) {
