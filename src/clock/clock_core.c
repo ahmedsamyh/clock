@@ -13,13 +13,16 @@
 
 static void set_view_matrix(Context* ctx) {
   gl(GLuint m = glGetUniformLocation(ctx->ren->current_shader, "view"));
-  // TODO: Do we have to flip the y-axis of the camera here?
-  Vector3f camera_flipped = {
-    ctx->camera.x,
-    ctx->camera.y,
-    ctx->camera.z,
-  };
-  Matrix4 translate = Mat4_translate(Mat4_identity(), camera_flipped);
+  Matrix4 translate = Mat4_identity();
+  if (ctx->use_camera_view) {
+    // TODO: Do we have to flip the y-axis of the camera here?
+    Vector3f camera_flipped = {
+      ctx->camera.x,
+      ctx->camera.y,
+      ctx->camera.z,
+    };
+    translate = Mat4_translate(Mat4_identity(), camera_flipped);
+  }
   gl(glUniformMatrix4fv(m, 1, GL_TRUE, &translate.m[0][0]));
 }
 
@@ -93,14 +96,14 @@ void Window_deinit(Window* win) {
 
 // Context / main user api
 
-Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title) {
+Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title, const Render_mode render_mode) {
   Context* ctx = (Context*)calloc(1, sizeof(Context));
   ctx->win = (Window*)  malloc(sizeof(Window));
   ctx->ren = (Renderer*)malloc(sizeof(Renderer));
   if (!Window_init(ctx->win, window_width, window_height, scl_x, scl_y, title)) {
     return NULL;
   }
-  if (!Renderer_init(ctx->ren, ctx->win)) {
+  if (!Renderer_init(ctx->ren, ctx->win, render_mode)) {
     return NULL;
   }
 
@@ -123,6 +126,8 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
   gl(glEnable(GL_BLEND));
 
   set_blend_mode(BLENDMODE_ALPHA);
+
+  clock_use_camera_view(ctx, true);
 
   return ctx;
 }
@@ -260,6 +265,56 @@ void clock_deinit(Context* ctx) {
   free(ctx->resman);
 }
 
+Vector2f clock_mpos_world(Context* ctx) {
+  if (ctx->use_camera_view) {
+    return (Vector2f) {
+      .x = ctx->mpos.x - ctx->camera.x,
+      .y = ctx->mpos.y - ctx->camera.y,
+    };
+  }
+
+  return clock_mpos_screen(ctx);
+}
+
+Vector2f clock_mpos_screen(Context* ctx) {
+  return ctx->mpos;
+}
+
+void clock_use_camera_view(Context* ctx, bool use) {
+  ctx->use_camera_view = use;
+}
+
+// TODO: Maybe use a matrix multiplication in converting from space to space
+Vector3f clock_screen_to_world_3d(Context* ctx, Vector3f pos) {
+  return (Vector3f) {
+    .x = pos.x - ctx->camera.x,
+    .y = pos.y - ctx->camera.y,
+    .z = pos.z - ctx->camera.z,
+  };
+}
+
+Vector2f clock_screen_to_world(Context* ctx, Vector2f pos) {
+  return (Vector2f) {
+    .x = pos.x - ctx->camera.x,
+    .y = pos.y - ctx->camera.y,
+  };
+}
+
+Vector3f clock_world_to_screen_3d(Context* ctx, Vector3f pos) {
+  return (Vector3f) {
+    .x = pos.x + ctx->camera.x,
+    .y = pos.y + ctx->camera.y,
+    .z = pos.z + ctx->camera.z,
+  };
+}
+
+Vector2f clock_world_to_screen(Context* ctx, Vector2f pos) {
+  return (Vector2f) {
+    .x = pos.x + ctx->camera.x,
+    .y = pos.y + ctx->camera.y,
+  };
+}
+
 void clock_set_vsync(bool enable) {
   glfwSwapInterval(enable ? 1 : 0);
 }
@@ -291,7 +346,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // Renderer
 
-bool Renderer_init(Renderer* r, Window* win) {
+bool Renderer_init(Renderer* r, Window* win, const Render_mode render_mode) {
   r->win = win;
 
   gl(glGenVertexArrays(1, &r->vao););
@@ -328,8 +383,16 @@ bool Renderer_init(Renderer* r, Window* win) {
   }
 
   Vector2f screen_size = {r->win->width, r->win->height};
-  r->proj = Mat4_screen_to_clip_projection_orthographic(screen_size);
-  /* r->proj = Mat4_screen_to_clip_projection_perspective(90.f, (float)r->win->width/(float)r->win->height, 1.f, 1000.f); */
+
+  switch (render_mode) {
+  case RENDER_MODE_2D: {
+    r->proj = Mat4_screen_to_clip_projection_orthographic(screen_size);
+  } break;
+  case RENDER_MODE_3D: {
+    r->proj = Mat4_screen_to_clip_projection_perspective(90.f, (float)r->win->width/(float)r->win->height, 1.f, 1000.f);
+  } break;
+  default: assert(0 && "Unreachable");
+  }
 
   return true;
 }

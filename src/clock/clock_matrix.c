@@ -111,13 +111,14 @@ Matrix4 Mat4_screen_to_clip_projection_orthographic(Vector2f size) {
   return m;
 }
 
+// TODO: Doesn't work at all
 Matrix4 Mat4_screen_to_clip_projection_perspective(float fov, float aspect_ratio, float n, float f) {
 
-  float s = 1.f / tan(fov/2.f);
+  fov = deg2rad(fov);
   Matrix4 m = {
-    .m = {{s, 0,  0, 0},
-	  {0, s,  0, 0},
-	  {0, 0,  -f / (f - n),  -1},
+    .m = {{aspect_ratio * (1.f / tan(fov/2.f)), 0,  0, 0},
+	  {0, 1.f / tan(fov/2.f),  0, 0},
+	  {0, 0,  -f / (f - n),    1},
 	  {0, 0,  -f*n / (f - n),  0}}
   };
   return m;

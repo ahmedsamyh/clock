@@ -49,6 +49,7 @@ struct Context {
   int       fps;
   Vector2f  mpos;
   Vector3f  camera;
+  bool      use_camera_view;
   Key k[KEYS_COUNT];
   Mouse m[MOUSE_BUTTONS_COUNT];
   Resource_manager* resman;
@@ -57,7 +58,13 @@ struct Context {
   char tmpbuff[TMP_BUFF_SIZE];
 };
 
-Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title);
+typedef enum {
+  RENDER_MODE_2D,
+  RENDER_MODE_3D,
+  RENDER_MODE_COUNT,
+} Render_mode;
+
+Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title, const Render_mode render_mode);
 bool clock_should_quit(Context* ctx);
 void clock_update_keys(Context* ctx);
 void clock_update_mouse(Context* ctx);
@@ -66,6 +73,13 @@ void clock_end_draw(Context* ctx);
 void clock_flush_draw(Context *ctx);
 void clock_clear(Context* ctx, Color color);
 void clock_deinit(Context* ctx);
+Vector2f clock_mpos_world(Context* ctx);
+Vector2f clock_mpos_screen(Context* ctx);
+void clock_use_camera_view(Context* ctx, bool use);
+Vector3f clock_screen_to_world_3d(Context* ctx, Vector3f pos);
+Vector2f clock_screen_to_world(Context* ctx, Vector2f pos);
+Vector3f clock_world_to_screen_3d(Context* ctx, Vector3f pos);
+Vector2f clock_world_to_screen(Context* ctx, Vector2f pos);
 
 void clock_set_vsync(bool enable);
 
@@ -98,7 +112,7 @@ struct Renderer {
   Matrix4 proj;
 };
 
-bool Renderer_init(Renderer* renderer, Window* win);
+bool Renderer_init(Renderer* renderer, Window* win, const Render_mode render_mode);
 void Renderer_deinit(Renderer* renderer);
 void Renderer_use_custom_shader(Renderer* renderer, const char* vs, const char* fs);
 void Renderer_use_color_shader(Renderer* renderer);
