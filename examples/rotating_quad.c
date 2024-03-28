@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 int main(void){
-  Context* ctx = clock_init(800, 800, 1.f, 1.f, "GLFW Window");
+  Context* ctx = clock_init(800, 800, 1.f, 1.f, "GLFW Window", RENDER_MODE_2D);
 
   if (ctx == NULL) return 1;
 
@@ -56,10 +56,10 @@ int main(void){
     p2 = (Vector3f){p2_.x, p2_.y, p2_.z};
     p3 = (Vector3f){p3_.x, p3_.y, p3_.z};
 
-    draw_imm_quad(ctx, p0, p1, p2, p3,
-		    COLOR_RED,
-		    COLOR_GREEN,
-		    COLOR_BLUE,
+    draw_imm_quad_3d(ctx, p0, p1, p2, p3,
+		    COLOR_GOLD,
+		    COLOR_MAGENTA,
+		    COLOR_YELLOW,
 		    COLOR_WHITE);
     deg += 100.f * (float)ctx->delta;
     a += (float)ctx->delta;
