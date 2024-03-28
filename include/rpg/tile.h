@@ -38,6 +38,8 @@ struct Tile {
 };
 
 bool Tile_init(Tile* tile, Vector2i type, Context* ctx, Texture* tex);
+bool Tile_set_invalid(Tile* tile);
+bool Tile_set_type(Tile* tile, Vector2i type);
 void Tile_draw(Tile* tile, bool debug);
 void Tile_update(Tile* tile);
 
@@ -46,5 +48,6 @@ void Tile_update(Tile* tile);
    pos.x,pos.y|size.x,size.y|type.x,type.y|collidable|warp_info
 */
 cstr Tile_serialize(Tile* tile);
+bool Tile_deserialize(Tile* tile, String_view fmt);
 
 #endif /* _TILE_H_ */

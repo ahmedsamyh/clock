@@ -4,6 +4,7 @@
 #include <rpg/enemy.h>
 #include <rpg/tile.h>
 #include <rpg/common.h>
+#include <rpg/debug_box.h>
 #include <assert.h>
 
 typedef enum {
@@ -12,17 +13,8 @@ typedef enum {
   STATE_COUNT
 } State;
 
-void draw_text_outlined(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color, Color out_color) {
-  Color col = out_color;
-  float offset = 4.f;
-  Vector2f p = v2f_adds(pos, offset);
-  draw_text(ctx, font, text, p, char_size, col);
-  col = color;
-  p = v2f_subs(p, offset);
-  draw_text(ctx, font, text, p, char_size, col);
-}
 
-bool change_state(Context* ctx, State* current_state, State next_state, cstr* current_state_text, float* state_show_timer, float state_show_time) {
+bool change_state(Context* ctx, State* current_state, State next_state, cstr* current_state_text) {
   switch (next_state) {
   case STATE_PLAY: {
     *current_state_text = "Play";
@@ -34,7 +26,6 @@ bool change_state(Context* ctx, State* current_state, State next_state, cstr* cu
   }
 
   *current_state = next_state;
-  *state_show_timer = state_show_time;
 
   return true;
 }
@@ -107,13 +98,18 @@ int main(void) {
   assert(allocate_new_stage(ctx, current_stage_name, &stage_map));
 
   cstr current_state_text = "";
-  float state_show_timer = 0.f;
-  float state_show_time  = 4.f; // seconds
+
+  Debug_box dbox = {0};
+  Debug_box_default(&dbox, ctx, &font);
+  dbox.pos.x = width*0.5f;
+
+  Debug_box_push_text(&dbox, &current_state_text);
 
   State current_state;
-  if (!change_state(ctx, &current_state, STATE_PLAY, &current_state_text, &state_show_timer, state_show_time)) return 1;
+  if (!change_state(ctx, &current_state, STATE_PLAY, &current_state_text)) return 1;
 
   // Edit
+  cstr collidable_text = "Collidable: on";
   Rect edit_cursor = {
     .pos = (Vector2f) {0.f, 0.f},
     .size = (Vector2f) {TILE_SIZE, TILE_SIZE}
@@ -140,7 +136,20 @@ int main(void) {
     //
     if (ctx->k[KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
     if (ctx->k[KEY_TAB].pressed) {
-      if (!change_state(ctx, &current_state, (current_state + 1) % STATE_COUNT, &current_state_text, &state_show_timer, state_show_time)) return 1;
+      if (!change_state(ctx, &current_state, (current_state + 1) % STATE_COUNT, &current_state_text)) return 1;
+      switch (current_state) {
+      case STATE_PLAY: {
+
+	while (arrlenu(dbox.text_ptrs) > 1) {
+	  Debug_box_pop_text(&dbox);
+	}
+      } break;
+      case STATE_EDIT: {
+	Debug_box_push_text(&dbox, &current_stage_name);
+	Debug_box_push_text(&dbox, &collidable_text);
+      } break;
+      default: assert(0 && "Unreachable");
+      }
     }
 
     Stage_KV* current_stage_kv = shgetp_null(stage_map, current_stage_name);
@@ -188,8 +197,8 @@ int main(void) {
 	}
       } else {
 	if (ctx->m[MOUSE_BUTTON_LEFT].held) {
-	  for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; ++x) {
-	    for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; ++y) {
+	  for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; x += TILE_SIZE) {
+	    for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; y += TILE_SIZE) {
 	      Vector2f p = {x, y};
 	      Stage_add_tile(current_stage, tile_type, tile_collidable, p);
 	    }
@@ -198,8 +207,8 @@ int main(void) {
 
 	// TODO: Have some sort of action history for undo-ing
 	if (ctx->m[MOUSE_BUTTON_RIGHT].held) {
-	  for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; ++x) {
-	    for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; ++y) {
+	  for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; x += TILE_SIZE) {
+	    for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; y += TILE_SIZE) {
 	      Vector2f p = {x, y};
 	      Stage_remove_tile(current_stage, p);
 	    }
@@ -263,48 +272,26 @@ int main(void) {
 	  .size = (Vector2f){TILE_SIZE, TILE_SIZE}
 	};
 	/* r.pos = clock_screen_to_world(ctx, r.pos); */
-	draw_rect(ctx, r, color_alpha(COLOR_GREEN, 0.1f));
+	draw_rect(ctx, r, color_alpha(COLOR_GREEN, 0.4f));
 
 	r.pos = v2f_muls((Vector2f){hovering_tile_type.x, hovering_tile_type.y}, TILE_SIZE);
 	/* r.pos = clock_screen_to_world(ctx, r.pos); */
-	draw_rect(ctx, r, color_alpha(COLOR_RED, 0.1f));
+	draw_rect(ctx, r, color_alpha(COLOR_RED, 0.4f));
 	clock_use_camera_view(ctx, prev_state);
       }
 
-      cstr collidable_text = "Collidable: on";
       if (!tile_collidable) {
 	collidable_text = "Collidable: off";
+      } else {
+	collidable_text = "Collidable: on";
       }
-
-      float ty = font.current_character_size;
-
-      draw_text_outlined(ctx, &font, collidable_text, (Vector2f) {0.f, ty}, 24, COLOR_WHITE, COLOR_BLACK);
-      ty += font.current_character_size;
-
-      cstr current_stage_name_full;
-      temp_sprint(current_stage_name_full, "Current Stage: %s", current_stage_name);
-      draw_text_outlined(ctx, &font, current_stage_name_full, (Vector2f) {0.f, ty}, 24, COLOR_WHITE, COLOR_BLACK);
 
       Player_draw(&player, DEBUG_DRAW);
     } break;
     default: assert(0 && "Unreachable");
     }
 
-    if (state_show_timer > 0.f) {
-      /* Color col = COLOR_BLACK; */
-      /* col.a = (state_show_timer / state_show_time); */
-      /* float offset = 4.f; */
-      /* Vector2f p = {offset, offset}; */
-      /* draw_text(ctx, &font, current_state_text, p, 24, col); */
-      /* col = COLOR_WHITE; */
-      /* col.a = (state_show_timer / state_show_time); */
-      /* p = v2f_subs(p, offset); */
-      /* draw_text(ctx, &font, current_state_text, p, 24, col); */
-
-      state_show_timer -= ctx->delta;
-    }
-
-    draw_text_outlined(ctx, &font, current_state_text, (Vector2f) {0.f, 0.f}, 24, COLOR_WHITE, COLOR_BLACK);
+    Debug_box_draw(&dbox);
 
     clock_end_draw(ctx);
   }

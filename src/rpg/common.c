@@ -46,3 +46,13 @@ void draw_spr_text(Context* ctx, Sprite* spr_font, cstr text, Vector2f pos, Colo
     pos.x += spr_font->tex_rect.size.x * spr_font->scale.x;
   }
 }
+
+void draw_text_outlined(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color, Color out_color) {
+  Color col = out_color;
+  float offset = 4.f;
+  Vector2f p = v2f_adds(pos, offset);
+  draw_text(ctx, font, text, p, char_size, col);
+  col = color;
+  p = v2f_subs(p, offset);
+  draw_text(ctx, font, text, p, char_size, col);
+}

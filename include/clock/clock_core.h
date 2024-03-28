@@ -85,7 +85,7 @@ Vector2f clock_world_to_screen(Context* ctx, Vector2f pos);
 void clock_set_vsync(bool enable);
 
 void clock_begin_scissor(Context* ctx, Rect rect);
-void clock_endn_scissor(Context* ctx);
+void clock_end_scissor(Context* ctx);
 
 // Callbacks
 
@@ -133,6 +133,8 @@ void draw_point_3d(Context* ctx, Vector3f p, Color col);
 void draw_point(Context* ctx, Vector2f p, Color col);
 // TODO: do we want a 3d version for draw_text()?
 void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color);
+
+Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size);
 
 // Blendmode
 

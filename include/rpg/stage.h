@@ -22,7 +22,7 @@ void Stage_init(Stage* stage, Context* ctx, const char* name);
 void Stage_update(Stage* stage, Player* player);
 void Stage_draw(Stage* stage, bool debug);
 bool Stage_add_tile(Stage* stage, Vector2i type, bool collidable, Vector2f pos);
-void Stage_remove_tile(Stage* stage, Vector2f pos);
+bool Stage_remove_tile(Stage* stage, Vector2f pos);
 void Stage_deinit(Stage* stage);
 
 // IO

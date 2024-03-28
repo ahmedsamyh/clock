@@ -10,6 +10,19 @@ void Stage_init(Stage* stage, Context* ctx, const char* name){
   stage->cols = SCREEN_WIDTH / TILE_SIZE;
   stage->rows = SCREEN_HEIGHT / TILE_SIZE;
   stage->tiles = (Tile*)calloc(stage->cols*stage->rows, sizeof(Tile));
+
+  Texture* tiles_tex = load_texture_err_handled(ctx, "resources/gfx/tiles.png");
+  for (float y = 0.f; y < stage->rows; ++y) {
+    for (float x = 0.f; x < stage->cols; ++x) {
+      size_t idx = (size_t)y * stage->cols + (size_t)x;
+      Tile_init(&stage->tiles[idx], (Vector2i) {0, 0}, ctx, tiles_tex);
+      stage->tiles[idx].pos.x = x*TILE_SIZE;
+      stage->tiles[idx].pos.y = y*TILE_SIZE;
+      Tile_set_invalid(&stage->tiles[idx]);
+
+      assert(stage->tiles[idx].ctx);
+    }
+  }
 }
 
 void Stage_update(Stage* stage, Player* player) {
@@ -35,49 +48,33 @@ void Stage_update(Stage* stage, Player* player) {
 }
 
 void Stage_draw(Stage* stage, bool debug) {
-  for (int i = arrlen(stage->tiles) - 1; i >= 0; --i) {
+  for (int i = stage->cols*stage->rows-1; i >= 0; --i) {
     Tile_draw(&stage->tiles[i], debug);
   }
 }
 
-// TODO: Checking collision of tiles is very slow!
-// Maybe use the index as the position?
 bool Stage_add_tile(Stage* stage, Vector2i type, bool collidable, Vector2f pos) {
-  Context* ctx = stage->ctx;
-
-  pos = v2f_div(pos, (Vector2f) {stage->cols, stage->rows});
-
+  pos = v2f_divs(pos, TILE_SIZE);
   size_t idx = pos.y * stage->cols + pos.x;
-
-  Texture* tiles_tex = load_texture_err_handled(ctx, "resources/gfx/tiles.png");
-
+  if (!(0 <= idx && idx < stage->cols*stage->rows)) return false;
+  /* log_f(LOG_INFO, "Adding tile at index '%u'", idx); */
   Tile* t = &stage->tiles[idx];
-
-  if (!Tile_init(t, type, ctx, tiles_tex)) return false;
-  t->pos = pos_in_tile_space(pos);
   t->collidable = collidable;
-
+  if (!Tile_set_type(t, type)) {
+    return false;
+  }
   return true;
 }
 
-void Stage_remove_tile(Stage* stage, Vector2f pos) {
-  Context* ctx = stage->ctx;
-  bool contains = false;
-  size_t containing_idx = 0;
-  for (size_t i = 0; i < arrlenu(stage->tiles); ++i) {
-    Rect tile_rect = (Rect) {
-      .pos = stage->tiles[i].pos,
-      .size = stage->tiles[i].size,
-    };
-    if (Rect_contains_point(tile_rect, pos)) {
-      contains = true;
-      containing_idx = i;
-      break;
-    }
+bool Stage_remove_tile(Stage* stage, Vector2f pos) {
+  pos = v2f_divs(pos, TILE_SIZE);
+  size_t idx = pos.y * stage->cols + pos.x;
+  if (!(0 <= idx && idx < stage->cols*stage->rows)) return false;
+  Tile* t = &stage->tiles[idx];
+  if (!Tile_set_invalid(t)) {
+    return false;
   }
-  if (contains) {
-    arrdel(stage->tiles, containing_idx);
-  }
+  return true;
 }
 
 void Stage_deinit(Stage* stage) {
@@ -88,118 +85,79 @@ void Stage_deinit(Stage* stage) {
 
 bool Stage_save_to_file(Stage* stage) {
   // TODO: Check if the file already exists and choose to whether overwrite or not...
-  /* const char* filename; */
-  /* temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name); */
+  const char* filename;
+  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
-  /* FILE* f = fopen(filename, "wb"); */
+  FILE* f = fopen(filename, "wb");
 
-  /* if (f == NULL) { */
-  /*   return false; */
-  /* } */
+  if (f == NULL) {
+    return false;
+  }
 
-  /* fprintf(f, "%d|", (int)arrlen(stage->tiles)); */
+  fprintf(f, "%zu|", stage->cols * stage->rows);
 
-  /* for (size_t i = 0; i < arrlenu(stage->tiles); ++i) { */
-  /*   fprintf(f, "(%s)", Tile_serialize(&stage->tiles[i])); */
-  /* } */
+  for (size_t i = 0; i < stage->cols * stage->rows; ++i) {
+    fprintf(f, "(%s)", Tile_serialize(&stage->tiles[i]));
+  }
 
-  /* temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name); */
+  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
-  /* log_f(LOG_INFO, "Stage '%s' saved to file '%s'!", stage->name, filename); */
+  log_f(LOG_INFO, "stage '%s' saved to file '%s'!", stage->name, filename);
 
-  /* fclose(f); */
+  fclose(f);
   return true;
 }
 
 bool Stage_load_from_file(Stage* stage) {
-  /* const char* filename; */
-  /* temp_sprint(filename, stage_save_path"/%s.lvl", stage->name); */
+  const char* filename;
+  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
-  /* const char* file = slurp_file(filename); */
+  cstr file = slurp_file(filename);
 
-  /* if (file == null) { */
-  /*   return false; */
-  /* } */
+  if (file == NULL) {
+    return false;
+  }
 
-  /* string_view view = sv(file); */
+  String_view view = SV(file);
 
-  /* string_view tiles_count_sv = sv_lpop_until_char(&view, '|'); */
-  /* sv_lremove(&view, 1); */
+  String_view tiles_count_sv = sv_lpop_until_char(&view, '|');
+  sv_lremove(&view, 1);
 
-  /* int tiles_count = sv_to_int(tiles_count_sv); */
+  int tiles_count = sv_to_int(tiles_count_sv);
 
-  /* tile* loading_tiles = null; */
-  /* if (tiles_count) { */
-  /*   loading_tiles = (tile*)calloc(tiles_count, sizeof(tile)); */
-  /* } */
+  Tile* loading_tiles = NULL;
+  if (tiles_count) {
+    loading_tiles = (Tile*)calloc(tiles_count, sizeof(Tile));
+  }
 
-  /* for (size_t i = 0; i < tiles_count; ++i) { */
-  /*   string_view tile_sv = sv_lpop_until_char(&view, ')'); */
-  /*   sv_lremove(&view, 1); */
-  /*   sv_lremove(&tile_sv, 1); */
+  Texture* tiles_tex = load_texture_err_handled(stage->ctx, "resources/gfx/tiles.png");
+  for (size_t i = 0; i < tiles_count; ++i) {
+    String_view tile_sv = sv_lpop_until_char(&view, ')');
+    sv_lremove(&view, 1);
+    sv_lremove(&tile_sv, 1);
 
-  /*   tile t = {0}; */
+    Tile t = {0};
+    if (!Tile_init(&t, (Vector2i) {0, 0}, stage->ctx, tiles_tex)) return false;
 
-  /*   string_view pos_x_sv = sv_lpop_until_char(&tile_sv, ','); */
-  /*   sv_lremove(&tile_sv, 1); */
-  /*   string_view pos_y_sv = sv_lpop_until_char(&tile_sv, '|'); */
-  /*   sv_lremove(&tile_sv, 1); */
+    if (!Tile_deserialize(&t, tile_sv)) {
+      if (loading_tiles) free(loading_tiles);
+      return false;
+    }
 
-  /*   vector2f pos = {0}; */
-  /*   pos.x = sv_to_float(pos_x_sv); */
-  /*   pos.y = sv_to_float(pos_y_sv); */
+    assert(loading_tiles != NULL);
+    loading_tiles[i] = t;
+  }
+  assert(view.count == 0);
 
-  /*   string_view size_x_sv = sv_lpop_until_char(&tile_sv, ','); */
-  /*   sv_lremove(&tile_sv, 1); */
-  /*   string_view size_y_sv = sv_lpop_until_char(&tile_sv, '|'); */
-  /*   sv_lremove(&tile_sv, 1); */
+  if (loading_tiles) {
+    // todo: can we just assign loading_tiles to stage->tiles and not free it?
 
-  /*   vector2f size = {0}; */
-  /*   size.x = sv_to_float(size_x_sv); */
-  /*   size.y = sv_to_float(size_y_sv); */
+    memcpy(stage->tiles, loading_tiles, sizeof(Tile)*tiles_count);
 
-  /*   string_view type_x_sv = sv_lpop_until_char(&tile_sv, ','); */
-  /*   sv_lremove(&tile_sv, 1); */
-  /*   string_view type_y_sv = sv_lpop_until_char(&tile_sv, '|'); */
-  /*   sv_lremove(&tile_sv, 1); */
+    free(loading_tiles);
+  }
 
-  /*   vector2i type = {0}; */
-  /*   type.x = sv_to_int(type_x_sv); */
-  /*   type.y = sv_to_int(type_y_sv); */
-
-  /*   texture* tiles_tex = load_texture_err_handled(stage->ctx, "resources/gfx/tiles.png"); */
-  /*   if (!tile_init(&t, type, stage->ctx, tiles_tex)) { */
-  /*     if (loading_tiles) free(loading_tiles); */
-  /*     return false; */
-  /*   } */
-
-  /*   t.pos = pos; */
-  /*   t.size = size; */
-
-  /*   string_view collidable_sv = sv_lpop_until_char(&tile_sv, '|'); */
-  /*   sv_lremove(&tile_sv, 1); */
-  /*   t.collidable = (bool)sv_to_int(collidable_sv); */
-
-  /*   assert(loading_tiles != null); */
-  /*   loading_tiles[i] = t; */
-  /* } */
-
-  /* assert(view.count == 0); */
-
-  /* if (stage->tiles) */
-  /*   arrfree(stage->tiles); */
-
-  /* if (loading_tiles) { */
-  /*   // todo: can we just assign loading_tiles to stage->tiles and not free it? */
-
-  /*   arrsetlen(stage->tiles, tiles_count); */
-
-  /*   memcpy(stage->tiles, loading_tiles, sizeof(tile)*tiles_count); */
-
-  /*   free(loading_tiles); */
-  /* } */
-
-  /* log_f(log_info, "stage '%s' loaded from file '%s'!", stage->name, filename); */
+  log_f(LOG_INFO, "stage '%s' loaded from file '%s'!", stage->name, filename);
 
   return true;
 }
