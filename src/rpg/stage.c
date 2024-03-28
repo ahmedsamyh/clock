@@ -37,6 +37,8 @@ void Stage_draw(Stage* stage, bool debug) {
   }
 }
 
+// TODO: Checking collision of tiles is very slow!
+// Maybe use the index as the position?
 bool Stage_add_tile(Stage* stage, Vector2i type, bool collidable, Vector2f pos) {
   Context* ctx = stage->ctx;
   bool contains = false;
@@ -57,7 +59,7 @@ bool Stage_add_tile(Stage* stage, Vector2i type, bool collidable, Vector2f pos) 
     t.pos = pos_in_tile_space(pos);
     t.collidable = collidable;
     arrput(stage->tiles, t);
-    log_f(LOG_INFO, "Tile added!");
+    log_f(LOG_INFO, "Tile added! at %f, %f", t.pos.x, t.pos.y);
   }
 
   return true;

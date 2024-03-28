@@ -12,13 +12,23 @@ typedef enum {
   STATE_COUNT
 } State;
 
-bool change_state(Context* ctx, State* current_state, State next_state, Sprite* state_spr, float* state_show_timer, float state_show_time) {
+void draw_text_outlined(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color, Color out_color) {
+  Color col = out_color;
+  float offset = 4.f;
+  Vector2f p = v2f_adds(pos, offset);
+  draw_text(ctx, font, text, p, char_size, col);
+  col = color;
+  p = v2f_subs(p, offset);
+  draw_text(ctx, font, text, p, char_size, col);
+}
+
+bool change_state(Context* ctx, State* current_state, State next_state, cstr* current_state_text, float* state_show_timer, float state_show_time) {
   switch (next_state) {
   case STATE_PLAY: {
-    if (!Sprite_init_scaled(state_spr, load_texture_err_handled(ctx, "resources/gfx/play_state.png"), 1, 1)) return false;
+    *current_state_text = "Play";
   } break;
   case STATE_EDIT: {
-    if (!Sprite_init_scaled(state_spr, load_texture_err_handled(ctx, "resources/gfx/edit_state.png"), 1, 1)) return false;
+    *current_state_text = "Edit";
   } break;
   default: assert(0 && "Unreachable");
   }
@@ -65,15 +75,14 @@ int main(void) {
 
   Texture* player_tex = load_texture_err_handled(ctx, "resources/gfx/player.png");
   Texture* tiles_tex  = load_texture_err_handled(ctx, "resources/gfx/tiles.png");
-  Texture* edit_state_tex = load_texture_err_handled(ctx, "resources/gfx/edit_state.png");
-  Texture* play_state_tex = load_texture_err_handled(ctx, "resources/gfx/play_state.png");
   Texture* font_tex = load_texture_err_handled(ctx, "resources/gfx/spr_font.png");
 
   init_tiles_texture(tiles_tex);
 
-  /* Sprite font_spr = {0}; */
-  /* if (!Sprite_init_scaled(&font_spr, font_tex, 95, 1)) return 1; */
-  /* cstr font_map = "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^ _`abcdefghijklmnopqrstuvwxyz{|}~"; */
+  Font font = {0};
+  if (!Font_init(&font, ctx, "resources/fonts/WayfarersToyBoxRegular-gxxER.ttf")) {
+    return 1;
+  }
 
   Player player = {0};
 
@@ -97,15 +106,18 @@ int main(void) {
   // We can assert because we are SURE that there is no other stages in the stage_map
   assert(allocate_new_stage(ctx, current_stage_name, &stage_map));
 
-  Sprite state_spr = {0};
-
+  cstr current_state_text = "";
   float state_show_timer = 0.f;
   float state_show_time  = 4.f; // seconds
 
   State current_state;
-  if (!change_state(ctx, &current_state, STATE_PLAY, &state_spr, &state_show_timer, state_show_time)) return 1;
+  if (!change_state(ctx, &current_state, STATE_PLAY, &current_state_text, &state_show_timer, state_show_time)) return 1;
 
   // Edit
+  Rect edit_cursor = {
+    .pos = (Vector2f) {0.f, 0.f},
+    .size = (Vector2f) {TILE_SIZE, TILE_SIZE}
+  };
   Vector2i tile_type          = {0};
   Vector2i hovering_tile_type = {0};
   bool tile_collidable = true;
@@ -128,7 +140,7 @@ int main(void) {
     //
     if (ctx->k[KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
     if (ctx->k[KEY_TAB].pressed) {
-      if (!change_state(ctx, &current_state, (current_state + 1) % STATE_COUNT, &state_spr, &state_show_timer, state_show_time)) return 1;
+      if (!change_state(ctx, &current_state, (current_state + 1) % STATE_COUNT, &current_state_text, &state_show_timer, state_show_time)) return 1;
     }
 
     Stage_KV* current_stage_kv = shgetp_null(stage_map, current_stage_name);
@@ -149,7 +161,22 @@ int main(void) {
     } break;
     case STATE_EDIT: {
       Stage_update(current_stage, NULL);
+      edit_cursor.pos = pos_in_tile_space(ctx->mpos);
 
+      // Increase cursor size
+      if (ctx->k[KEY_Z].pressed) {
+	edit_cursor.size.x -= TILE_SIZE;
+	if (edit_cursor.size.x < TILE_SIZE) edit_cursor.size.x = TILE_SIZE;
+	edit_cursor.size.y -= TILE_SIZE;
+	if (edit_cursor.size.y < TILE_SIZE) edit_cursor.size.y = TILE_SIZE;
+      }
+
+      if (ctx->k[KEY_X].pressed) {
+	edit_cursor.size.x += TILE_SIZE;
+	edit_cursor.size.y += TILE_SIZE;
+      }
+
+      // Choose tile type
       if (ctx->k[KEY_LEFT_SHIFT].held) {
 	if (Rect_contains_point(tiles_rect, ctx->mpos)) {
 	  hovering_tile_type.x = (int)ctx->mpos.x / (int)TILE_SIZE;
@@ -161,12 +188,22 @@ int main(void) {
 	}
       } else {
 	if (ctx->m[MOUSE_BUTTON_LEFT].held) {
-	  Stage_add_tile(current_stage, tile_type, tile_collidable, ctx->mpos);
+	  for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; ++x) {
+	    for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; ++y) {
+	      Vector2f p = {x, y};
+	      Stage_add_tile(current_stage, tile_type, tile_collidable, p);
+	    }
+	  }
 	}
 
 	// TODO: Have some sort of action history for undo-ing
 	if (ctx->m[MOUSE_BUTTON_RIGHT].held) {
-	  Stage_remove_tile(current_stage, ctx->mpos);
+	  for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; ++x) {
+	    for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; ++y) {
+	      Vector2f p = {x, y};
+	      Stage_remove_tile(current_stage, p);
+	    }
+	  }
 	}
       }
 
@@ -205,6 +242,8 @@ int main(void) {
       clock_clear(ctx, hex_to_color(0xFF5555AA));
       Stage_draw(current_stage, DEBUG_DRAW);
 
+      draw_rect(ctx, edit_cursor, color_alpha(COLOR_GREEN, 0.5f));
+
       if (ctx->k[KEY_LEFT_SHIFT].held) {
 	bool prev_state = ctx->use_camera_view;
 	clock_use_camera_view(ctx, false);
@@ -232,10 +271,19 @@ int main(void) {
 	clock_use_camera_view(ctx, prev_state);
       }
 
-      if (tile_collidable) {
-	/* draw_spr_text(ctx, &font_spr, "C", clock_screen_to_world(ctx, (Vector2f){0.f, height - font_spr.tex_rect.size.y}), COLOR_WHITE, font_map); */
-	draw_rect(ctx, (Rect){{}, {4,4}}, COLOR_RED);
+      cstr collidable_text = "Collidable: on";
+      if (!tile_collidable) {
+	collidable_text = "Collidable: off";
       }
+
+      float ty = font.current_character_size;
+
+      draw_text_outlined(ctx, &font, collidable_text, (Vector2f) {0.f, ty}, 24, COLOR_WHITE, COLOR_BLACK);
+      ty += font.current_character_size;
+
+      cstr current_stage_name_full;
+      temp_sprint(current_stage_name_full, "Current Stage: %s", current_stage_name);
+      draw_text_outlined(ctx, &font, current_stage_name_full, (Vector2f) {0.f, ty}, 24, COLOR_WHITE, COLOR_BLACK);
 
       Player_draw(&player, DEBUG_DRAW);
     } break;
@@ -243,10 +291,20 @@ int main(void) {
     }
 
     if (state_show_timer > 0.f) {
-      state_spr.tint.a = (state_show_timer / state_show_time);
-      draw_sprite(ctx, &state_spr);
+      /* Color col = COLOR_BLACK; */
+      /* col.a = (state_show_timer / state_show_time); */
+      /* float offset = 4.f; */
+      /* Vector2f p = {offset, offset}; */
+      /* draw_text(ctx, &font, current_state_text, p, 24, col); */
+      /* col = COLOR_WHITE; */
+      /* col.a = (state_show_timer / state_show_time); */
+      /* p = v2f_subs(p, offset); */
+      /* draw_text(ctx, &font, current_state_text, p, 24, col); */
+
       state_show_timer -= ctx->delta;
     }
+
+    draw_text_outlined(ctx, &font, current_state_text, (Vector2f) {0.f, 0.f}, 24, COLOR_WHITE, COLOR_BLACK);
 
     clock_end_draw(ctx);
   }
@@ -254,6 +312,7 @@ int main(void) {
   arrfree(enemies);
   shfree(stage_map);
 
+  Font_deinit(&font);
   clock_deinit(ctx);
 
   return 0;

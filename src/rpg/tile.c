@@ -15,7 +15,7 @@ cstr Warp_info_serialize(Warp_info* wi) {
   cstr res;
 
   if (!wi->active) {
-    res = "INACTIVE_WARP_INFO";
+    res = "";
   } else {
     temp_sprint(res, "%d|%s|%f,%f|%f,%f", wi->active, wi->stage_name,
 		wi->in_pos.x, wi->in_pos.y, wi->out_pos.x, wi->out_pos.y);
@@ -67,13 +67,17 @@ void Tile_draw(Tile* t, bool debug) {
     // draw debug
     Color color = color_alpha(COLOR_BLUE, (t->collidable ? 0.45f : 0.1f));
     draw_rect(t->ctx, (Rect){t->pos, t->size}, color);
+    if (t->warp_info.active) {
+      color = color_alpha(COLOR_MAGENTA, 0.45f);
+      draw_rect(t->ctx, (Rect){t->pos, t->size}, color);
+    }
   }
 }
 
 const char* Tile_serialize(Tile* tile) {
   const char* res;
 
-  temp_sprint(res, "%f,%f|%f,%f|%d,%d|%d|%s", tile->pos.x, tile->pos.y,
+  temp_sprint(res, "%.2f,%.2f|%.2f,%.2f|%d,%d|%d|%s", tile->pos.x, tile->pos.y,
 	      tile->size.x, tile->size.y, tile->type.x, tile->type.y, tile->collidable, Warp_info_serialize(&tile->warp_info));
 
   return res;
