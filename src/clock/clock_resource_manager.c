@@ -34,6 +34,8 @@ Texture* Resman_load_texture_uninitialized(Resource_manager* res_man, const char
   if (tex_kv != NULL) return tex_kv->value;
 
   Texture* tex = (Texture*)calloc(1, sizeof(Texture));
+  tex->id = 0;
+  tex->name = filepath;
 
   shput(res_man->texture_map, filepath, tex);
 
@@ -41,7 +43,7 @@ Texture* Resman_load_texture_uninitialized(Resource_manager* res_man, const char
 
   arrput(res_man->texture_names, filepath);
 
-  log_f(LOG_INFO, "Loaded uninitialized texture '%s' (%dx%d) in slot %d", filepath, tex->size.x, tex->size.y, tex->slot);
+  log_f(LOG_INFO, "Loaded uninitialized texture '%s'", filepath);
 
   return tex;
 }

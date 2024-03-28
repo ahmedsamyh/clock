@@ -722,6 +722,8 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
 
     spr.tex_rect = rect;
     spr.pos.y = pos.y + kv->value.offset.y;
+    // NOTE: Make the text draw from topleft
+    spr.pos.y += font->current_character_size;
     spr.pos.x = codepoint_pos.x + kv->value.offset.x;
     draw_sprite(ctx, &spr);
 
@@ -730,8 +732,6 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
     codepoint_pos.x += (adv * sf) + (lsb * sf);
     *text++;
   }
-
-
 }
 
 // Blendmode

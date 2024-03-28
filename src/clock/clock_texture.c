@@ -29,12 +29,15 @@ void Texture_load_empty(Texture* t, int width, int height) {
   gl(glGetIntegerv(GL_MAX_COMPUTE_TEXTURE_IMAGE_UNITS, &max_tex_image_slots));
 
   t->slot = (last_used_texture_slot++ % (max_tex_image_slots-1)); // last slot is used for ren_tex
+
+  log_f(LOG_INFO, "Initialized texture '%s' (%dx%d) in slot %d", t->name, t->size.x, t->size.y, t->slot);
 }
 
-bool Texture_load_from_file(Texture* t, const char* filename){
+bool Texture_load_from_file(Texture* t, const char* filename) {
   /* stbi_set_flip_vertically_on_load(1); */
 
   t->local_data = stbi_load(filename, &t->size.x, &t->size.y, &t->comps, 4);
+  t->name = filename;
 
   if (t->local_data == NULL){
     log_f(LOG_ERROR, "Could not load image '%s'", filename);
@@ -67,8 +70,12 @@ bool Texture_load_from_file(Texture* t, const char* filename){
 }
 
 bool Texture_load_from_memory(Texture* t, unsigned char* data) {
+  assert(0 && "Unfinished!");
 
   t->local_data = data;
+
+  // TODO: pass the name here
+  /* t->name = */
 
   assert(t->local_data != NULL);
 

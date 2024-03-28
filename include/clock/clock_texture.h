@@ -2,13 +2,15 @@
 #define _CLOCK_TEXTURE_H_
 
 #include <clock/clock_vector.h>
+#include <commonlib.h>
 #include <stdbool.h>
 
 static unsigned int last_used_texture_slot;
 
 typedef struct {
-  unsigned char* local_data;
-  unsigned int id;
+  cstr name;
+  uint8* local_data;
+  uint32 id;
   Vector2i size;
   int comps;
   int slot;
