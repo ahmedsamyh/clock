@@ -14,6 +14,7 @@ struct Stage {
   Tile* warp_tiles;
   Vector2f size;
   Context* ctx;
+  size_t cols, rows;
 };
 
 void Stage_init(Stage* stage, Context* ctx, const char* name);

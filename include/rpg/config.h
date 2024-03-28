@@ -1,10 +1,14 @@
 #ifndef _CONFIG_H_
 #define _CONFIG_H_
 
+
 #define SCALE 4.f
 
 #define UNSCALED_TILE_SIZE 16.f
 #define TILE_SIZE (UNSCALED_TILE_SIZE*SCALE)
+
+#define SCREEN_WIDTH  1280
+#define SCREEN_HEIGHT  960
 
 typedef enum {
   MOVE_DIR_LEFT,
