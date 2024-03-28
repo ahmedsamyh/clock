@@ -711,9 +711,6 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
     int codepoint = *text;
 
     float sf = stbtt_ScaleForPixelHeight(&font->font, font->current_character_size);
-    int x0, y0, x1, y1;
-
-    stbtt_GetCodepointBox(&font->font, codepoint, &x0, &y0, &x1, &y1);
 
     // TODO: Maybe don't assert and do some error handling, lazy ass?
     Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
@@ -732,6 +729,27 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
     codepoint_pos.x += (adv * sf) + (lsb * sf);
     *text++;
   }
+}
+
+Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size) {
+  Vector2f size = {0};
+  size.y = char_size;
+  while (*text != '\0') {
+    int codepoint = *text;
+
+    float sf = stbtt_ScaleForPixelHeight(&font->font, char_size);
+
+    // TODO: Maybe don't assert and do some error handling, lazy ass?
+    Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
+    assert(kv != NULL);
+    Rect rect = kv->value.rect;
+
+    int adv, lsb;
+    stbtt_GetCodepointHMetrics(&font->font, codepoint, &adv, &lsb);
+    *text++;
+    size.x += (adv * sf) + (lsb * sf);
+  }
+  return size;
 }
 
 // Blendmode
