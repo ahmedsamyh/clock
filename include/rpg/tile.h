@@ -15,8 +15,9 @@ int tile_cols;
 void init_tiles_texture(Texture* texture);
 
 struct Warp_info {
-  bool active;
-  cstr stage_name;
+  bool     active;
+  cstr     in_stage;
+  cstr     out_stage;
   Vector2f in_pos;
   Vector2f out_pos;
 };

@@ -57,7 +57,6 @@ bool Stage_add_tile(Stage* stage, Vector2i type, bool collidable, Vector2f pos) 
   pos = v2f_divs(pos, TILE_SIZE);
   size_t idx = pos.y * stage->cols + pos.x;
   if (!(0 <= idx && idx < stage->cols*stage->rows)) return false;
-  /* log_f(LOG_INFO, "Adding tile at index '%u'", idx); */
   Tile* t = &stage->tiles[idx];
   t->collidable = collidable;
   if (!Tile_set_type(t, type)) {

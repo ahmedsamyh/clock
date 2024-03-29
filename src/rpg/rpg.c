@@ -110,6 +110,8 @@ int main(void) {
 
   // Edit
   cstr collidable_text = "Collidable: on";
+  cstr warp_mode_text = "Warp mode";
+  bool WARP_MODE = false;
   Rect edit_cursor = {
     .pos = (Vector2f) {0.f, 0.f},
     .size = (Vector2f) {TILE_SIZE, TILE_SIZE}
@@ -117,6 +119,7 @@ int main(void) {
   Vector2i tile_type          = {0};
   Vector2i hovering_tile_type = {0};
   bool tile_collidable = true;
+  Warp_info tile_warp_info = {0};
   Sprite tiles_spr = {0};
   if (!Sprite_init_scaled(&tiles_spr, tiles_tex, 1, 1)) return 1;
 
@@ -172,52 +175,85 @@ int main(void) {
       Stage_update(current_stage, NULL);
       edit_cursor.pos = pos_in_tile_space(ctx->mpos);
 
-      // Increase cursor size
-      if (ctx->k[KEY_Z].pressed) {
-	edit_cursor.size.x -= TILE_SIZE;
-	if (edit_cursor.size.x < TILE_SIZE) edit_cursor.size.x = TILE_SIZE;
-	edit_cursor.size.y -= TILE_SIZE;
-	if (edit_cursor.size.y < TILE_SIZE) edit_cursor.size.y = TILE_SIZE;
-      }
-
-      if (ctx->k[KEY_X].pressed) {
-	edit_cursor.size.x += TILE_SIZE;
-	edit_cursor.size.y += TILE_SIZE;
-      }
-
-      // Choose tile type
-      if (ctx->k[KEY_LEFT_SHIFT].held) {
-	if (Rect_contains_point(tiles_rect, ctx->mpos)) {
-	  hovering_tile_type.x = (int)ctx->mpos.x / (int)TILE_SIZE;
-	  hovering_tile_type.y = (int)ctx->mpos.y / (int)TILE_SIZE;
-
-	  if (ctx->m[MOUSE_BUTTON_LEFT].pressed) {
-	    tile_type = hovering_tile_type;
+      if (WARP_MODE) {
+	if (ctx->m[MOUSE_BUTTON_LEFT].pressed) {
+	  if (!tile_warp_info.in_stage) {
+	    tile_warp_info.in_stage = current_stage_name;
+	    tile_warp_info.in_pos = edit_cursor.pos;
+	  } else {
+	    tile_warp_info.out_stage = current_stage_name;
+	    tile_warp_info.out_pos = edit_cursor.pos;
+	    WARP_MODE = false;
 	  }
 	}
+
       } else {
-	if (ctx->m[MOUSE_BUTTON_LEFT].held) {
-	  for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; x += TILE_SIZE) {
-	    for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; y += TILE_SIZE) {
-	      Vector2f p = {x, y};
-	      Stage_add_tile(current_stage, tile_type, tile_collidable, p);
+	// Increase cursor size
+	if (ctx->k[KEY_Z].pressed) {
+	  if (ctx->k[KEY_LEFT_ALT].held) {
+	    edit_cursor.size.x -= TILE_SIZE;
+	    if (edit_cursor.size.x < TILE_SIZE) edit_cursor.size.x = TILE_SIZE;
+	  } else {
+	    edit_cursor.size.x += TILE_SIZE;
+	  }
+	}
+
+	if (ctx->k[KEY_X].pressed) {
+	  if (ctx->k[KEY_LEFT_ALT].held) {
+	    edit_cursor.size.y -= TILE_SIZE;
+	    if (edit_cursor.size.y < TILE_SIZE) edit_cursor.size.y = TILE_SIZE;
+	  } else {
+	    edit_cursor.size.y += TILE_SIZE;
+	  }
+	}
+
+	// Choose tile type
+	if (ctx->k[KEY_LEFT_SHIFT].held) {
+	  if (Rect_contains_point(tiles_rect, ctx->mpos)) {
+	    hovering_tile_type.x = (int)ctx->mpos.x / (int)TILE_SIZE;
+	    hovering_tile_type.y = (int)ctx->mpos.y / (int)TILE_SIZE;
+
+	    if (ctx->m[MOUSE_BUTTON_LEFT].pressed) {
+	      tile_type = hovering_tile_type;
+	    }
+	  }
+	} else {
+	  if (ctx->m[MOUSE_BUTTON_LEFT].held) {
+	    for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; x += TILE_SIZE) {
+	      for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; y += TILE_SIZE) {
+		Vector2f p = {x, y};
+		Stage_add_tile(current_stage, tile_type, tile_collidable, p);
+	      }
+	    }
+	  }
+
+	  // TODO: Have some sort of action history for undo-ing
+	  if (ctx->m[MOUSE_BUTTON_RIGHT].held) {
+	    for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; x += TILE_SIZE) {
+	      for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; y += TILE_SIZE) {
+		Vector2f p = {x, y};
+		Stage_remove_tile(current_stage, p);
+	      }
 	    }
 	  }
 	}
 
-	// TODO: Have some sort of action history for undo-ing
-	if (ctx->m[MOUSE_BUTTON_RIGHT].held) {
-	  for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; x += TILE_SIZE) {
-	    for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; y += TILE_SIZE) {
-	      Vector2f p = {x, y};
-	      Stage_remove_tile(current_stage, p);
-	    }
-	  }
+	if (ctx->k[KEY_C].pressed) {
+	  tile_collidable = !tile_collidable;
 	}
       }
 
-      if (ctx->k[KEY_C].pressed) {
-	tile_collidable = !tile_collidable;
+      if (ctx->k[KEY_W].pressed) {
+	if (!tile_warp_info.active) {
+	  WARP_MODE = true;
+	  Debug_box_push_text(&dbox, &warp_mode_text);
+	  Debug_box_push_text(&dbox, &tile_warp_info.in_stage);
+	  Debug_box_push_text(&dbox, &tile_warp_info.out_stage);
+	} else {
+	  WARP_MODE = false;
+	  Debug_box_pop_text(&dbox);
+	}
+	tile_warp_info.active = !tile_warp_info.active;
       }
 
       if (ctx->k[KEY_LEFT_CONTROL].held && ctx->k[KEY_S].pressed) {

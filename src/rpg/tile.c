@@ -17,7 +17,8 @@ cstr Warp_info_serialize(Warp_info* wi) {
   if (!wi->active) {
     res = "";
   } else {
-    temp_sprint(res, "%d|%s|%f,%f|%f,%f", wi->active, wi->stage_name,
+    temp_sprint(res, "%d|%s|%s|%f,%f|%f,%f", wi->active,
+		wi->in_stage, wi->out_stage,
 		wi->in_pos.x, wi->in_pos.y, wi->out_pos.x, wi->out_pos.y);
   }
 
