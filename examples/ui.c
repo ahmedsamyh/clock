@@ -16,6 +16,9 @@ int main(void) {
 
     UI_begin(&ui, (Vector2f) {10.f, 0.f}, UI_LAYOUT_KIND_VERT);
 
+    UI_text(&ui, "Buttons", 32, COLOR_WHITE);
+    UI_spacing(&ui, 32.f);
+
     if (UI_button(&ui, "Press me 1", 24, COLOR_RED)) {
       log_f(LOG_INFO, "Pressed 1");
     }

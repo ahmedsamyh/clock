@@ -145,6 +145,46 @@ bool UI_button(UI* this, cstr text, int char_size, Color color) {
   return click;
 }
 
+void UI_text(UI* this, cstr text, int char_size, Color color) {
+  int id = this->last_used_id++;
+  UI_Layout* layout = UI_top_layout(this);
+  if (layout == NULL) {
+    log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
+    return;
+  }
+  assert(this->ctx);
+  Context* ctx = this->ctx;
+
+  const Vector2f pos = UI_Layout_available_pos(layout);
+  const Vector2f size = v2f_add(get_text_size(this->ctx, this->font, text, char_size), v2f_muls(this->btn_padding, 2.f));
+  draw_text(ctx, this->font, text, pos, char_size, color);
+  UI_Layout_push_widget(layout, size);
+
+}
+
+void UI_spacing(UI* this, float spacing) {
+  int id = this->last_used_id++;
+  UI_Layout* layout = UI_top_layout(this);
+  if (layout == NULL) {
+    log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
+    return;
+  }
+  assert(this->ctx);
+  Context* ctx = this->ctx;
+
+  Vector2f size = {
+    .x = spacing,
+    .y = 0.f,
+  };
+
+  if (layout->kind == UI_LAYOUT_KIND_VERT) {
+    size.x = 0.f;
+    size.y = spacing;
+  }
+
+  UI_Layout_push_widget(layout, size);
+}
+
 void UI_end(UI* this) {
   this->last_used_id = 0;
   UI_pop_layout(this);
