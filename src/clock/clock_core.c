@@ -695,6 +695,7 @@ void draw_point(Context* ctx, Vector2f p, Color col) {
 }
 
 void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color) {
+  if (!text) return;
   Sprite spr = {0};
   if (font->current_character_size != char_size) {
     Font_generate_atlas_tex(font, char_size);
@@ -733,6 +734,7 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
 
 Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size) {
   Vector2f size = {0};
+  if (text == NULL) return size;
   size.y = char_size;
   while (*text != '\0') {
     int codepoint = *text;
