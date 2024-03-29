@@ -6,7 +6,7 @@ set CLEAN_QUIET=1
 set INCLUDE_DIRS=.\include
 set LIB_DIR=.\lib
 set LIBS=user32.lib shell32.lib gdi32.lib kernel32.lib
-set CLOCK_FILES=clock_core clock_math clock_vector clock_matrix clock_texture clock_sprite clock_rect clock_resource_manager clock_render_target clock_color clock_font clock_timer
+set CLOCK_FILES=clock_core clock_math clock_vector clock_matrix clock_texture clock_sprite clock_rect clock_resource_manager clock_render_target clock_color clock_font clock_timer clock_ui
 set CLOCK_SRCS=
 set CLOCK_OBJS=
 set COMMON_CFLAGS=/Zi /W1
@@ -69,6 +69,7 @@ if "!arg!"=="vector_gen" (
   call shell build rotating_quad
   call shell build drawing_sprite
   call shell build text
+  call shell build ui
 
 ) else if "!arg!"=="rotating_quad" (
   call shell build clock !config!
@@ -82,6 +83,10 @@ if "!arg!"=="vector_gen" (
   call shell build clock !config!
 
   call shell cl !COMMON_CFLAGS! examples\text.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
+) else if "!arg!"=="ui" (
+  call shell build clock !config!
+
+  call shell cl !COMMON_CFLAGS! examples\ui.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
 ) else if "!arg!"=="clean" (
   call shell clean exe
   call shell clean ilk

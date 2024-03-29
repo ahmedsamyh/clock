@@ -7,5 +7,6 @@
 #include <clock/clock_core.h>
 #include <clock/clock_font.h>
 #include <clock/clock_render_target.h>
+#include <clock/clock_ui.h>
 
 #endif /* _CLOCK_H_ */
