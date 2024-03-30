@@ -26,7 +26,7 @@ void UI_Layout_push_widget(UI_Layout* this, Vector2f size) {
   switch (this->kind) {
   case UI_LAYOUT_KIND_HORZ: {
     this->size.x += size.x + this->padding.x;
-    this->size.y += max(this->size.y, size.y);
+    this->size.y = max(this->size.y, size.y);
   } break;
   case UI_LAYOUT_KIND_VERT: {
     this->size.x = max(this->size.x, size.x);

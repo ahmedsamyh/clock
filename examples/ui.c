@@ -22,22 +22,32 @@ int main(void) {
     UI_text(&ui, "Buttons", 32, COLOR_WHITE);
     UI_spacing(&ui, 32.f);
 
-    if (UI_button(&ui, "Press me 1", 24, COLOR_RED)) {
-      log_f(LOG_INFO, "Pressed 1");
-    }
+    {
+      UI_begin_layout(&ui, UI_LAYOUT_KIND_HORZ);
+      if (UI_button(&ui, "Press me 1", 24, COLOR_RED)) {
+	log_f(LOG_INFO, "Pressed 1");
+      }
 
-    if (UI_button(&ui, "Press me 2", 24, COLOR_GREEN)) {
-      log_f(LOG_INFO, "Pressed 2");
+      if (UI_button(&ui, "Press me 2", 24, COLOR_GREEN)) {
+	log_f(LOG_INFO, "Pressed 2");
+      }
+      UI_end_layout(&ui);
     }
 
     if (UI_button(&ui, "Press me 3", 24, COLOR_YELLOW)) {
       log_f(LOG_INFO, "Pressed 3");
     }
 
-    UI_sprite(&ui, &spr);
+    {
+      UI_begin_layout(&ui, UI_LAYOUT_KIND_HORZ);
 
-    if (UI_sprite_button(&ui, &spr)) {
-      log_f(LOG_INFO, "Sprite pressed");
+      UI_sprite(&ui, &spr);
+
+      if (UI_sprite_button(&ui, &spr)) {
+	log_f(LOG_INFO, "Sprite pressed");
+      }
+
+      UI_end_layout(&ui);
     }
 
     UI_end(&ui);
