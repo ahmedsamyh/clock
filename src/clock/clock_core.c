@@ -626,6 +626,22 @@ void draw_rect(Context* ctx, Rect rect, Color color) {
   draw_imm_quad(ctx, tl, tr, br, bl, color, color, color, color);
 }
 
+void draw_box(Context* ctx, Rect rect, Color out_color, Color fill_color) {
+  Renderer* r = ctx->ren;
+  Vector2f tl, tr, br, bl;
+  Rect_get_points(rect, &tl, &tr, &br, &bl);
+  draw_imm_quad(ctx, tl, tr, br, bl, fill_color, fill_color, fill_color, fill_color);
+  draw_imm_box(ctx, tl, tr, br, bl, out_color, out_color, out_color, out_color);
+}
+
+void draw_rect_centered(Context* ctx, Rect rect, Color col) {
+  Vector2f p0 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y - (rect.size.y * 0.5f)};
+  Vector2f p1 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y - (rect.size.y * 0.5f)};
+  Vector2f p2 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
+  Vector2f p3 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
+  draw_imm_quad(ctx, p0, p1, p2, p3, col, col, col, col);
+}
+
 void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
   Renderer* r = ctx->ren;
 
@@ -657,14 +673,6 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
   gl(glDrawArrays(GL_LINE_STRIP, 0, 2));
 
   set_matrices(ctx, screen_size);
-}
-
-void draw_rect_centered(Context* ctx, Rect rect, Color col) {
-  Vector2f p0 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y - (rect.size.y * 0.5f)};
-  Vector2f p1 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y - (rect.size.y * 0.5f)};
-  Vector2f p2 = {rect.pos.x + (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
-  Vector2f p3 = {rect.pos.x - (rect.size.x * 0.5f), rect.pos.y + (rect.size.y * 0.5f)};
-  draw_imm_quad(ctx, p0, p1, p2, p3, col, col, col, col);
 }
 
 void draw_point_3d(Context* ctx, Vector3f p, Color col) {
