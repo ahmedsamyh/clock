@@ -126,6 +126,7 @@ void draw_imm_quad(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Vector2f
 void draw_imm_box_2d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, Vector3f p3, Color c0, Color c1, Color c2, Color c3);
 void draw_imm_box(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Vector2f p3, Color c0, Color c1, Color c2, Color c3);
 void draw_sprite(Context* ctx, Sprite* spr);
+void draw_sprite_at(Context* ctx, Sprite* spr, Vector2f pos);
 void draw_rect(Context* ctx, Rect rect, Color color);
 void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1);
 void draw_rect_centered(Context* ctx, Rect rect, Color col);

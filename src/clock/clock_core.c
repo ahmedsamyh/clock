@@ -607,6 +607,16 @@ void draw_sprite(Context* ctx, Sprite* spr) {
   glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 }
 
+void draw_sprite_at(Context* ctx, Sprite* spr, Vector2f pos) {
+  Vector2f previous_pos = spr->pos;
+
+  spr->pos = pos;
+
+  draw_sprite(ctx, spr);
+
+  spr->pos = previous_pos;
+}
+
 void draw_rect(Context* ctx, Rect rect, Color color) {
   Renderer* r = ctx->ren;
   Vector2f tl = (Vector2f){rect.pos.x, rect.pos.y};
