@@ -43,6 +43,7 @@ UI UI_make(Context* ctx, Font* font) {
   res.ctx = ctx;
   res.font = font;
   res.btn_padding = (Vector2f) {4.f, 4.f};
+  res.text_input_width = 12;
 
   return res;
 }
@@ -96,15 +97,15 @@ void UI_begin(UI* this, Vector2f pos, UI_Layout_kind kind) {
 
 bool UI_button(UI* this, cstr text, int char_size, Color color) {
   int id = this->last_used_id++;
-  UI_Layout* layout = UI_top_layout(this);
-  if (layout == NULL) {
+  UI_Layout* top = UI_top_layout(this);
+  if (top == NULL) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return false;
   }
   assert(this->ctx);
   Context* ctx = this->ctx;
 
-  const Vector2f pos = UI_Layout_available_pos(layout);
+  const Vector2f pos = UI_Layout_available_pos(top);
   const Vector2f size = v2f_add(get_text_size(this->ctx, this->font, text, char_size), v2f_muls(this->btn_padding, 2.f));
   const Rect rect = {pos, size};
   bool click = false;
@@ -140,54 +141,54 @@ bool UI_button(UI* this, cstr text, int char_size, Color color) {
   }
   draw_text(ctx, this->font, text, draw_pos, char_size, COLOR_WHITE);
 
-  UI_Layout_push_widget(layout, size);
+  UI_Layout_push_widget(top, size);
 
   return click;
 }
 
 void UI_text(UI* this, cstr text, int char_size, Color color) {
   int id = this->last_used_id++;
-  UI_Layout* layout = UI_top_layout(this);
-  if (layout == NULL) {
+  UI_Layout* top = UI_top_layout(this);
+  if (top == NULL) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return;
   }
   assert(this->ctx);
   Context* ctx = this->ctx;
 
-  const Vector2f pos = UI_Layout_available_pos(layout);
+  const Vector2f pos = UI_Layout_available_pos(top);
   const Vector2f size = v2f_add(get_text_size(this->ctx, this->font, text, char_size), v2f_muls(this->btn_padding, 2.f));
   draw_text(ctx, this->font, text, pos, char_size, color);
-  UI_Layout_push_widget(layout, size);
+  UI_Layout_push_widget(top, size);
 }
 
 void UI_sprite(UI* this, Sprite* spr) {
   int id = this->last_used_id++;
-  UI_Layout* layout = UI_top_layout(this);
-  if (layout == NULL) {
+  UI_Layout* top = UI_top_layout(this);
+  if (top == NULL) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return;
   }
   assert(this->ctx);
   Context* ctx = this->ctx;
 
-  const Vector2f pos = UI_Layout_available_pos(layout);
+  const Vector2f pos = UI_Layout_available_pos(top);
   const Vector2f size = spr->tex_rect.size;
   draw_sprite_at(ctx, spr, pos);
-  UI_Layout_push_widget(layout, size);
+  UI_Layout_push_widget(top, size);
 }
 
 bool UI_sprite_button(UI* this, Sprite* spr) {
   int id = this->last_used_id++;
-  UI_Layout* layout = UI_top_layout(this);
-  if (layout == NULL) {
+  UI_Layout* top = UI_top_layout(this);
+  if (top == NULL) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return false;
   }
   assert(this->ctx);
   Context* ctx = this->ctx;
 
-  const Vector2f pos = UI_Layout_available_pos(layout);
+  const Vector2f pos = UI_Layout_available_pos(top);
   const Vector2f size = spr->tex_rect.size;
   const Rect rect = {pos, size};
   bool click = false;
@@ -219,15 +220,15 @@ bool UI_sprite_button(UI* this, Sprite* spr) {
   draw_sprite_at(ctx, spr, pos);
   spr->tint = previous_tint;
 
-  UI_Layout_push_widget(layout, size);
+  UI_Layout_push_widget(top, size);
 
   return click;
 }
 
 void UI_spacing(UI* this, float spacing) {
   int id = this->last_used_id++;
-  UI_Layout* layout = UI_top_layout(this);
-  if (layout == NULL) {
+  UI_Layout* top = UI_top_layout(this);
+  if (top == NULL) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return;
   }
@@ -239,12 +240,62 @@ void UI_spacing(UI* this, float spacing) {
     .y = 0.f,
   };
 
-  if (layout->kind == UI_LAYOUT_KIND_VERT) {
+  if (top->kind == UI_LAYOUT_KIND_VERT) {
     size.x = 0.f;
     size.y = spacing;
   }
 
-  UI_Layout_push_widget(layout, size);
+  UI_Layout_push_widget(top, size);
+}
+
+void UI_text_input(UI* this, cstr* text, int char_size, Color color) {
+  int id = this->last_used_id++;
+  UI_Layout* top = UI_top_layout(this);
+  if (top == NULL) {
+    log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
+    return;
+  }
+  assert(this->ctx);
+  Context* ctx = this->ctx;
+
+  const Vector2f pos = UI_Layout_available_pos(top);
+  // TODO: maybe have text input padding?
+  const Vector2f size = v2f_add((Vector2f) {this->text_input_width * char_size, char_size}, v2f_muls(this->btn_padding, 2.f));
+  const Rect rect = {pos, size};
+  bool click = false;
+  bool hovering = Rect_contains_point(rect, ctx->mpos);
+  if (this->active_id == id) {
+    if (ctx->m[MOUSE_BUTTON_LEFT].released) {
+      this->active_id = -1;
+      if (hovering) {
+	click = true;
+      }
+    }
+  } else {
+    if (hovering && ctx->m[MOUSE_BUTTON_LEFT].pressed) {
+      this->active_id = id;
+    }
+  }
+
+  draw_box(ctx, rect, COLOR_WHITE, COLOR_BLANK);
+  // TODO: look previous todo...
+  Vector2f draw_pos = v2f_add(pos, this->btn_padding);
+  bool is_clicked = (hovering && ctx->m[MOUSE_BUTTON_LEFT].held);
+  if (is_clicked) {
+    draw_pos = v2f_adds(draw_pos, 1);
+  }
+
+  float text_width = get_text_size(this->ctx, this->font, *text, char_size).x;
+  float text_box_width = (this->text_input_width * char_size);
+  if (text_width > text_box_width) {
+    draw_pos.x -= text_width - text_box_width;
+  }
+
+  clock_begin_scissor(ctx, rect);
+  draw_text(ctx, this->font, *text, draw_pos, char_size, color);
+  clock_end_scissor(ctx);
+
+  UI_Layout_push_widget(top, size);
 }
 
 void UI_end(UI* this) {

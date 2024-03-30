@@ -13,11 +13,20 @@ int main(void) {
   Sprite spr = {0};
   if (!Sprite_init(&spr, Resman_load_texture_from_file(ctx->resman, "resources/gfx/flower.png"), 1, 1)) return 1;
 
+  char* text_input = "Hello, this is a long text.";
+  int s = strlen((cstr)text_input);
+
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
     clock_clear(ctx, COLOR_BLACK);
 
-    UI_begin(&ui, (Vector2f) {10.f, 0.f}, UI_LAYOUT_KIND_VERT);
+    if (ctx->k[KEY_SPACE].pressed) {
+      if (s >= 0) {
+	text_input[s--] = '\0';
+      }
+    }
+
+    UI_begin(&ui, (Vector2f) {100.f, 0.f}, UI_LAYOUT_KIND_VERT);
 
     UI_text(&ui, "Buttons", 32, COLOR_WHITE);
     UI_spacing(&ui, 32.f);
@@ -49,6 +58,8 @@ int main(void) {
 
       UI_end_layout(&ui);
     }
+
+    UI_text_input(&ui, &text_input, 24, COLOR_YELLOW);
 
     UI_end(&ui);
 
