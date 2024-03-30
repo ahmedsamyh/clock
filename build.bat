@@ -67,7 +67,7 @@ if "!arg!"=="vector_gen" (
 ) else if "!arg!"=="examples" (
   echo Building examples...
   call shell build rotating_quad
-  call shell build drawing_sprite
+  call shell build sprite
   call shell build text
   call shell build ui
 
@@ -75,10 +75,10 @@ if "!arg!"=="vector_gen" (
   call shell build clock !config!
 
   call shell cl !COMMON_CFLAGS! examples\rotating_quad.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
-) else if "!arg!"=="drawing_sprite" (
+) else if "!arg!"=="sprite" (
   call shell build clock !config!
 
-  call shell cl !COMMON_CFLAGS! examples\drawing_sprite.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\sprite.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
 ) else if "!arg!"=="text" (
   call shell build clock !config!
 

@@ -12,7 +12,7 @@ int main(void) {
 
   Texture* khu_tex = Resman_load_texture_from_file(ctx->resman, "resources/gfx/khu_sheet.png");
 
-  if (!Sprite_init(&spr, khu_tex, 3, 1)) {
+  if (!Sprite_init(&spr, Resman_load_texture_from_file(ctx->resman, "resources/gfx/flower.png"), 1, 1)) {
     return 1;
   }
 
