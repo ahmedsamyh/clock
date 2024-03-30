@@ -4,7 +4,6 @@
 #include <rpg/enemy.h>
 #include <rpg/tile.h>
 #include <rpg/common.h>
-#include <rpg/debug_box.h>
 #include <assert.h>
 
 typedef enum {
@@ -66,7 +65,6 @@ int main(void) {
 
   Texture* player_tex = load_texture_err_handled(ctx, "resources/gfx/player.png");
   Texture* tiles_tex  = load_texture_err_handled(ctx, "resources/gfx/tiles.png");
-  Texture* font_tex = load_texture_err_handled(ctx, "resources/gfx/spr_font.png");
 
   init_tiles_texture(tiles_tex);
 
@@ -99,18 +97,11 @@ int main(void) {
 
   cstr current_state_text = "";
 
-  Debug_box dbox = {0};
-  Debug_box_default(&dbox, ctx, &font);
-  dbox.pos.x = width*0.5f;
-
-  Debug_box_push_text(&dbox, &current_state_text);
-
   State current_state;
   if (!change_state(ctx, &current_state, STATE_PLAY, &current_state_text)) return 1;
 
   // Edit
   cstr collidable_text = "Collidable: on";
-  cstr warp_mode_text = "Warp mode";
   bool WARP_MODE = false;
   Rect edit_cursor = {
     .pos = (Vector2f) {0.f, 0.f},
@@ -128,6 +119,8 @@ int main(void) {
     .size = v2f_mul(tiles_spr.size, tiles_spr.scale),
   };
 
+  UI ui = UI_make(ctx, &font);
+
   while (!clock_should_quit(ctx)) {
 
     clock_begin_draw(ctx);
@@ -140,19 +133,6 @@ int main(void) {
     if (ctx->k[KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
     if (ctx->k[KEY_TAB].pressed) {
       if (!change_state(ctx, &current_state, (current_state + 1) % STATE_COUNT, &current_state_text)) return 1;
-      switch (current_state) {
-      case STATE_PLAY: {
-
-	while (arrlenu(dbox.text_ptrs) > 1) {
-	  Debug_box_pop_text(&dbox);
-	}
-      } break;
-      case STATE_EDIT: {
-	Debug_box_push_text(&dbox, &current_stage_name);
-	Debug_box_push_text(&dbox, &collidable_text);
-      } break;
-      default: assert(0 && "Unreachable");
-      }
     }
 
     Stage_KV* current_stage_kv = shgetp_null(stage_map, current_stage_name);
@@ -186,7 +166,6 @@ int main(void) {
 	    WARP_MODE = false;
 	  }
 	}
-
       } else {
 	// Increase cursor size
 	if (ctx->k[KEY_Z].pressed) {
@@ -246,12 +225,8 @@ int main(void) {
       if (ctx->k[KEY_W].pressed) {
 	if (!tile_warp_info.active) {
 	  WARP_MODE = true;
-	  Debug_box_push_text(&dbox, &warp_mode_text);
-	  Debug_box_push_text(&dbox, &tile_warp_info.in_stage);
-	  Debug_box_push_text(&dbox, &tile_warp_info.out_stage);
 	} else {
 	  WARP_MODE = false;
-	  Debug_box_pop_text(&dbox);
 	}
 	tile_warp_info.active = !tile_warp_info.active;
       }
@@ -274,7 +249,7 @@ int main(void) {
 
     switch (current_state) {
     case STATE_PLAY: {
-      clock_clear(ctx, hex_to_color(0xFF555555));
+      clock_clear(ctx, color_from_hex(0xFF555555));
       Stage_draw(current_stage, DEBUG_DRAW);
 
       for (int i = arrlen(enemies) - 1; i >= 0; --i) {
@@ -284,7 +259,7 @@ int main(void) {
       Player_draw(&player, DEBUG_DRAW);
     } break;
     case STATE_EDIT: {
-      clock_clear(ctx, hex_to_color(0xFF5555AA));
+      clock_clear(ctx, color_from_hex(0xFF5555AA));
       Stage_draw(current_stage, DEBUG_DRAW);
 
       draw_rect(ctx, edit_cursor, color_alpha(COLOR_GREEN, 0.5f));
@@ -293,9 +268,7 @@ int main(void) {
 	bool prev_state = ctx->use_camera_view;
 	clock_use_camera_view(ctx, false);
 	draw_rect(ctx, (Rect){(Vector2f){0.f, 0.f}, screen_size}, color_alpha(COLOR_BLACK, 0.8f));
-	// TODO: Make draw_sprite_at() func
 	Sprite tiles_spr_copy = tiles_spr;
-	/* tiles_spr_copy.pos = clock_screen_to_world(ctx, tiles_spr.pos); */
 	draw_sprite(ctx, &tiles_spr_copy);
 	Color color = COLOR_RED;
 
@@ -323,11 +296,37 @@ int main(void) {
       }
 
       Player_draw(&player, DEBUG_DRAW);
+
     } break;
     default: assert(0 && "Unreachable");
     }
 
-    Debug_box_draw(&dbox);
+    //
+    // UI
+    //
+    UI_begin(&ui, (Vector2f) {width/2.f, 0.f}, UI_LAYOUT_KIND_VERT);
+    cstr full_state_text;
+    temp_sprint(full_state_text, "State: %s", current_state_text);
+    UI_text(&ui, full_state_text, 24, COLOR_WHITE);
+
+    switch (current_state) {
+    case STATE_PLAY: {
+    } break;
+    case STATE_EDIT: {
+      cstr full_stage_name;
+      temp_sprint(full_stage_name, "Stage: %s", current_stage_name);
+      UI_text(&ui, full_stage_name, 24, COLOR_WHITE);
+
+      UI_text(&ui, collidable_text, 24, COLOR_WHITE);
+      cstr warp_mode_text;
+      temp_sprint(warp_mode_text, "Warp mode: %s", (WARP_MODE ? "On" : "Off"));
+      UI_text(&ui, warp_mode_text, 24, COLOR_WHITE);
+    } break;
+    default: assert(0 && "Unreachable");
+    }
+
+    UI_end(&ui);
+
 
     clock_end_draw(ctx);
   }

@@ -42,7 +42,7 @@ if "!config!" == "Release" (
 
 rem RPG --------------------------------------------------
 set RPG_SRC_PATH=src\rpg
-set RPG_FILES=rpg player enemy tile common stage debug_box
+set RPG_FILES=rpg player enemy tile common stage
 set RPG_SRCS=
 
 for %%i in (!RPG_FILES!) do (
