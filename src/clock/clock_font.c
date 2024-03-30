@@ -83,7 +83,7 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
 
   /* log_f(LOG_INFO, "Font codepoint range: %d..%d", font->codepoint_start, font->codepoint_end); */
 
-  Texture_load_empty(font->texture, tex_size.x, tex_size.y);
+  Texture_load_font_atlas(font->texture, tex_size.x, tex_size.y);
 
   gl(glBindTexture(GL_TEXTURE_2D, font->texture->id));
 

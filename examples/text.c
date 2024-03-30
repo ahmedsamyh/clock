@@ -12,19 +12,28 @@ int main(void) {
     return 1;
   }
 
+  cstr text = "The quick brown fox jumps over the lazy dog";
+
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
-    clock_clear(ctx, COLOR_RED);
+    clock_clear(ctx, color_from_hex(0xFF141414));
 
-    cstr text = "The quick brown fox jumps over the lazy dog";
-    draw_text(ctx, &font, text, ctx->mpos, 32, (Color){0.4f, 0.f, 0.5f, 1.f});
-
-    Rect rect = {
-      .pos = ctx->mpos,
-      .size = get_text_size(ctx, &font, text, 32)
-    };
-
-    draw_rect(ctx, rect, color_alpha(COLOR_GREEN, 0.4f));
+    float y = 0.f;
+    int char_size = 32;
+    if (ctx->k[KEY_SPACE].held) {
+      for (size_t i = 0; i < 4; ++i) {
+	draw_text(ctx, &font, text, (Vector2f) {ctx->mpos.x / char_size, y}, char_size, COLOR_MAGENTA);
+	y += char_size;
+	char_size -= 1;
+	draw_text(ctx, &font, text, (Vector2f) {ctx->mpos.x / char_size, y}, char_size, COLOR_GOLD);
+	y += char_size;
+	char_size -= 1;
+	draw_text(ctx, &font, text, (Vector2f) {ctx->mpos.x / char_size, y}, char_size, COLOR_ORANGE);
+	y += char_size;
+	char_size -= 1;
+	draw_text(ctx, &font, text, (Vector2f) {ctx->mpos.x / char_size, y}, char_size, COLOR_CYAN);
+      }
+    }
 
     clock_end_draw(ctx);
   }

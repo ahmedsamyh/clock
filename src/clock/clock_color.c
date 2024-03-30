@@ -1,6 +1,6 @@
 #include <clock/clock_color.h>
 
-Color hex_to_color(int color) {
+Color color_from_hex(int color) {
   return (Color) {
     .r = ((color >> (8 * 0)) & 0xFF) / 255.f,
     .g = ((color >> (8 * 1)) & 0xFF) / 255.f,
