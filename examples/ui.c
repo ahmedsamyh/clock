@@ -10,6 +10,9 @@ int main(void) {
 
   UI ui = UI_make(ctx, &font);
 
+  Sprite spr = {0};
+  if (!Sprite_init(&spr, Resman_load_texture_from_file(ctx->resman, "resources/gfx/flower.png"), 1, 1)) return 1;
+
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
     clock_clear(ctx, COLOR_BLACK);
@@ -31,11 +34,18 @@ int main(void) {
       log_f(LOG_INFO, "Pressed 3");
     }
 
+    UI_sprite(&ui, &spr);
+
+    if (UI_sprite_button(&ui, &spr)) {
+      log_f(LOG_INFO, "Sprite pressed");
+    }
+
     UI_end(&ui);
 
     clock_end_draw(ctx);
   }
 
+  Sprite_deinit(&spr);
   Font_deinit(&font);
   clock_deinit(ctx);
 

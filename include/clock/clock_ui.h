@@ -46,6 +46,8 @@ void UI_begin(UI* this, Vector2f pos, UI_Layout_kind kind);
 bool UI_button(UI* this, cstr text, int char_size, Color color);
 void UI_text(UI* this, cstr text, int char_size, Color color);
 void UI_spacing(UI* this, float spacing);
+void UI_sprite(UI* this, Sprite* spr);
+bool UI_sprite_button(UI* this, Sprite* spr);
 void UI_end(UI* this);
 
 #endif /* _CLOCK_UI_H_ */

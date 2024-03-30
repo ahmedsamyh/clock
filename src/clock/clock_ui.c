@@ -159,7 +159,69 @@ void UI_text(UI* this, cstr text, int char_size, Color color) {
   const Vector2f size = v2f_add(get_text_size(this->ctx, this->font, text, char_size), v2f_muls(this->btn_padding, 2.f));
   draw_text(ctx, this->font, text, pos, char_size, color);
   UI_Layout_push_widget(layout, size);
+}
 
+void UI_sprite(UI* this, Sprite* spr) {
+  int id = this->last_used_id++;
+  UI_Layout* layout = UI_top_layout(this);
+  if (layout == NULL) {
+    log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
+    return;
+  }
+  assert(this->ctx);
+  Context* ctx = this->ctx;
+
+  const Vector2f pos = UI_Layout_available_pos(layout);
+  const Vector2f size = spr->tex_rect.size;
+  draw_sprite_at(ctx, spr, pos);
+  UI_Layout_push_widget(layout, size);
+}
+
+bool UI_sprite_button(UI* this, Sprite* spr) {
+  int id = this->last_used_id++;
+  UI_Layout* layout = UI_top_layout(this);
+  if (layout == NULL) {
+    log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
+    return false;
+  }
+  assert(this->ctx);
+  Context* ctx = this->ctx;
+
+  const Vector2f pos = UI_Layout_available_pos(layout);
+  const Vector2f size = spr->tex_rect.size;
+  const Rect rect = {pos, size};
+  bool click = false;
+  bool hovering = Rect_contains_point(rect, ctx->mpos);
+  if (this->active_id == id) {
+    if (ctx->m[MOUSE_BUTTON_LEFT].released) {
+      this->active_id = -1;
+      if (hovering) {
+	click = true;
+      }
+    }
+  } else {
+    if (hovering && ctx->m[MOUSE_BUTTON_LEFT].pressed) {
+      this->active_id = id;
+    }
+  }
+
+  float alpha = 0.4f;
+  if (hovering) {
+    alpha = 0.5f;
+  }
+
+  bool is_clicked = (hovering && ctx->m[MOUSE_BUTTON_LEFT].held);
+  if (is_clicked) {
+    alpha = 1.f;
+  }
+  Color previous_tint = spr->tint;
+  spr->tint.a = alpha;
+  draw_sprite_at(ctx, spr, pos);
+  spr->tint = previous_tint;
+
+  UI_Layout_push_widget(layout, size);
+
+  return click;
 }
 
 void UI_spacing(UI* this, float spacing) {
