@@ -87,6 +87,10 @@ if "!arg!"=="vector_gen" (
   call shell build clock !config!
 
   call shell cl !COMMON_CFLAGS! examples\ui.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
+) else if "!arg!"=="text_input" (
+  call shell build clock !config!
+
+  call shell cl !COMMON_CFLAGS! examples\text_input.c /I!INCLUDE_DIRS! /link !LIB_DIR!\clock.lib !LIBS!
 ) else if "!arg!"=="clean" (
   call shell clean exe
   call shell clean ilk
