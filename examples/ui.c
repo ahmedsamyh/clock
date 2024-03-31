@@ -17,11 +17,14 @@ int main(void) {
   char text_input[text_input_size] = {0};
   uint32 text_cursor = 0;
 
+
+  Vector2f ui_pos = {100.f, 100.f};
+
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
-    clock_clear(ctx, COLOR_BLACK);
+    clock_clear(ctx, COLOR_MIDNIGHT_BLUE);
 
-    UI_begin(&ui, (Vector2f) {100.f, 0.f}, UI_LAYOUT_KIND_VERT);
+    UI_begin(&ui, &ui_pos, UI_LAYOUT_KIND_VERT);
 
     UI_text(&ui, "Buttons", 32, COLOR_WHITE);
     UI_spacing(&ui, 32.f);
@@ -59,6 +62,8 @@ int main(void) {
     if (UI_button(&ui, "Submit", 24, COLOR_WHITE)) {
       log_f(LOG_INFO, "%s", text_input);
     }
+
+    UI_background(&ui);
 
     UI_end(&ui);
 

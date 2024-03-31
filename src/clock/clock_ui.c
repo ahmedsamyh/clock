@@ -1,5 +1,6 @@
 #include <clock/clock_ui.h>
 #include <assert.h>
+#include <float.h>
 
 Vector2f UI_Layout_available_pos(UI_Layout* this) {
   switch (this->kind) {
@@ -44,6 +45,7 @@ UI UI_make(Context* ctx, Font* font) {
   res.font = font;
   res.btn_padding = (Vector2f) {4.f, 4.f};
   res.text_input_width = 12;
+  res.bg_padding = (Vector2f) {10.f, 10.f};
 
   return res;
 }
@@ -88,9 +90,10 @@ void UI_end_layout(UI* this) {
   UI_Layout_push_widget(parent, child.size);
 }
 
-void UI_begin(UI* this, Vector2f pos, UI_Layout_kind kind) {
+void UI_begin(UI* this, Vector2f* pos, UI_Layout_kind kind) {
   UI_Layout layout = {0};
-  layout.pos = pos;
+  this->active_pos = pos;
+  layout.pos = *pos;
   layout.kind = kind;
   UI_push_layout(this, layout);
 }
@@ -215,6 +218,7 @@ bool UI_sprite_button(UI* this, Sprite* spr) {
   if (is_clicked) {
     alpha = 1.f;
   }
+
   Color previous_tint = spr->tint;
   spr->tint.a = alpha;
   draw_sprite_at(ctx, spr, pos);
@@ -287,8 +291,8 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
       if (clock_key_held(ctx, KEY_LEFT_CONTROL)) {
 	this->active_id = -1;
       } else {
-	text_buff[cursor] = '\n';
-	cursor++;
+    /* 	text_buff[cursor] = '\n'; */
+    /* 	cursor++; */
       }
     }
 
@@ -350,7 +354,57 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
   *cursor_ptr = cursor;
 }
 
+void UI_background(UI* this) {
+  Vector2f min = {FLT_MAX, FLT_MAX};
+  Vector2f max = {FLT_MIN, FLT_MIN};
+  for (size_t i = 0; i < this->layouts_count; ++i) {
+    if (this->layouts[i].pos.x < min.x) min.x = this->layouts[i].pos.x;
+    if (this->layouts[i].pos.y < min.y) min.y = this->layouts[i].pos.y;
+
+    if (this->layouts[i].pos.x + this->layouts[i].size.x > max.x) max.x = this->layouts[i].pos.x + this->layouts[i].size.x;
+    if (this->layouts[i].pos.y + this->layouts[i].size.y > max.y) max.y = this->layouts[i].pos.y + this->layouts[i].size.y;
+  }
+
+  Rect rect = {
+    .pos = v2f_sub(min, this->bg_padding),
+    .size = v2f_add(v2f_sub(max, min), v2f_muls(this->bg_padding, 2.f))
+  };
+
+  draw_box(this->ctx, rect, COLOR_WHITE, color_alpha(COLOR_BLACK, 0.f));
+}
+
 void UI_end(UI* this) {
+  Context* ctx = this->ctx;
+  Vector2f min = {FLT_MAX, FLT_MAX};
+  Vector2f max = {FLT_MIN, FLT_MIN};
+  for (size_t i = 0; i < this->layouts_count; ++i) {
+    if (this->layouts[i].pos.x < min.x) min.x = this->layouts[i].pos.x;
+    if (this->layouts[i].pos.y < min.y) min.y = this->layouts[i].pos.y;
+
+    if (this->layouts[i].pos.x + this->layouts[i].size.x > max.x) max.x = this->layouts[i].pos.x + this->layouts[i].size.x;
+    if (this->layouts[i].pos.y + this->layouts[i].size.y > max.y) max.y = this->layouts[i].pos.y + this->layouts[i].size.y;
+  }
+
+  Rect rect = {
+    .pos = v2f_sub(min, this->bg_padding),
+    .size = v2f_add(v2f_sub(max, min), v2f_muls(this->bg_padding, 2.f))
+  };
+
+  if (!ctx->m[MOUSE_BUTTON_LEFT].held) {
+    this->is_moving = false;
+  }
+
+  if (clock_key_held(ctx, KEY_LEFT_ALT) &&
+      ctx->m[MOUSE_BUTTON_LEFT].pressed &&
+      Rect_contains_point(rect, ctx->mpos)) {
+    this->active_pos_offset = v2f_sub(ctx->mpos, rect.pos);
+    this->is_moving = true;
+  }
+
+  if (this->is_moving) {
+    *this->active_pos = v2f_sub(ctx->mpos, this->active_pos_offset);
+  }
+
   this->last_used_id = 0;
   UI_pop_layout(this);
 }

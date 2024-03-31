@@ -30,10 +30,12 @@ struct UI {
   size_t layouts_count;
   Vector2f btn_padding;
   int text_input_width; // in characters, so depends on the char_size
-  /* int hover_time; */
-  /* int hover_time_max; */
   Context* ctx;
   Font* font;
+  Vector2f bg_padding;
+  Vector2f* active_pos;
+  Vector2f active_pos_offset;
+  bool is_moving;
 };
 
 UI UI_make(Context* ctx, Font* font);
@@ -43,13 +45,14 @@ UI_Layout* UI_top_layout(UI* this);
 void UI_begin_layout(UI* this, UI_Layout_kind kind);
 void UI_end_layout(UI* this);
 
-void UI_begin(UI* this, Vector2f pos, UI_Layout_kind kind);
+void UI_begin(UI* this, Vector2f* pos, UI_Layout_kind kind);
 bool UI_button(UI* this, cstr text, int char_size, Color color);
 void UI_text(UI* this, cstr text, int char_size, Color color);
 void UI_spacing(UI* this, float spacing);
 void UI_sprite(UI* this, Sprite* spr);
 bool UI_sprite_button(UI* this, Sprite* spr);
 void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cursor, int char_size, Color color);
+void UI_background(UI* this);
 void UI_end(UI* this);
 
 #endif /* _CLOCK_UI_H_ */
