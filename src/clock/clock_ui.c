@@ -248,7 +248,8 @@ void UI_spacing(UI* this, float spacing) {
   UI_Layout_push_widget(top, size);
 }
 
-void UI_text_input(UI* this, cstr* text, int char_size, Color color) {
+void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cursor_ptr, int char_size, Color color) {
+  uint32 cursor = (*cursor_ptr);
   int id = this->last_used_id++;
   UI_Layout* top = UI_top_layout(this);
   if (top == NULL) {
@@ -262,14 +263,54 @@ void UI_text_input(UI* this, cstr* text, int char_size, Color color) {
   // TODO: maybe have text input padding?
   const Vector2f size = v2f_add((Vector2f) {this->text_input_width * char_size, char_size}, v2f_muls(this->btn_padding, 2.f));
   const Rect rect = {pos, size};
-  bool click = false;
   bool hovering = Rect_contains_point(rect, ctx->mpos);
   if (this->active_id == id) {
-    if (ctx->m[MOUSE_BUTTON_LEFT].released) {
-      this->active_id = -1;
-      if (hovering) {
-	click = true;
+    // backspace
+    if (clock_key_pressed(ctx, KEY_BACKSPACE)) {
+      if (cursor > 0) {
+	uint32 n = text_buff_size - cursor;
+	if (n == 0) {
+	  text_buff[--cursor] = '\0';
+	} else {
+	  memcpy((uint8*)text_buff+(cursor-1), (uint8*)text_buff+cursor, n);
+	  cursor--;
+	  // Edge case: text buffer is full, cursor is not at the end of text buffer
+	  if (text_buff[text_buff_size-1] != '\0') {
+	    memset((uint8*)text_buff+cursor+n, 0, text_buff_size - (cursor + n));
+	  }
+	}
       }
+    }
+
+    // enter
+    if (clock_key_pressed(ctx, KEY_ENTER)) {
+      if (clock_key_held(ctx, KEY_LEFT_CONTROL)) {
+	this->active_id = -1;
+      } else {
+	text_buff[cursor] = '\n';
+	cursor++;
+      }
+    }
+
+    if (ctx->text_entered) {
+      text_buff[cursor] = ctx->last_entered_character;
+      cursor++;
+    }
+
+    // cursor movement
+        if (clock_key_pressed(ctx, KEY_LEFT)) {
+      if (cursor > 0) cursor--;
+    }
+
+    if (clock_key_pressed(ctx, KEY_RIGHT)) {
+      uint32 text_len = strlen(text_buff);
+      if (cursor < text_len) cursor++;
+    }
+
+    clock_eat_input(ctx);
+
+    if (!hovering && ctx->m[MOUSE_BUTTON_LEFT].released) {
+      this->active_id = -1;
     }
   } else {
     if (hovering && ctx->m[MOUSE_BUTTON_LEFT].pressed) {
@@ -277,25 +318,36 @@ void UI_text_input(UI* this, cstr* text, int char_size, Color color) {
     }
   }
 
-  draw_box(ctx, rect, COLOR_WHITE, COLOR_BLANK);
+  Color fill_col = color_alpha(COLOR_WHITE, this->active_id == id ? 0.2f : 0.f);
+  draw_box(ctx, rect, COLOR_WHITE, fill_col);
   // TODO: look previous todo...
-  Vector2f draw_pos = v2f_add(pos, this->btn_padding);
-  bool is_clicked = (hovering && ctx->m[MOUSE_BUTTON_LEFT].held);
-  if (is_clicked) {
-    draw_pos = v2f_adds(draw_pos, 1);
-  }
-
-  float text_width = get_text_size(this->ctx, this->font, *text, char_size).x;
+  Vector2f text_pos = v2f_add(pos, this->btn_padding);
+  float text_width = get_text_size(this->ctx, this->font, text_buff, char_size).x;
   float text_box_width = (this->text_input_width * char_size);
   if (text_width > text_box_width) {
-    draw_pos.x -= text_width - text_box_width;
+    text_pos.x -= text_width - text_box_width;
   }
 
   clock_begin_scissor(ctx, rect);
-  draw_text(ctx, this->font, *text, draw_pos, char_size, color);
+  float alpha = 0.5f;
+  if (this->active_id == id) {
+    alpha = 1.f;
+  }
+  color.a = alpha;
+  draw_text(ctx, this->font, text_buff, text_pos, char_size, color);
   clock_end_scissor(ctx);
 
+  // cursor
+  assert(cursor <= text_buff_size);
+  float text_width_until_cursor = get_text_sizen(this->ctx, this->font, text_buff, cursor, char_size).x;
+  Rect cursor_rect = {
+    .pos = (Vector2f) {text_pos.x + text_width_until_cursor, text_pos.y},
+    .size = (Vector2f) {char_size*0.2f, char_size}
+  };
+  draw_rect(ctx, cursor_rect, color_alpha(COLOR_WHITE, 0.5f));
+
   UI_Layout_push_widget(top, size);
+  *cursor_ptr = cursor;
 }
 
 void UI_end(UI* this) {
