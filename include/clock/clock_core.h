@@ -57,6 +57,9 @@ struct Context {
   int       ren_tex_image_slot;
 #define TMP_BUFF_SIZE (1024)
   char tmpbuff[TMP_BUFF_SIZE];
+  uint32 last_entered_character; // text input
+  bool text_entered;
+  bool key_input_handled;
 };
 
 typedef enum {
@@ -67,7 +70,6 @@ typedef enum {
 
 Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title, const Render_mode render_mode);
 bool clock_should_quit(Context* ctx);
-void clock_update_keys(Context* ctx);
 void clock_update_mouse(Context* ctx);
 void clock_begin_draw(Context* ctx);
 void clock_end_draw(Context* ctx);
@@ -87,9 +89,20 @@ void clock_set_vsync(bool enable);
 void clock_begin_scissor(Context* ctx, Rect rect);
 void clock_end_scissor(Context* ctx);
 
+// Input
+void clock_update_keys(Context* ctx);
+void clock_eat_input(Context* ctx);
+// !!!IMPORTANT!!!: User must not access the Context::keys[] array manually for key input, rather must use these functions!!!
+bool clock_key_state(Context* ctx, int key, Key_state state);
+bool clock_key_pressed(Context* ctx, int key);
+bool clock_key_just_pressed(Context* ctx, int key);
+bool clock_key_released(Context* ctx, int key);
+bool clock_key_held(Context* ctx, int key);
+
 // Callbacks
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void text_callback(GLFWwindow* window, uint32 key_code);
 
 // Renderer
 

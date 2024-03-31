@@ -129,8 +129,21 @@
 
 typedef struct Key Key;
 
+typedef enum {
+  KEY_STATE_PRESSED,
+  KEY_STATE_JUST_PRESSED,
+  KEY_STATE_RELEASED,
+  KEY_STATE_HELD,
+  KEY_STATE_COUNT,
+} Key_state;
+
+// Helper macros
+#define KEY_PRESSED      KEY_STATE_PRESSED
+#define KEY_JUST_PRESSED KEY_STATE_JUST_PRESSED
+#define KEY_RELEASED     KEY_STATE_RELEASED
+#define KEY_HELD         KEY_STATE_HELD
+
 struct Key {
-  uint32_t key;
   bool held;
   bool prev_state;
   bool just_pressed;

@@ -111,6 +111,7 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
 
   glfwSetWindowUserPointer(ctx->win->glfw_win, ctx);
   glfwSetKeyCallback(ctx->win->glfw_win, key_callback);
+  glfwSetCharCallback(ctx->win->glfw_win, text_callback);
 
   ctx->tp1 = glfwGetTime();
   ctx->tp2 = 0.0;
@@ -134,39 +135,6 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
 
 bool clock_should_quit(Context* ctx) {
   return glfwWindowShouldClose(ctx->win->glfw_win);
-}
-
-// TODO: key pressed are ignored when moving the window
-
-void clock_update_keys(Context* ctx) {
-  Key* keys   = ctx->k;
-  Window* win = ctx->win;
-  // update key states
-  for (size_t i = 0; i < KEYS_COUNT; ++i) {
-    keys[i].just_pressed = false;
-    keys[i].pressed = false;
-    keys[i].released = false;
-  }
-
-  for (int i = 0; i < KEYS_COUNT; ++i) {
-    keys[i].prev_state = keys[i].held;
-    int state = glfwGetKey(win->glfw_win, i);
-    if (state == GLFW_PRESS) {
-      keys[i].held = true;
-    } else if (state == GLFW_RELEASE) {
-      keys[i].held = false;
-    }
-  }
-
-  for (int i = 0; i < KEYS_COUNT; ++i) {
-    if (!keys[i].prev_state && keys[i].held) {
-      keys[i].just_pressed = true;
-      keys[i].pressed = true;
-    }
-    if (keys[i].prev_state && !keys[i].held) {
-      keys[i].released = true;
-    }
-  }
 }
 
 void clock_update_mouse(Context* ctx) {
@@ -238,6 +206,8 @@ void clock_flush_draw(Context *ctx) {
 void clock_end_draw(Context* ctx) {
   clock_flush_draw(ctx);
   clock_update_keys(ctx);
+  ctx->text_entered = false;
+  ctx->key_input_handled = false;
   gl(glBindFramebuffer(GL_FRAMEBUFFER, 0));
   glfwSwapBuffers(ctx->win->glfw_win);
   glfwPollEvents();
@@ -332,6 +302,81 @@ void clock_end_scissor(Context* ctx) {
   gl(glBindFramebuffer(GL_FRAMEBUFFER, ctx->ren->ren_tex->fbo));
 }
 
+// Input
+
+// TODO: key pressed are ignored when moving the window
+
+void clock_update_keys(Context* ctx) {
+  Key* keys   = ctx->k;
+  Window* win = ctx->win;
+  // update key states
+  for (size_t i = 0; i < KEYS_COUNT; ++i) {
+    keys[i].just_pressed = false;
+    keys[i].pressed = false;
+    keys[i].released = false;
+  }
+
+  for (int i = 0; i < KEYS_COUNT; ++i) {
+    keys[i].prev_state = keys[i].held;
+    int state = glfwGetKey(win->glfw_win, i);
+    if (state == GLFW_PRESS) {
+      keys[i].held = true;
+    } else if (state == GLFW_RELEASE) {
+      keys[i].held = false;
+    }
+  }
+
+  for (int i = 0; i < KEYS_COUNT; ++i) {
+    if (!keys[i].prev_state && keys[i].held) {
+      keys[i].just_pressed = true;
+      keys[i].pressed = true;
+    }
+    if (keys[i].prev_state && !keys[i].held) {
+      keys[i].released = true;
+    }
+  }
+}
+
+void clock_eat_input(Context* ctx) {
+  ctx->key_input_handled = true;
+}
+
+bool clock_key_state(Context* ctx, int key, Key_state state) {
+  if (ctx->key_input_handled) return false;
+  switch (state) {
+  case KEY_STATE_PRESSED: {
+    return ctx->k[key].pressed;
+  } break;
+  case KEY_STATE_JUST_PRESSED: {
+    return ctx->k[key].just_pressed;
+  } break;
+  case KEY_STATE_RELEASED: {
+    return ctx->k[key].released;
+  } break;
+  case KEY_STATE_HELD: {
+    return ctx->k[key].held;
+  } break;
+  default: assert(0 && "Unreachable");
+  }
+  return false;
+}
+
+bool clock_key_pressed(Context* ctx, int key) {
+  return clock_key_state(ctx, key, KEY_PRESSED);
+}
+
+bool clock_key_just_pressed(Context* ctx, int key) {
+  return clock_key_state(ctx, key, KEY_JUST_PRESSED);
+}
+
+bool clock_key_released(Context* ctx, int key) {
+  return clock_key_state(ctx, key, KEY_RELEASED);
+}
+
+bool clock_key_held(Context* ctx, int key) {
+  return clock_key_state(ctx, key, KEY_HELD);
+}
+
 // Callbacks
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
@@ -342,6 +387,12 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     /* log_f(LOG_INFO, "Key: %d repeat", key); */
     keys[key].pressed = true;
   }
+}
+
+void text_callback(GLFWwindow* window, uint32 key_code) {
+  Context* ctx = (Context*)glfwGetWindowUserPointer(window);
+  ctx->last_entered_character = key_code;
+  ctx->text_entered = true;
 }
 
 // Renderer
