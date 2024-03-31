@@ -150,6 +150,7 @@ void draw_point(Context* ctx, Vector2f p, Color col);
 void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color);
 
 Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size);
+Vector2f get_text_sizen(Context* ctx, Font* font, char* text, uint32 text_size, int char_size);
 
 // Blendmode
 

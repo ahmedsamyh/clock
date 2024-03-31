@@ -782,7 +782,7 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
 
     float sf = stbtt_ScaleForPixelHeight(&font->font, font->current_character_size);
 
-    // TODO: Maybe don't assert and do some error handling, lazy ass?
+    // TODO: Handle newline and other codepoints
     Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
     assert(kv != NULL);
     Rect rect = kv->value.rect;
@@ -810,14 +810,42 @@ Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size) {
 
     float sf = stbtt_ScaleForPixelHeight(&font->font, char_size);
 
-    // TODO: Maybe don't assert and do some error handling, lazy ass?
     Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
-    assert(kv != NULL);
+    if (kv == NULL) {
+      // could not find codepoint in font, so continue
+      continue;
+    }
     Rect rect = kv->value.rect;
 
     int adv, lsb;
     stbtt_GetCodepointHMetrics(&font->font, codepoint, &adv, &lsb);
     *text++;
+    size.x += (adv * sf) + (lsb * sf);
+  }
+  return size;
+}
+
+Vector2f get_text_sizen(Context* ctx, Font* font, char* text, uint32 text_size, int char_size) {
+  Vector2f size = {0};
+  if (text == NULL) return size;
+  size.y = char_size;
+  uint32 n = 0;
+  while (n < text_size && *text != '\0') {
+    int codepoint = *text;
+
+    float sf = stbtt_ScaleForPixelHeight(&font->font, char_size);
+
+    Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
+    if (kv == NULL) {
+      // could not find codepoint in font, so continue
+      continue;
+    }
+    Rect rect = kv->value.rect;
+
+    int adv, lsb;
+    stbtt_GetCodepointHMetrics(&font->font, codepoint, &adv, &lsb);
+    *text++;
+    n++;
     size.x += (adv * sf) + (lsb * sf);
   }
   return size;
