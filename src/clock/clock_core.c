@@ -113,6 +113,7 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
   glfwSetKeyCallback(ctx->win->glfw_win, key_callback);
   glfwSetCharCallback(ctx->win->glfw_win, text_callback);
   glfwSetScrollCallback(ctx->win->glfw_win, mouse_scroll_callback);
+  glfwSetErrorCallback(error_callback);
 
   ctx->tp1 = glfwGetTime();
   ctx->tp2 = 0.0;
@@ -130,6 +131,8 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
   set_blend_mode(BLENDMODE_ALPHA);
 
   clock_use_camera_view(ctx, true);
+
+  clock_init_keys(ctx);
 
   return ctx;
 }
@@ -313,6 +316,25 @@ void clock_end_scissor(Context* ctx) {
 
 // TODO: key pressed are ignored when moving the window
 
+void clock_init_keys(Context* ctx) {
+  Key* keys = ctx->k;
+  // ascii
+  for (int i = 0; i < ASCII_KEYS_COUNT; ++i) {
+    keys[i].code = i+KEY_SPACE;
+  }
+
+  // non-us
+  keys[ASCII_KEYS_COUNT+0].code = 161;
+  keys[ASCII_KEYS_COUNT+1].code = 162;
+
+  // function
+  for (int i = 0; i < FUNCTION_KEYS_COUNT; ++i) {
+    keys[i+ASCII_KEYS_COUNT+2].code = i+KEY_ESCAPE;
+  }
+
+  /* log_f(LOG_INFO, "Initialized %d keys!", KEYS_COUNT); */
+}
+
 void clock_update_keys(Context* ctx) {
   Key* keys   = ctx->k;
   Window* win = ctx->win;
@@ -325,7 +347,7 @@ void clock_update_keys(Context* ctx) {
 
   for (int i = 0; i < KEYS_COUNT; ++i) {
     keys[i].prev_state = keys[i].held;
-    int state = glfwGetKey(win->glfw_win, i);
+    int state = glfwGetKey(win->glfw_win, keys[i].code);
     if (state == GLFW_PRESS) {
       keys[i].held = true;
     } else if (state == GLFW_RELEASE) {
@@ -445,7 +467,10 @@ void mouse_scroll_callback(GLFWwindow* window, real64 xoffset, real64 yoffset) {
   Context* ctx = (Context*)glfwGetWindowUserPointer(window);
   ctx->mscroll.x = (real32)xoffset;
   ctx->mscroll.y = (real32)yoffset;
-  /* log_f(LOG_INFO, "mscroll.y: %f", ctx->mscroll.y); */
+}
+
+void error_callback(int error_code, cstr description) {
+  log_f(LOG_ERROR, "GLFW: [%d] %s", error_code, description);
 }
 
 // Renderer

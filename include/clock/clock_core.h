@@ -92,6 +92,7 @@ void clock_begin_scissor(Context* ctx, Rect rect);
 void clock_end_scissor(Context* ctx);
 
 // Input
+void clock_init_keys(Context* ctx);
 void clock_update_keys(Context* ctx);
 void clock_eat_key_input(Context* ctx);
 void clock_eat_mouse_input(Context* ctx);
@@ -114,6 +115,7 @@ bool clock_mouse_held(Context* ctx, int button);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void text_callback(GLFWwindow* window, uint32 key_code);
 void mouse_scroll_callback(GLFWwindow* window, real64 xoffset, real64 yoffset);
+void error_callback(int error_code, cstr description);
 
 // Renderer
 

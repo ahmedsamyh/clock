@@ -3,8 +3,6 @@
 
 #include <stdbool.h>
 
-#define KEYS_COUNT (GLFW_KEY_LAST+GLFW_KEY_SPACE)
-
 #define KEY_SPACE GLFW_KEY_SPACE
 #define KEY_APOSTROPHE GLFW_KEY_APOSTROPHE
 #define KEY_COMMA GLFW_KEY_COMMA
@@ -127,6 +125,11 @@
 #define KEY_MENU GLFW_KEY_MENU
 #define KEY_LAST GLFW_KEY_LAST
 
+#define ASCII_KEYS_COUNT (KEY_GRAVE_ACCENT-KEY_SPACE)
+#define NON_US_KEYS_COUNT (2) // 161 non-US #1 and 162 non-US #2
+#define FUNCTION_KEYS_COUNT (KEY_MENU-KEY_ESCAPE)
+#define KEYS_COUNT (ASCII_KEYS_COUNT+NON_US_KEYS_COUNT+FUNCTION_KEYS_COUNT)
+
 typedef struct Key Key;
 
 typedef enum {
@@ -144,6 +147,7 @@ typedef enum {
 #define KEY_HELD         KEY_STATE_HELD
 
 struct Key {
+  uint32 code;
   bool held;
   bool prev_state;
   bool just_pressed;
