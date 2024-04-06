@@ -83,9 +83,6 @@ int main(void) {
   clock_set_vsync(false);
 
   bool DEBUG_DRAW = false;
-#ifdef DEBUG
-  DEBUG_DRAW = true;
-#endif
 
   Enemy* enemies = NULL; // dynamic array
   Stage_KV* stage_map = NULL;  // hashmap
@@ -128,12 +125,8 @@ int main(void) {
     clock_clear(ctx, COLOR_BLACK);
 
     //
-    // Update
+    // Draw
     //
-    if (ctx->k[KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
-    if (ctx->k[KEY_TAB].pressed) {
-      if (!change_state(ctx, &current_state, (current_state + 1) % STATE_COUNT, &current_state_text)) return 1;
-    }
 
     Stage_KV* current_stage_kv = shgetp_null(stage_map, current_stage_name);
     assert(current_stage_kv != NULL);
@@ -141,8 +134,95 @@ int main(void) {
 
     switch (current_state) {
     case STATE_PLAY: {
-      Player_control(&player);
-      Player_update (&player);
+      clock_clear(ctx, color_from_hex(0xFF555555));
+      Stage_draw(current_stage, DEBUG_DRAW);
+
+      for (int i = arrlen(enemies) - 1; i >= 0; --i) {
+	Enemy_draw(&enemies[i], DEBUG_DRAW);
+      }
+
+      Player_draw(&player, DEBUG_DRAW);
+    } break;
+    case STATE_EDIT: {
+      clock_clear(ctx, color_from_hex(0xFF5555AA));
+      Stage_draw(current_stage, DEBUG_DRAW);
+
+      draw_rect(ctx, edit_cursor, color_alpha(COLOR_GREEN, 0.5f));
+
+      if (ctx->k[KEY_LEFT_SHIFT].held) {
+	bool prev_state = ctx->use_camera_view;
+	clock_use_camera_view(ctx, false);
+	draw_rect(ctx, (Rect){(Vector2f){0.f, 0.f}, screen_size}, color_alpha(COLOR_BLACK, 0.8f));
+	Sprite tiles_spr_copy = tiles_spr;
+	draw_sprite(ctx, &tiles_spr_copy);
+	Color color = COLOR_RED;
+
+	Vector2f p0, p1, p2, p3;
+	Rect_get_points((Rect){tiles_spr.pos, v2f_mul(tiles_spr.size, tiles_spr.scale)}, &p0, &p1, &p2, &p3);
+	draw_imm_box(ctx, p0, p1, p2, p3, color, color, color, color);
+
+	Rect r = {
+	  .pos =  v2f_muls((Vector2f){tile_type.x, tile_type.y}, TILE_SIZE),
+	  .size = (Vector2f){TILE_SIZE, TILE_SIZE}
+	};
+	/* r.pos = clock_screen_to_world(ctx, r.pos); */
+	draw_rect(ctx, r, color_alpha(COLOR_GREEN, 0.4f));
+
+	r.pos = v2f_muls((Vector2f){hovering_tile_type.x, hovering_tile_type.y}, TILE_SIZE);
+	/* r.pos = clock_screen_to_world(ctx, r.pos); */
+	draw_rect(ctx, r, color_alpha(COLOR_RED, 0.4f));
+	clock_use_camera_view(ctx, prev_state);
+      }
+
+      if (!tile_collidable) {
+	collidable_text = "Collidable: off";
+      } else {
+	collidable_text = "Collidable: on";
+      }
+
+      Player_draw(&player, DEBUG_DRAW);
+
+    } break;
+    default: assert(0 && "Unreachable");
+    }
+
+    //
+    // UI
+    //
+    UI_begin(&ui, &ui_pos, UI_LAYOUT_KIND_VERT);
+    cstr full_state_text;
+    temp_sprint(full_state_text, "State: %s", current_state_text);
+    UI_text(&ui, full_state_text, 24, COLOR_WHITE);
+
+    switch (current_state) {
+    case STATE_PLAY: {
+    } break;
+    case STATE_EDIT: {
+      cstr full_stage_name;
+      temp_sprint(full_stage_name, "Stage: %s", current_stage_name);
+      UI_text(&ui, full_stage_name, 24, COLOR_WHITE);
+
+      UI_text(&ui, collidable_text, 24, COLOR_WHITE);
+      cstr warp_mode_text;
+      temp_sprint(warp_mode_text, "Warp mode: %s", (WARP_MODE ? "On" : "Off"));
+      UI_text(&ui, warp_mode_text, 24, COLOR_WHITE);
+    } break;
+    default: assert(0 && "Unreachable");
+    }
+
+    UI_end(&ui);
+
+    //
+    // Update
+    //
+    if (ctx->k[KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
+    if (ctx->k[KEY_TAB].pressed) {
+      if (!change_state(ctx, &current_state, (current_state + 1) % STATE_COUNT, &current_state_text)) return 1;
+    }
+
+    switch (current_state) {
+    case STATE_PLAY: {
+      Player_update(&player);
 
       for (int i = arrlen(enemies) - 1; i >= 0; --i) {
 	Enemy_update(&enemies[i]);
@@ -242,91 +322,6 @@ int main(void) {
     } break;
     default: assert(0 && "Unreachable");
     }
-
-    //
-    // Draw
-    //
-
-    switch (current_state) {
-    case STATE_PLAY: {
-      clock_clear(ctx, color_from_hex(0xFF555555));
-      Stage_draw(current_stage, DEBUG_DRAW);
-
-      for (int i = arrlen(enemies) - 1; i >= 0; --i) {
-	Enemy_draw(&enemies[i], DEBUG_DRAW);
-      }
-
-      Player_draw(&player, DEBUG_DRAW);
-    } break;
-    case STATE_EDIT: {
-      clock_clear(ctx, color_from_hex(0xFF5555AA));
-      Stage_draw(current_stage, DEBUG_DRAW);
-
-      draw_rect(ctx, edit_cursor, color_alpha(COLOR_GREEN, 0.5f));
-
-      if (ctx->k[KEY_LEFT_SHIFT].held) {
-	bool prev_state = ctx->use_camera_view;
-	clock_use_camera_view(ctx, false);
-	draw_rect(ctx, (Rect){(Vector2f){0.f, 0.f}, screen_size}, color_alpha(COLOR_BLACK, 0.8f));
-	Sprite tiles_spr_copy = tiles_spr;
-	draw_sprite(ctx, &tiles_spr_copy);
-	Color color = COLOR_RED;
-
-	Vector2f p0, p1, p2, p3;
-	Rect_get_points((Rect){tiles_spr.pos, v2f_mul(tiles_spr.size, tiles_spr.scale)}, &p0, &p1, &p2, &p3);
-	draw_imm_box(ctx, p0, p1, p2, p3, color, color, color, color);
-
-	Rect r = {
-	  .pos =  v2f_muls((Vector2f){tile_type.x, tile_type.y}, TILE_SIZE),
-	  .size = (Vector2f){TILE_SIZE, TILE_SIZE}
-	};
-	/* r.pos = clock_screen_to_world(ctx, r.pos); */
-	draw_rect(ctx, r, color_alpha(COLOR_GREEN, 0.4f));
-
-	r.pos = v2f_muls((Vector2f){hovering_tile_type.x, hovering_tile_type.y}, TILE_SIZE);
-	/* r.pos = clock_screen_to_world(ctx, r.pos); */
-	draw_rect(ctx, r, color_alpha(COLOR_RED, 0.4f));
-	clock_use_camera_view(ctx, prev_state);
-      }
-
-      if (!tile_collidable) {
-	collidable_text = "Collidable: off";
-      } else {
-	collidable_text = "Collidable: on";
-      }
-
-      Player_draw(&player, DEBUG_DRAW);
-
-    } break;
-    default: assert(0 && "Unreachable");
-    }
-
-    //
-    // UI
-    //
-    UI_begin(&ui, &ui_pos, UI_LAYOUT_KIND_VERT);
-    cstr full_state_text;
-    temp_sprint(full_state_text, "State: %s", current_state_text);
-    UI_text(&ui, full_state_text, 24, COLOR_WHITE);
-
-    switch (current_state) {
-    case STATE_PLAY: {
-    } break;
-    case STATE_EDIT: {
-      cstr full_stage_name;
-      temp_sprint(full_stage_name, "Stage: %s", current_stage_name);
-      UI_text(&ui, full_stage_name, 24, COLOR_WHITE);
-
-      UI_text(&ui, collidable_text, 24, COLOR_WHITE);
-      cstr warp_mode_text;
-      temp_sprint(warp_mode_text, "Warp mode: %s", (WARP_MODE ? "On" : "Off"));
-      UI_text(&ui, warp_mode_text, 24, COLOR_WHITE);
-    } break;
-    default: assert(0 && "Unreachable");
-    }
-
-    UI_end(&ui);
-
 
     clock_end_draw(ctx);
   }

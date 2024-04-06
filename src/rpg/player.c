@@ -22,8 +22,12 @@ bool Player_init(Player* p, Context* ctx, Texture* tex) {
 }
 
 void Player_update(Player* p) {
-  assert(p->ctx);
-  float delta = p->ctx->delta;
+  Player_control(p);
+  Player_look_at_mouse(p);
+
+  Context* ctx = p->ctx;
+  assert(ctx);
+  float delta = ctx->delta;
 
   p->vel = v2f_add(p->vel, v2f_muls(p->acc, p->speed));
   p->pos = v2f_add(p->pos, v2f_muls(p->vel, delta));
@@ -44,8 +48,9 @@ void Player_update(Player* p) {
     p->pos.x + PLAYER_HITBOX_OFFSET_X,
     p->pos.y + PLAYER_HITBOX_OFFSET_Y,
   };
+  p->spr.pos = p->pos;
 
-  p->spr.pos    = p->pos;
+  /* bool mouse_moving = v2f_sub(ctx->mpos, ctx->prev_mpos).x != 0.f && v2f_sub(ctx->mpos, ctx->prev_mpos).y != 0.f; */
 
   // animate sprite
   Sprite_animate_hframe(&p->spr, delta);
@@ -96,6 +101,23 @@ void Player_control(Player* p) {
 
   p->acc = v2f_add(p->acc, dir);
 
+}
+
+void Player_look_at_mouse(Player* p) {
+  if (p->is_moving) return;
+
+  Context* ctx = p->ctx;
+  Vector2f look_dir = v2f_sub(ctx->mpos, p->pos);
+
+  if (abs(look_dir.x) > abs(look_dir.y)) {
+    if (look_dir.x > 0)      p->last_move_dir = MOVE_DIR_RIGHT;
+    else if (look_dir.x < 0) p->last_move_dir = MOVE_DIR_LEFT;
+  } else {
+    if (look_dir.y > 0)      p->last_move_dir = MOVE_DIR_DOWN;
+    else if (look_dir.y < 0) p->last_move_dir = MOVE_DIR_UP;
+  }
+
+  /* log_f(LOG_INFO, "look_dir: %f, %f", look_dir.x, look_dir.y); */
 }
 
 void Player_draw(Player* p, bool debug) {
