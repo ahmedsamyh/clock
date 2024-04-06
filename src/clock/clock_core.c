@@ -144,6 +144,7 @@ void clock_update_mouse(Context* ctx) {
   glfwGetCursorPos(win->glfw_win, &mx, &my);
 
   // TODO: fix y position being messed up when scaling (x is fine)
+  ctx->prev_mpos = ctx->mpos;
   ctx->mpos.x = (float)mx / win->scale_x;
   ctx->mpos.y = (float)my / win->scale_y;
 

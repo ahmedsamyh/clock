@@ -48,7 +48,7 @@ struct Context {
   double    tp2;
   float     delta;
   int       fps;
-  Vector2f  mpos;
+  Vector2f  prev_mpos, mpos;
   Vector3f  camera;
   bool      use_camera_view;
   Key k[KEYS_COUNT];
