@@ -49,6 +49,7 @@ struct Context {
   float     delta;
   int       fps;
   Vector2f  prev_mpos, mpos;
+  Vector2f  mscroll;
   Vector3f  camera;
   bool      use_camera_view;
   Key k[KEYS_COUNT];
@@ -112,6 +113,7 @@ bool clock_mouse_held(Context* ctx, int button);
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void text_callback(GLFWwindow* window, uint32 key_code);
+void mouse_scroll_callback(GLFWwindow* window, real64 xoffset, real64 yoffset);
 
 // Renderer
 

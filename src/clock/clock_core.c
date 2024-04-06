@@ -112,6 +112,7 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
   glfwSetWindowUserPointer(ctx->win->glfw_win, ctx);
   glfwSetKeyCallback(ctx->win->glfw_win, key_callback);
   glfwSetCharCallback(ctx->win->glfw_win, text_callback);
+  glfwSetScrollCallback(ctx->win->glfw_win, mouse_scroll_callback);
 
   ctx->tp1 = glfwGetTime();
   ctx->tp2 = 0.0;
@@ -207,9 +208,13 @@ void clock_flush_draw(Context *ctx) {
 void clock_end_draw(Context* ctx) {
   clock_flush_draw(ctx);
   clock_update_keys(ctx);
+
   ctx->text_entered = false;
   ctx->key_input_handled = false;
   ctx->mouse_input_handled = false;
+  ctx->mscroll.x = 0.f;
+  ctx->mscroll.y = 0.f;
+
   gl(glBindFramebuffer(GL_FRAMEBUFFER, 0));
   glfwSwapBuffers(ctx->win->glfw_win);
   glfwPollEvents();
@@ -434,6 +439,13 @@ void text_callback(GLFWwindow* window, uint32 key_code) {
   Context* ctx = (Context*)glfwGetWindowUserPointer(window);
   ctx->last_entered_character = key_code;
   ctx->text_entered = true;
+}
+
+void mouse_scroll_callback(GLFWwindow* window, real64 xoffset, real64 yoffset) {
+  Context* ctx = (Context*)glfwGetWindowUserPointer(window);
+  ctx->mscroll.x = (real32)xoffset;
+  ctx->mscroll.y = (real32)yoffset;
+  /* log_f(LOG_INFO, "mscroll.y: %f", ctx->mscroll.y); */
 }
 
 // Renderer
