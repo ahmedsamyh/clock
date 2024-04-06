@@ -17,8 +17,8 @@ int main(void) {
   char text_input[text_input_size] = {0};
   uint32 text_cursor = 0;
 
-
   Vector2f ui_pos = {100.f, 100.f};
+  Vector2f ui_pos2 = {10.f, 10.f};
 
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
@@ -26,7 +26,8 @@ int main(void) {
 
     UI_begin(&ui, &ui_pos, UI_LAYOUT_KIND_VERT);
 
-    UI_text(&ui, "Buttons", 32, COLOR_WHITE);
+    UI_text(&ui, "Big Text", 32, COLOR_WHITE);
+    UI_text(&ui, "Smol Text", 12, COLOR_WHITE);
     UI_spacing(&ui, 32.f);
 
     {
@@ -63,9 +64,11 @@ int main(void) {
       log_f(LOG_INFO, "%s", text_input);
     }
 
-    UI_background(&ui);
-
     UI_end(&ui);
+
+    if (clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT)) {
+      log_f(LOG_INFO, "Left mouse button pressed!");
+    }
 
     clock_end_draw(ctx);
   }

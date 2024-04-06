@@ -208,6 +208,7 @@ void clock_end_draw(Context* ctx) {
   clock_update_keys(ctx);
   ctx->text_entered = false;
   ctx->key_input_handled = false;
+  ctx->mouse_input_handled = false;
   gl(glBindFramebuffer(GL_FRAMEBUFFER, 0));
   glfwSwapBuffers(ctx->win->glfw_win);
   glfwPollEvents();
@@ -337,8 +338,17 @@ void clock_update_keys(Context* ctx) {
   }
 }
 
-void clock_eat_input(Context* ctx) {
+void clock_eat_key_input(Context* ctx) {
   ctx->key_input_handled = true;
+}
+
+void clock_eat_mouse_input(Context* ctx) {
+  ctx->mouse_input_handled = true;
+}
+
+void clock_eat_input(Context* ctx) {
+  clock_eat_key_input(ctx);
+  clock_eat_mouse_input(ctx);
 }
 
 bool clock_key_state(Context* ctx, int key, Key_state state) {
@@ -376,6 +386,36 @@ bool clock_key_released(Context* ctx, int key) {
 bool clock_key_held(Context* ctx, int key) {
   return clock_key_state(ctx, key, KEY_HELD);
 }
+
+bool clock_mouse_state(Context* ctx, int button, Mouse_state state) {
+  if (ctx->mouse_input_handled) return false;
+  switch (state) {
+  case MOUSE_STATE_PRESSED: {
+    return ctx->m[button].pressed;
+  } break;
+  case MOUSE_STATE_RELEASED: {
+    return ctx->m[button].released;
+  } break;
+  case MOUSE_STATE_HELD: {
+    return ctx->m[button].held;
+  } break;
+  default: assert(0 && "Unreachable");
+  }
+  return false;
+}
+
+bool clock_mouse_pressed(Context* ctx, int button) {
+  return clock_mouse_state(ctx, button, MOUSE_STATE_PRESSED);
+}
+
+bool clock_mouse_released(Context* ctx, int button) {
+  return clock_mouse_state(ctx, button, MOUSE_STATE_RELEASED);
+}
+
+bool clock_mouse_held(Context* ctx, int button) {
+  return clock_mouse_state(ctx, button, MOUSE_STATE_HELD);
+}
+
 
 // Callbacks
 

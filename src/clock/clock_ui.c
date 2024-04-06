@@ -114,15 +114,16 @@ bool UI_button(UI* this, cstr text, int char_size, Color color) {
   bool click = false;
   bool hovering = Rect_contains_point(rect, ctx->mpos);
   if (this->active_id == id) {
-    if (ctx->m[MOUSE_BUTTON_LEFT].released) {
+    if (clock_mouse_released(ctx, MOUSE_BUTTON_LEFT)) {
       this->active_id = -1;
       if (hovering) {
 	click = true;
       }
     }
   } else {
-    if (hovering && ctx->m[MOUSE_BUTTON_LEFT].pressed) {
+    if (hovering && clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT)) {
       this->active_id = id;
+      clock_eat_mouse_input(ctx);
     }
   }
 
@@ -131,7 +132,7 @@ bool UI_button(UI* this, cstr text, int char_size, Color color) {
     alpha = 0.5f;
   }
 
-  bool is_clicked = (hovering && ctx->m[MOUSE_BUTTON_LEFT].held);
+  bool is_clicked = (hovering && clock_mouse_held(ctx, MOUSE_BUTTON_LEFT));
   if (is_clicked) {
     alpha = 1.f;
   }
@@ -197,14 +198,14 @@ bool UI_sprite_button(UI* this, Sprite* spr) {
   bool click = false;
   bool hovering = Rect_contains_point(rect, ctx->mpos);
   if (this->active_id == id) {
-    if (ctx->m[MOUSE_BUTTON_LEFT].released) {
+    if (clock_mouse_released(ctx, MOUSE_BUTTON_LEFT)) {
       this->active_id = -1;
       if (hovering) {
 	click = true;
       }
     }
   } else {
-    if (hovering && ctx->m[MOUSE_BUTTON_LEFT].pressed) {
+    if (hovering && clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT)) {
       this->active_id = id;
     }
   }
@@ -214,7 +215,7 @@ bool UI_sprite_button(UI* this, Sprite* spr) {
     alpha = 0.5f;
   }
 
-  bool is_clicked = (hovering && ctx->m[MOUSE_BUTTON_LEFT].held);
+  bool is_clicked = (hovering && clock_mouse_held(ctx, MOUSE_BUTTON_LEFT));
   if (is_clicked) {
     alpha = 1.f;
   }
@@ -225,6 +226,8 @@ bool UI_sprite_button(UI* this, Sprite* spr) {
   spr->tint = previous_tint;
 
   UI_Layout_push_widget(top, size);
+
+  if (click) clock_eat_mouse_input(ctx);
 
   return click;
 }
@@ -311,14 +314,15 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
       if (cursor < text_len) cursor++;
     }
 
-    clock_eat_input(ctx);
+    clock_eat_key_input(ctx);
 
-    if (!hovering && ctx->m[MOUSE_BUTTON_LEFT].released) {
+    if (!hovering && clock_mouse_released(ctx, MOUSE_BUTTON_LEFT)) {
       this->active_id = -1;
     }
   } else {
-    if (hovering && ctx->m[MOUSE_BUTTON_LEFT].pressed) {
+    if (hovering && clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT)) {
       this->active_id = id;
+      clock_eat_mouse_input(ctx);
     }
   }
 
@@ -374,7 +378,10 @@ void UI_background(UI* this) {
 }
 
 void UI_end(UI* this) {
+  UI_background(this);
+
   Context* ctx = this->ctx;
+
   Vector2f min = {FLT_MAX, FLT_MAX};
   Vector2f max = {FLT_MIN, FLT_MIN};
   for (size_t i = 0; i < this->layouts_count; ++i) {
@@ -390,19 +397,20 @@ void UI_end(UI* this) {
     .size = v2f_add(v2f_sub(max, min), v2f_muls(this->bg_padding, 2.f))
   };
 
-  if (!ctx->m[MOUSE_BUTTON_LEFT].held) {
+  if (!clock_mouse_held(ctx, MOUSE_BUTTON_LEFT)) {
     this->is_moving = false;
   }
 
   if (clock_key_held(ctx, KEY_LEFT_ALT) &&
-      ctx->m[MOUSE_BUTTON_LEFT].pressed &&
+      clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT) &&
       Rect_contains_point(rect, ctx->mpos)) {
     this->active_pos_offset = v2f_sub(ctx->mpos, rect.pos);
     this->is_moving = true;
   }
 
   if (this->is_moving) {
-    *this->active_pos = v2f_sub(ctx->mpos, this->active_pos_offset);
+    clock_eat_mouse_input(ctx);
+    *this->active_pos = v2f_add(v2f_sub(ctx->mpos, this->active_pos_offset), this->bg_padding);
   }
 
   this->last_used_id = 0;

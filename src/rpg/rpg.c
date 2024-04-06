@@ -12,7 +12,6 @@ typedef enum {
   STATE_COUNT
 } State;
 
-
 bool change_state(Context* ctx, State* current_state, State next_state, cstr* current_state_text) {
   switch (next_state) {
   case STATE_PLAY: {
@@ -101,6 +100,7 @@ int main(void) {
   if (!change_state(ctx, &current_state, STATE_PLAY, &current_state_text)) return 1;
 
   // Edit
+  Vector2f ui_pos = {width/2.f, 0.f};
   cstr collidable_text = "Collidable: on";
   bool WARP_MODE = false;
   Rect edit_cursor = {
@@ -156,7 +156,7 @@ int main(void) {
       edit_cursor.pos = pos_in_tile_space(ctx->mpos);
 
       if (WARP_MODE) {
-	if (ctx->m[MOUSE_BUTTON_LEFT].pressed) {
+	if (clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT)) {
 	  if (!tile_warp_info.in_stage) {
 	    tile_warp_info.in_stage = current_stage_name;
 	    tile_warp_info.in_pos = edit_cursor.pos;
@@ -192,12 +192,12 @@ int main(void) {
 	    hovering_tile_type.x = (int)ctx->mpos.x / (int)TILE_SIZE;
 	    hovering_tile_type.y = (int)ctx->mpos.y / (int)TILE_SIZE;
 
-	    if (ctx->m[MOUSE_BUTTON_LEFT].pressed) {
+	    if (clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT)) {
 	      tile_type = hovering_tile_type;
 	    }
 	  }
 	} else {
-	  if (ctx->m[MOUSE_BUTTON_LEFT].held) {
+	  if (clock_mouse_held(ctx, MOUSE_BUTTON_LEFT)) {
 	    for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; x += TILE_SIZE) {
 	      for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; y += TILE_SIZE) {
 		Vector2f p = {x, y};
@@ -207,7 +207,7 @@ int main(void) {
 	  }
 
 	  // TODO: Have some sort of action history for undo-ing
-	  if (ctx->m[MOUSE_BUTTON_RIGHT].held) {
+	  if (clock_mouse_held(ctx, MOUSE_BUTTON_RIGHT)) {
 	    for (float x = edit_cursor.pos.x; x < edit_cursor.pos.x + edit_cursor.size.x; x += TILE_SIZE) {
 	      for (float y = edit_cursor.pos.y; y < edit_cursor.pos.y + edit_cursor.size.y; y += TILE_SIZE) {
 		Vector2f p = {x, y};
@@ -304,7 +304,7 @@ int main(void) {
     //
     // UI
     //
-    UI_begin(&ui, (Vector2f) {width/2.f, 0.f}, UI_LAYOUT_KIND_VERT);
+    UI_begin(&ui, &ui_pos, UI_LAYOUT_KIND_VERT);
     cstr full_state_text;
     temp_sprint(full_state_text, "State: %s", current_state_text);
     UI_text(&ui, full_state_text, 24, COLOR_WHITE);

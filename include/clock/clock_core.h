@@ -60,6 +60,7 @@ struct Context {
   uint32 last_entered_character; // text input
   bool text_entered;
   bool key_input_handled;
+  bool mouse_input_handled;
 };
 
 typedef enum {
@@ -91,13 +92,21 @@ void clock_end_scissor(Context* ctx);
 
 // Input
 void clock_update_keys(Context* ctx);
+void clock_eat_key_input(Context* ctx);
+void clock_eat_mouse_input(Context* ctx);
 void clock_eat_input(Context* ctx);
-// !!!IMPORTANT!!!: User must not access the Context::keys[] array manually for key input, rather must use these functions!!!
+// !!!IMPORTANT!!!: User must not access the Context::k[] array manually for key input, rather must use these functions!!!
 bool clock_key_state(Context* ctx, int key, Key_state state);
 bool clock_key_pressed(Context* ctx, int key);
 bool clock_key_just_pressed(Context* ctx, int key);
 bool clock_key_released(Context* ctx, int key);
 bool clock_key_held(Context* ctx, int key);
+
+// !!!IMPORTANT!!!: User must not access the Context::m[] array manually for mouse input, rather must use these functions!!!
+bool clock_mouse_state(Context* ctx, int button, Mouse_state state);
+bool clock_mouse_pressed(Context* ctx, int button);
+bool clock_mouse_released(Context* ctx, int button);
+bool clock_mouse_held(Context* ctx, int button);
 
 // Callbacks
 
