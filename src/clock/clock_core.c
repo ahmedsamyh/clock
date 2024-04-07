@@ -26,7 +26,7 @@ static void set_view_matrix(Context* ctx) {
   gl(glUniformMatrix4fv(m, 1, GL_TRUE, &translate.m[0][0]));
 }
 
-static void set_matrices(Context* ctx, const Vector2f screen_size) {
+static void set_matrices(Context* ctx) {
   Renderer* r = ctx->ren;
   {
     gl(GLuint m = glGetUniformLocation(r->current_shader, "model"));
@@ -185,7 +185,7 @@ void clock_begin_draw(Context* ctx) {
   clock_update_mouse(ctx);
 
   ctx->tp2 = glfwGetTime();
-  ctx->delta = ctx->tp2 - ctx->tp1;
+  ctx->delta = (real32)(ctx->tp2 - ctx->tp1);
   ctx->tp1 = ctx->tp2;
 
   ctx->fps = (int)(1.0f / ctx->delta);
@@ -448,6 +448,8 @@ bool clock_mouse_held(Context* ctx, int button) {
 // Callbacks
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+  (void)mods;
+  (void)scancode;
   Context* ctx = (Context*)glfwGetWindowUserPointer(window);
   Key* keys = ctx->k;
 
@@ -506,12 +508,12 @@ bool Renderer_init(Renderer* r, Window* win, const Render_mode render_mode) {
 
   r->ren_tex = (Render_target*)calloc(1, sizeof(Render_target));
 
-  if (!Rentar_init(r->ren_tex, win, win->width / win->scale_x, win->height / win->scale_y)) {
+  if (!Rentar_init(r->ren_tex, win, (uint)(win->width / win->scale_x), (uint)(win->height / win->scale_y))) {
     free(r->ren_tex);
     return false;
   }
 
-  Vector2f screen_size = {r->win->width, r->win->height};
+  Vector2f screen_size = {(real32)r->win->width, (real32)r->win->height};
 
   switch (render_mode) {
   case RENDER_MODE_2D: {
@@ -576,7 +578,7 @@ void draw_imm_triangle_3d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, C
     c0, c1, c2
   };
 
-  Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};
+  /* Vector2f screen_size = (Vector2f){(real32)ctx->win->width, (real32)ctx->win->height}; */
 
   for (size_t i = 0; i < 3; ++i) {
     Vector3f p  = positions[i];
@@ -596,7 +598,7 @@ void draw_imm_triangle_3d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, C
 
   gl(glDrawArrays(GL_TRIANGLES, 0, 3));
 
-  set_matrices(ctx, screen_size);
+  set_matrices(ctx);
 }
 
 void draw_imm_triangle(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Color c0, Color c1, Color c2) {
@@ -606,7 +608,6 @@ void draw_imm_triangle(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Colo
 #define IMM_QUAD_BODY(draw_type)					\
   Vector3f positions[] = {p0, p1, p2, p3};				\
   Vector4f colors[] = {c0, c1, c2, c3};					\
-  Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};	\
   for (size_t i = 0; i < 4; ++i){					\
     Vector3f p    = positions[i];					\
     Vector4f pn = (Vector4f) {.x = p.x,					\
@@ -622,7 +623,7 @@ void draw_imm_triangle(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Colo
   gl(gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo)));			\
   gl(gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices))); \
   gl(glDrawArrays(draw_type, 0, 4));					\
-  set_matrices(ctx, screen_size)
+  set_matrices(ctx)
 
 // TODO: Should we render quads in term of Render_imm_triangle?
 // From what i understand rn about opengl, more draw calls -> bad, so by implementing Render_imm_quad
@@ -672,8 +673,6 @@ void draw_sprite(Context* ctx, Sprite* spr) {
     texcoords[i].x /= spr->size.x;
     texcoords[i].y /= spr->size.y;
   }
-
-  Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};
 
   for (size_t i = 0; i < 4; ++i) {
     Vector3f p    = positions[i];
@@ -747,7 +746,6 @@ void draw_sprite_at(Context* ctx, Sprite* spr, Vector2f pos) {
 }
 
 void draw_rect(Context* ctx, Rect rect, Color color) {
-  Renderer* r = ctx->ren;
   Vector2f tl = (Vector2f){rect.pos.x, rect.pos.y};
   Vector2f tr = (Vector2f){rect.pos.x + rect.size.x, rect.pos.y};
   Vector2f br = (Vector2f){rect.pos.x + rect.size.x, rect.pos.y + rect.size.y};
@@ -756,7 +754,6 @@ void draw_rect(Context* ctx, Rect rect, Color color) {
 }
 
 void draw_box(Context* ctx, Rect rect, Color out_color, Color fill_color) {
-  Renderer* r = ctx->ren;
   Vector2f tl, tr, br, bl;
   Rect_get_points(rect, &tl, &tr, &br, &bl);
   draw_imm_quad(ctx, tl, tr, br, bl, fill_color, fill_color, fill_color, fill_color);
@@ -782,8 +779,6 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
     c0, c1
   };
 
-  Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};
-
   for (size_t i = 0; i < 2; ++i) {
     Vector3f p    = positions[i];
     Vector4f pn = (Vector4f) {
@@ -801,21 +796,20 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 2, r->vertices));
   gl(glDrawArrays(GL_LINE_STRIP, 0, 2));
 
-  set_matrices(ctx, screen_size);
+  set_matrices(ctx);
 }
 
-void draw_point_3d(Context* ctx, Vector3f p, Color col) {
+void draw_point_3d(Context* ctx, Vector3f pos, Color col) {
  Renderer* r = ctx->ren;
 
   Vector3f positions[] = {
-    p
+    pos
   };
 
   Vector4f colors[] = {
     col
   };
 
-  Vector2f screen_size = (Vector2f){ctx->win->width, ctx->win->height};
 
   for (size_t i = 0; i < 1; ++i) {
     Vector3f p    = positions[i];
@@ -834,7 +828,7 @@ void draw_point_3d(Context* ctx, Vector3f p, Color col) {
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 1, r->vertices));
   gl(glDrawArrays(GL_POINTS, 0, 1));
 
-  set_matrices(ctx, screen_size);
+  set_matrices(ctx);
 }
 
 void draw_point(Context* ctx, Vector2f p, Color col) {
@@ -858,7 +852,7 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
 
     int codepoint = *text;
 
-    float sf = stbtt_ScaleForPixelHeight(&font->font, font->current_character_size);
+    float sf = stbtt_ScaleForPixelHeight(&font->font, (real32)font->current_character_size);
 
     // TODO: Handle newline and other codepoints
     Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
@@ -880,20 +874,21 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
 }
 
 Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size) {
+  (void)ctx;
   Vector2f size = {0};
   if (text == NULL) return size;
-  size.y = char_size;
+  size.y = (real32)char_size;
   while (*text != '\0') {
     int codepoint = *text;
 
-    float sf = stbtt_ScaleForPixelHeight(&font->font, char_size);
+    float sf = stbtt_ScaleForPixelHeight(&font->font, (real32)char_size);
 
     Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
     if (kv == NULL) {
       // could not find codepoint in font, so continue
       continue;
     }
-    Rect rect = kv->value.rect;
+    /* Rect rect = kv->value.rect; */
 
     int adv, lsb;
     stbtt_GetCodepointHMetrics(&font->font, codepoint, &adv, &lsb);
@@ -904,21 +899,21 @@ Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size) {
 }
 
 Vector2f get_text_sizen(Context* ctx, Font* font, char* text, uint32 text_size, int char_size) {
+  (void)ctx;
   Vector2f size = {0};
   if (text == NULL) return size;
-  size.y = char_size;
+  size.y = (real32)char_size;
   uint32 n = 0;
   while (n < text_size && *text != '\0') {
     int codepoint = *text;
 
-    float sf = stbtt_ScaleForPixelHeight(&font->font, char_size);
+    float sf = stbtt_ScaleForPixelHeight(&font->font, (real32)char_size);
 
     Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
     if (kv == NULL) {
       // could not find codepoint in font, so continue
       continue;
     }
-    Rect rect = kv->value.rect;
 
     int adv, lsb;
     stbtt_GetCodepointHMetrics(&font->font, codepoint, &adv, &lsb);

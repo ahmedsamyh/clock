@@ -109,7 +109,7 @@ void Player_look_at_mouse(Player* p) {
   Context* ctx = p->ctx;
   Vector2f look_dir = v2f_sub(ctx->mpos, p->pos);
 
-  if (abs(look_dir.x) > abs(look_dir.y)) {
+  if (fabsf(look_dir.x) > fabsf(look_dir.y)) {
     if (look_dir.x > 0)      p->last_move_dir = MOVE_DIR_RIGHT;
     else if (look_dir.x < 0) p->last_move_dir = MOVE_DIR_LEFT;
   } else {

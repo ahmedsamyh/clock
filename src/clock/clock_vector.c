@@ -58,21 +58,21 @@ float v2f_degree(Vector2f v){
   return (v2f_radian(v) / 6.28318530718f) * 360.f;
 }
 float v2f_mag(Vector2f v){
-  return sqrtf((v.x*v.x) + (v.y*v.y));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 float v2f_mag2(Vector2f v){
-  return ((v.x*v.x) + (v.y*v.y));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 float v2f_dist(Vector2f v){
-  return sqrtf((v.x*v.x) + (v.y*v.y));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 float v2f_dist2(Vector2f v){
-  return ((v.x*v.x) + (v.y*v.y));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 Vector2f v2f_normalize(Vector2f v){
-  double mag = v2f_mag(v);
+  float mag = v2f_mag(v);
   if (mag == 0.f) return v;
-  return v2f_divs(v, mag);
+  return v2f_divs(v, (float)mag);
 }
 
 // Vector3f --------------------------------------------------
@@ -134,21 +134,21 @@ Vector3f v3f_divs(Vector3f v1, float num){
   };
 }
 float v3f_mag(Vector3f v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 float v3f_mag2(Vector3f v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 float v3f_dist(Vector3f v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 float v3f_dist2(Vector3f v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 Vector3f v3f_normalize(Vector3f v){
-  double mag = v3f_mag(v);
+  float mag = v3f_mag(v);
   if (mag == 0.f) return v;
-  return v3f_divs(v, mag);
+  return v3f_divs(v, (float)mag);
 }
 
 // Vector4f --------------------------------------------------
@@ -218,21 +218,21 @@ Vector4f v4f_divs(Vector4f v1, float num){
   };
 }
 float v4f_mag(Vector4f v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 float v4f_mag2(Vector4f v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 float v4f_dist(Vector4f v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 float v4f_dist2(Vector4f v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 Vector4f v4f_normalize(Vector4f v){
-  double mag = v4f_mag(v);
+  float mag = v4f_mag(v);
   if (mag == 0.f) return v;
-  return v4f_divs(v, mag);
+  return v4f_divs(v, (float)mag);
 }
 
 // Vector2d --------------------------------------------------
@@ -292,21 +292,21 @@ float v2d_degree(Vector2d v){
   return (v2d_radian(v) / 6.28318530718f) * 360.f;
 }
 float v2d_mag(Vector2d v){
-  return sqrtf((v.x*v.x) + (v.y*v.y));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 float v2d_mag2(Vector2d v){
-  return ((v.x*v.x) + (v.y*v.y));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 float v2d_dist(Vector2d v){
-  return sqrtf((v.x*v.x) + (v.y*v.y));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 float v2d_dist2(Vector2d v){
-  return ((v.x*v.x) + (v.y*v.y));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 Vector2d v2d_normalize(Vector2d v){
-  double mag = v2d_mag(v);
+  float mag = v2d_mag(v);
   if (mag == 0.f) return v;
-  return v2d_divs(v, mag);
+  return v2d_divs(v, (double)mag);
 }
 
 // Vector3d --------------------------------------------------
@@ -368,21 +368,21 @@ Vector3d v3d_divs(Vector3d v1, double num){
   };
 }
 float v3d_mag(Vector3d v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 float v3d_mag2(Vector3d v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 float v3d_dist(Vector3d v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 float v3d_dist2(Vector3d v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 Vector3d v3d_normalize(Vector3d v){
-  double mag = v3d_mag(v);
+  float mag = v3d_mag(v);
   if (mag == 0.f) return v;
-  return v3d_divs(v, mag);
+  return v3d_divs(v, (double)mag);
 }
 
 // Vector4d --------------------------------------------------
@@ -452,21 +452,21 @@ Vector4d v4d_divs(Vector4d v1, double num){
   };
 }
 float v4d_mag(Vector4d v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 float v4d_mag2(Vector4d v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 float v4d_dist(Vector4d v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 float v4d_dist2(Vector4d v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 Vector4d v4d_normalize(Vector4d v){
-  double mag = v4d_mag(v);
+  float mag = v4d_mag(v);
   if (mag == 0.f) return v;
-  return v4d_divs(v, mag);
+  return v4d_divs(v, (double)mag);
 }
 
 // Vector2i --------------------------------------------------
@@ -526,21 +526,21 @@ float v2i_degree(Vector2i v){
   return (v2i_radian(v) / 6.28318530718f) * 360.f;
 }
 float v2i_mag(Vector2i v){
-  return sqrtf((v.x*v.x) + (v.y*v.y));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 float v2i_mag2(Vector2i v){
-  return ((v.x*v.x) + (v.y*v.y));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 float v2i_dist(Vector2i v){
-  return sqrtf((v.x*v.x) + (v.y*v.y));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 float v2i_dist2(Vector2i v){
-  return ((v.x*v.x) + (v.y*v.y));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y));
 }
 Vector2i v2i_normalize(Vector2i v){
-  double mag = v2i_mag(v);
+  float mag = v2i_mag(v);
   if (mag == 0.f) return v;
-  return v2i_divs(v, mag);
+  return v2i_divs(v, (int)mag);
 }
 
 // Vector3i --------------------------------------------------
@@ -602,21 +602,21 @@ Vector3i v3i_divs(Vector3i v1, int num){
   };
 }
 float v3i_mag(Vector3i v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 float v3i_mag2(Vector3i v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 float v3i_dist(Vector3i v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 float v3i_dist2(Vector3i v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z));
 }
 Vector3i v3i_normalize(Vector3i v){
-  double mag = v3i_mag(v);
+  float mag = v3i_mag(v);
   if (mag == 0.f) return v;
-  return v3i_divs(v, mag);
+  return v3i_divs(v, (int)mag);
 }
 
 // Vector4i --------------------------------------------------
@@ -686,19 +686,19 @@ Vector4i v4i_divs(Vector4i v1, int num){
   };
 }
 float v4i_mag(Vector4i v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 float v4i_mag2(Vector4i v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 float v4i_dist(Vector4i v){
-  return sqrtf((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (float)sqrtf(((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 float v4i_dist2(Vector4i v){
-  return ((v.x*v.x) + (v.y*v.y) + (v.z*v.z) + (v.w*v.w));
+  return (((float)v.x*(float)v.x) + ((float)v.y*(float)v.y) + ((float)v.z*(float)v.z) + ((float)v.w*(float)v.w));
 }
 Vector4i v4i_normalize(Vector4i v){
-  double mag = v4i_mag(v);
+  float mag = v4i_mag(v);
   if (mag == 0.f) return v;
-  return v4i_divs(v, mag);
+  return v4i_divs(v, (int)mag);
 }

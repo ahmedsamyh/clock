@@ -7,8 +7,8 @@
 void Stage_init(Stage* stage, Context* ctx, const char* name){
   stage->ctx = ctx;
   stage->name = name;
-  stage->cols = SCREEN_WIDTH / TILE_SIZE;
-  stage->rows = SCREEN_HEIGHT / TILE_SIZE;
+  stage->cols = (size_t)(SCREEN_WIDTH / TILE_SIZE);
+  stage->rows = (size_t)(SCREEN_HEIGHT / TILE_SIZE);
   stage->tiles = (Tile*)calloc(stage->cols*stage->rows, sizeof(Tile));
 
   Texture* tiles_tex = load_texture_err_handled(ctx, "resources/gfx/tiles.png");
@@ -29,7 +29,7 @@ void Stage_update(Stage* stage, Player* player) {
   bool will_check_collision = player != NULL;
   if (will_check_collision) player->hitting = false;
   // TODO: Maybe store an array of collidable tiles and loop over those instead
-  for (int i = stage->cols*stage->rows-1; i >= 0; --i) {
+  for (size_t i = stage->cols*stage->rows-1; i >= 0; --i) {
     if (stage->tiles[i].collidable) {
       if (will_check_collision) {
 	Rect tile_rect = (Rect) {
@@ -48,14 +48,14 @@ void Stage_update(Stage* stage, Player* player) {
 }
 
 void Stage_draw(Stage* stage, bool debug) {
-  for (int i = stage->cols*stage->rows-1; i >= 0; --i) {
+  for (size_t i = stage->cols*stage->rows-1; i >= 0; --i) {
     Tile_draw(&stage->tiles[i], debug);
   }
 }
 
 bool Stage_add_tile(Stage* stage, Vector2i type, bool collidable, Vector2f pos) {
   pos = v2f_divs(pos, TILE_SIZE);
-  size_t idx = pos.y * stage->cols + pos.x;
+  size_t idx = (size_t)(pos.y * stage->cols + pos.x);
   if (!(0 <= idx && idx < stage->cols*stage->rows)) return false;
   Tile* t = &stage->tiles[idx];
   t->collidable = collidable;
@@ -67,7 +67,7 @@ bool Stage_add_tile(Stage* stage, Vector2i type, bool collidable, Vector2f pos) 
 
 bool Stage_remove_tile(Stage* stage, Vector2f pos) {
   pos = v2f_divs(pos, TILE_SIZE);
-  size_t idx = pos.y * stage->cols + pos.x;
+  size_t idx = (size_t)(pos.y * stage->cols + pos.x);
   if (!(0 <= idx && idx < stage->cols*stage->rows)) return false;
   Tile* t = &stage->tiles[idx];
   if (!Tile_set_invalid(t)) {

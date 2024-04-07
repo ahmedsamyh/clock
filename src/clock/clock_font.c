@@ -7,7 +7,7 @@
 #include <stb/stb_ds.h>
 
 bool Font_init(Font* font, Context* ctx, const char* filepath) {
-  unsigned char* ttf_buffer = (char*)slurp_file(filepath);
+  uint8* ttf_buffer = (uint8*)slurp_file(filepath);
 
   if (ttf_buffer == NULL) {
     log_f(LOG_ERROR, "Could not load font file '%s'!", filepath);
@@ -43,7 +43,7 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
 
   font->current_character_size = character_size;
 
-  Vector2f tex_size = {0.f, character_size};
+  Vector2f tex_size = {0.f, (real32)character_size};
 
   int codepoint_min =  INT_MAX;
   int codepoint_max = -INT_MAX;
@@ -55,16 +55,16 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
       if (i > codepoint_max) codepoint_max = i;
 
       int w, h, xoff, yoff;
-      unsigned char* single_channel_bitmap = stbtt_GetCodepointBitmap(&font->font, 0, stbtt_ScaleForPixelHeight(&font->font, character_size), i, &w, &h, &xoff, &yoff);
+      uint8* single_channel_bitmap = stbtt_GetCodepointBitmap(&font->font, 0, stbtt_ScaleForPixelHeight(&font->font, (real32)character_size), i, &w, &h, &xoff, &yoff);
       stbtt_FreeBitmap(single_channel_bitmap, NULL);
 
       Rect rect = {
 	.pos = (Vector2f){tex_size.x, 0.f},
-	.size = (Vector2f){w, h}
+	.size = (Vector2f){(real32)w, (real32)h}
       };
 
       Codepoint_rect crect = {
-	.offset = (Vector2f){xoff, yoff},
+	.offset = (Vector2f){(real32)xoff, (real32)yoff},
 	.rect = rect};
       hmput(font->codepoint_rect_map, i, crect);
       tex_size.x += w;
@@ -83,14 +83,14 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
 
   /* log_f(LOG_INFO, "Font codepoint range: %d..%d", font->codepoint_start, font->codepoint_end); */
 
-  Texture_load_font_atlas(font->texture, tex_size.x, tex_size.y);
+  Texture_load_font_atlas(font->texture, (int)tex_size.x, (int)tex_size.y);
 
   gl(glBindTexture(GL_TEXTURE_2D, font->texture->id));
 
   for (int i = font->codepoint_start; i <= font->codepoint_end; ++i) {
     if (stbtt_FindGlyphIndex(&font->font, i) != 0) {
       int w, h, xoff, yoff;
-      unsigned char* single_channel_bitmap = stbtt_GetCodepointBitmap(&font->font, 0, stbtt_ScaleForPixelHeight(&font->font, character_size), i, &w, &h, &xoff, &yoff);
+      unsigned char* single_channel_bitmap = stbtt_GetCodepointBitmap(&font->font, 0, stbtt_ScaleForPixelHeight(&font->font, (real32)character_size), i, &w, &h, &xoff, &yoff);
       size_t single_channel_bitmap_size = sizeof(unsigned char)*w*h;
       unsigned char* bitmap = onechan_to_fourchan(single_channel_bitmap, single_channel_bitmap_size);
       stbtt_FreeBitmap(single_channel_bitmap, NULL);
@@ -100,7 +100,7 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
 
       /* log_f(LOG_INFO, "Codepoint: %d '%c' -> Rect: %fx%f | %fx%f", i, i, codepoint_rect.pos.x, codepoint_rect.pos.y, codepoint_rect.size.x, codepoint_rect.size.y); */
 
-      gl(glTexSubImage2D(GL_TEXTURE_2D, 0, codepoint_rect.pos.x, codepoint_rect.pos.y, codepoint_rect.size.x, codepoint_rect.size.y, GL_RGBA, GL_UNSIGNED_BYTE, bitmap));
+      gl(glTexSubImage2D(GL_TEXTURE_2D, 0, (GLint)codepoint_rect.pos.x, (GLint)codepoint_rect.pos.y, (GLsizei)codepoint_rect.size.x, (GLsizei)codepoint_rect.size.y, GL_RGBA, GL_UNSIGNED_BYTE, bitmap));
       free(bitmap);
     }
   }

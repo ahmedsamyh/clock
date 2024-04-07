@@ -33,13 +33,12 @@ Matrix4 Mat4_scale(Matrix4 mat, Vector3f by) {
 }
 
 Matrix4 Mat4_rotate_x(Matrix4 mat, float deg) {
-  Vector4f r = {0};
   float rad = deg2rad(deg);
 
   Matrix4 m = {
     .m = {{1, 0,          0        , 0},
-	  {0, cos(rad), -sin(rad), 0},
-          {0, sin(rad),  cos(rad), 0},
+	  {0, cosf(rad), -sinf(rad), 0},
+          {0, sinf(rad),  cosf(rad), 0},
           {0, 0,          0,         1}}
   };
 
@@ -47,25 +46,23 @@ Matrix4 Mat4_rotate_x(Matrix4 mat, float deg) {
 }
 
 Matrix4 Mat4_rotate_y(Matrix4 mat, float deg) {
-  Vector4f r = {0};
   float rad = deg2rad(deg);
 
   Matrix4 m = {
-    .m = {{cos(rad),  0, sin(rad), 0},
+    .m = {{cosf(rad),  0, sinf(rad), 0},
 	  {0,          1, 0        , 0},
-	  {-sin(rad), 0, cos(rad), 0},
+	  {-sinf(rad), 0, cosf(rad), 0},
 	  {0,          0, 0        , 1}}
   };
   return Mat4_mul(mat, m);
 }
 
 Matrix4 Mat4_rotate_z(Matrix4 mat, float deg) {
-  Vector4f r = {0};
   float rad = deg2rad(deg);
 
   Matrix4 m = {
-    .m = {{cos(rad), -sin(rad), 0, 0},
-	  {sin(rad),  cos(rad), 0, 0},
+    .m = {{cosf(rad), -sinf(rad), 0, 0},
+	  {sinf(rad),  cosf(rad), 0, 0},
 	  {0,          0,         1, 0},
 	  {0,          0,         0, 1}}
   };
@@ -116,8 +113,8 @@ Matrix4 Mat4_screen_to_clip_projection_perspective(float fov, float aspect_ratio
 
   fov = deg2rad(fov);
   Matrix4 m = {
-    .m = {{aspect_ratio * (1.f / tan(fov/2.f)), 0,  0, 0},
-	  {0, 1.f / tan(fov/2.f),  0, 0},
+    .m = {{aspect_ratio * (1.f / tanf(fov/2.f)), 0,  0, 0},
+	  {0, 1.f / tanf(fov/2.f),  0, 0},
 	  {0, 0,  -f / (f - n),    1},
 	  {0, 0,  -f*n / (f - n),  0}}
   };
@@ -125,8 +122,6 @@ Matrix4 Mat4_screen_to_clip_projection_perspective(float fov, float aspect_ratio
 }
 
 Vector4f Mat4_translate_vector(Vector4f v, Vector3f by) {
-  Vector4f r = {0};
-
   Matrix4 translation_mat = {
     .m = {{1.f, 0.f, 0.f, by.x},
 	  {0.f, 1.f, 0.f, by.y},
@@ -138,8 +133,6 @@ Vector4f Mat4_translate_vector(Vector4f v, Vector3f by) {
 }
 
 Vector4f Mat4_scale_vector(Vector4f v, Vector3f by){
-  Vector4f r = {0};
-
   Matrix4 translation_mat = {
     .m = {{by.x, 0.f, 0.f, 0.f},
 	  {0.f, by.y, 0.f, 0.f},
@@ -155,8 +148,8 @@ Vector4f Mat4_rotate_x_vector(Vector4f v, float deg){
 
   Matrix3 m = {
     .m = {{1, 0,          0        },
-	  {0, cos(rad), -sin(rad)},
-          {0, sin(rad),  cos(rad)}}
+	  {0, cosf(rad), -sinf(rad)},
+          {0, sinf(rad),  cosf(rad)}}
   };
 
   return Mat3_vector_mul(m, v);
@@ -166,20 +159,19 @@ Vector4f Mat4_rotate_y_vector(Vector4f v, float deg){
   float rad = deg2rad(deg);
 
   Matrix3 m = {
-    .m = {{cos(rad),  0, sin(rad)},
+    .m = {{cosf(rad),  0, sinf(rad)},
 	  {0,          1, 0        },
-	  {-sin(rad), 0, cos(rad)}}
+	  {-sinf(rad), 0, cosf(rad)}}
   };
   return Mat3_vector_mul(m, v);
 }
 
 Vector4f Mat4_rotate_z_vector(Vector4f v, float deg){
-  Vector4f r = {0};
   float rad = deg2rad(deg);
 
   Matrix3 m = {
-    .m = {{cos(rad), -sin(rad), 0},
-	  {sin(rad),  cos(rad), 0},
+    .m = {{cosf(rad), -sinf(rad), 0},
+	  {sinf(rad),  cosf(rad), 0},
 	  {0,          0,         1}}
   };
   return Mat3_vector_mul(m, v);

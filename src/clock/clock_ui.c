@@ -152,6 +152,7 @@ bool UI_button(UI* this, cstr text, int char_size, Color color) {
 
 void UI_text(UI* this, cstr text, int char_size, Color color) {
   int id = this->last_used_id++;
+  (void)id;
   UI_Layout* top = UI_top_layout(this);
   if (top == NULL) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
@@ -168,6 +169,7 @@ void UI_text(UI* this, cstr text, int char_size, Color color) {
 
 void UI_sprite(UI* this, Sprite* spr) {
   int id = this->last_used_id++;
+  (void)id;
   UI_Layout* top = UI_top_layout(this);
   if (top == NULL) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
@@ -234,13 +236,13 @@ bool UI_sprite_button(UI* this, Sprite* spr) {
 
 void UI_spacing(UI* this, float spacing) {
   int id = this->last_used_id++;
+  (void)id;
   UI_Layout* top = UI_top_layout(this);
   if (top == NULL) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return;
   }
   assert(this->ctx);
-  Context* ctx = this->ctx;
 
   Vector2f size = {
     .x = spacing,
@@ -268,7 +270,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
 
   const Vector2f pos = UI_Layout_available_pos(top);
   // TODO: maybe have text input padding?
-  const Vector2f size = v2f_add((Vector2f) {this->text_input_width * char_size, char_size}, v2f_muls(this->btn_padding, 2.f));
+  const Vector2f size = v2f_add((Vector2f) {this->text_input_width * (real32)char_size, (real32)char_size}, v2f_muls(this->btn_padding, 2.f));
   const Rect rect = {pos, size};
   bool hovering = Rect_contains_point(rect, ctx->mpos);
   if (this->active_id == id) {
@@ -300,7 +302,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
     }
 
     if (ctx->text_entered) {
-      text_buff[cursor] = ctx->last_entered_character;
+      text_buff[cursor] = (char)ctx->last_entered_character;
       cursor++;
     }
 
@@ -310,7 +312,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
     }
 
     if (clock_key_pressed(ctx, KEY_RIGHT)) {
-      uint32 text_len = strlen(text_buff);
+      size_t text_len = strlen(text_buff);
       if (cursor < text_len) cursor++;
     }
 
@@ -331,7 +333,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
   // TODO: look previous todo...
   Vector2f text_pos = v2f_add(pos, this->btn_padding);
   float text_width = get_text_size(this->ctx, this->font, text_buff, char_size).x;
-  float text_box_width = (this->text_input_width * char_size);
+  float text_box_width = ((real32)this->text_input_width * (real32)char_size);
   if (text_width > text_box_width) {
     text_pos.x -= text_width - text_box_width;
   }
@@ -350,7 +352,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
   float text_width_until_cursor = get_text_sizen(this->ctx, this->font, text_buff, cursor, char_size).x;
   Rect cursor_rect = {
     .pos = (Vector2f) {text_pos.x + text_width_until_cursor, text_pos.y},
-    .size = (Vector2f) {char_size*0.2f, char_size}
+    .size = (Vector2f) {char_size*0.2f, (real32)char_size}
   };
   draw_rect(ctx, cursor_rect, color_alpha(COLOR_WHITE, 0.5f));
 

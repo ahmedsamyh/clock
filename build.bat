@@ -6,11 +6,17 @@ set CLEAN_QUIET=1
 set INCLUDE_DIRS=.\include
 set LIB_DIR=.\lib
 set LIBS=user32.lib shell32.lib gdi32.lib kernel32.lib
+set IGNORED_WARNINGS_RAW= 4201 4127
+
+for %%i in (!IGNORED_WARNINGS_RAW!) do (
+  set IGNORED_WARNINGS=!IGNORED_WARNINGS! /wd%%i
+)
+
+set COMMON_CFLAGS=/Z7 /W4 /nologo /MT !IGNORED_WARNINGS!
+
 set CLOCK_FILES=clock_core clock_math clock_vector clock_matrix clock_texture clock_sprite clock_rect clock_resource_manager clock_render_target clock_color clock_font clock_timer clock_ui
 set CLOCK_SRCS=
 set CLOCK_OBJS=
-set COMMON_CFLAGS=/Z7 /W1 /nologo /MT
-
 for %%i in (!CLOCK_FILES!) do (
   set CLOCK_SRCS=!CLOCK_SRCS! src\clock\%%i.c
   set CLOCK_OBJS=!CLOCK_OBJS! %%i.obj

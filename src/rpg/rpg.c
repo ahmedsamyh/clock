@@ -13,6 +13,7 @@ typedef enum {
 } State;
 
 bool change_state(Context* ctx, State* current_state, State next_state, cstr* current_state_text) {
+  (void)ctx;
   switch (next_state) {
   case STATE_PLAY: {
     *current_state_text = "Play";
@@ -137,7 +138,7 @@ int main(void) {
       clock_clear(ctx, color_from_hex(0xFF555555));
       Stage_draw(current_stage, DEBUG_DRAW);
 
-      for (int i = arrlen(enemies) - 1; i >= 0; --i) {
+      for (size_t i = arrlen(enemies) - 1; i >= 0; --i) {
 	Enemy_draw(&enemies[i], DEBUG_DRAW);
       }
 
@@ -162,13 +163,13 @@ int main(void) {
 	draw_imm_box(ctx, p0, p1, p2, p3, color, color, color, color);
 
 	Rect r = {
-	  .pos =  v2f_muls((Vector2f){tile_type.x, tile_type.y}, TILE_SIZE),
+	  .pos =  v2f_muls((Vector2f){(real32)tile_type.x, (real32)tile_type.y}, TILE_SIZE),
 	  .size = (Vector2f){TILE_SIZE, TILE_SIZE}
 	};
 	/* r.pos = clock_screen_to_world(ctx, r.pos); */
 	draw_rect(ctx, r, color_alpha(COLOR_GREEN, 0.4f));
 
-	r.pos = v2f_muls((Vector2f){hovering_tile_type.x, hovering_tile_type.y}, TILE_SIZE);
+	r.pos = v2f_muls((Vector2f){(real32)hovering_tile_type.x, (real32)hovering_tile_type.y}, TILE_SIZE);
 	/* r.pos = clock_screen_to_world(ctx, r.pos); */
 	draw_rect(ctx, r, color_alpha(COLOR_RED, 0.4f));
 	clock_use_camera_view(ctx, prev_state);
@@ -224,7 +225,7 @@ int main(void) {
     case STATE_PLAY: {
       Player_update(&player);
 
-      for (int i = arrlen(enemies) - 1; i >= 0; --i) {
+      for (size_t i = arrlen(enemies) - 1; i >= 0; --i) {
 	Enemy_update(&enemies[i]);
       }
 

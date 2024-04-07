@@ -4,8 +4,6 @@
 #define COMMONLIB_IMPLEMENTATION
 #include <commonlib.h>
 #include <stdio.h>
-#define STRING_VIEW_IMPLEMENTATION
-#include <string_view.h>
 #include <assert.h>
 
 static const char* header_filename = "clock_vector.h";
@@ -32,13 +30,13 @@ void declare_modifier_function(FILE* out, const char* prefix, const char* func, 
   fprintf(out, "%s %s_%s(%s v);\n", full_name, prefix, func, full_name);
 }
 
-void define_normalize_function(FILE* out, const char* prefix, const char* full_name){
+void define_normalize_function(FILE* out, const char* prefix, const char* full_name, String_view type){
   fprintf(out, "%s %s_normalize(%s v){\n", full_name, prefix, full_name);
 
-  fprintf(out, "  double mag = %s_mag(v);\n", prefix);
+  fprintf(out, "  float mag = %s_mag(v);\n", prefix);
 
   fprintf(out, "  if (mag == 0.f) return v;\n");
-  fprintf(out, "  return %s_divs(v, mag);\n", prefix);
+  fprintf(out, "  return %s_divs(v, ("SV_FMT")mag);\n", prefix, SV_ARG(type));
 
   fprintf(out, "}\n");
 }
@@ -94,15 +92,16 @@ void define_scalar_arithmetic_function(FILE* out, const char* return_type, const
 
 
 void define_getter_function_base(FILE* out, const char* param_name, String_view members, String_view format){
+  (void)param_name;
   assert(0 && "Not implemented!");
-  int cursor = 0;
+  size_t cursor = 0;
   bool done = false;
   String_view og_members = members;
   size_t members_count = 0;
 
   // count members
   while (members.count > 0){
-    String_view member = sv_lpop_until_char(&members, ' ');
+    sv_lpop_until_char(&members, ' ');
     sv_trim(&members);
     members_count++;
   }
@@ -112,7 +111,6 @@ void define_getter_function_base(FILE* out, const char* param_name, String_view 
   members = og_members;
 
   int members_outputted = 0;
-  bool inside_between_member = false;
 
   bool output_member = false;
   while (!done){
@@ -162,17 +160,17 @@ void define_getter_function_base(FILE* out, const char* param_name, String_view 
 }
 
 void define_mag_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type, String_view members, bool squared){
+  (void)type;
   fprintf(out, "%s %s_%s(%s v){\n", return_type, prefix, func, full_name);
   fprintf(out, "  return ");
   if (!squared){
-    fprintf(out, "sqrtf");
+    fprintf(out, "(float)sqrtf");
   }
   fprintf(out, "(");
-  size_t c = 0;
   while (members.count > 0){
     String_view member = sv_lpop_until_char(&members, ' ');
     sv_trim(&members);
-    fprintf(out, "(v."SV_FMT"*v."SV_FMT")", SV_ARG(member), SV_ARG(member));
+    fprintf(out, "((float)v."SV_FMT"*(float)v."SV_FMT")", SV_ARG(member), SV_ARG(member));
 
     if (members.count != 0){ // therefore this is not the last member
       fprintf(out, " + ");
@@ -183,6 +181,8 @@ void define_mag_function(FILE* out, const char* return_type, const char* prefix,
 }
 
 void define_radian_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type, String_view members) {
+  (void)members;
+  (void)type;
   fprintf(out, "%s %s_%s(%s v){\n", return_type, prefix, func, full_name);
   fprintf(out, "  return ");
 
@@ -192,6 +192,8 @@ void define_radian_function(FILE* out, const char* return_type, const char* pref
 }
 
 void define_degree_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type, String_view members) {
+  (void)members;
+  (void)type;
   fprintf(out, "%s %s_%s(%s v){\n", return_type, prefix, func, full_name);
   fprintf(out, "  return ");
 
@@ -255,7 +257,7 @@ void declare_vector(String_view format) {
   fprintf(out, "%c;\n", *type.data);
 
   char prefix[4] = {0};
-  char c = tolower(*name.data);
+  char c = (char)tolower(*name.data);
   snprintf(prefix, 4, "%c%c%c", c, *(name.data+name.count-1), *type.data);
 
   char* full_name = (char*)malloc(sizeof(char)*name.count+2);
@@ -310,7 +312,7 @@ void define_vector(String_view format) {
   size_t members_count = 0; // actual number of members not the count of the characters in 'members' sv... eg: Vector2 will have 2 members_count (x, y)
 
   while (members_copy.count > 0) {
-    String_view member = sv_lpop_until_char(&members_copy, ' ');
+    sv_lpop_until_char(&members_copy, ' ');
     sv_trim(&members_copy);
     members_count++;
   }
@@ -325,7 +327,7 @@ void define_vector(String_view format) {
   fprintf(out, "\n");
 
   char prefix[4] = {0};
-  char c = tolower(*name.data);
+  char c = (char)tolower(*name.data);
   snprintf(prefix, 4, "%c%c%c", c, *(name.data+name.count-1), *type.data);
 
   // function definitions
@@ -350,7 +352,7 @@ void define_vector(String_view format) {
   define_mag_function(out, "float", prefix, "dist", full_name, type, members, false);
   define_mag_function(out, "float", prefix, "dist2", full_name, type, members, true);
 
-  define_normalize_function(out, prefix, full_name);
+  define_normalize_function(out, prefix, full_name, type);
 
   free(full_name);
 

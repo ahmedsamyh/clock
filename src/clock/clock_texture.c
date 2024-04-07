@@ -98,6 +98,8 @@ bool Texture_load_from_file(Texture* t, const char* filename) {
 }
 
 bool Texture_load_from_memory(Texture* t, unsigned char* data) {
+  (void)t;
+  (void)data;
   assert(0 && "Unfinished!");
 
   /* t->local_data = data; */
