@@ -28,34 +28,34 @@ int main(void) {
     clock_clear(ctx, COLOR_BLACK);
 
     // rotation
-    if (clock_key_held(KEY_Z)) spr.rotation.x += 100.f * delta;
-    if (clock_key_held(KEY_X)) spr.rotation.y += 100.f * delta;
-    if (clock_key_held(KEY_C)) spr.rotation.z += 100.f * delta;
+    if (clock_key_held(ctx, KEY_Z)) spr.rotation.x += 100.f * delta;
+    if (clock_key_held(ctx, KEY_X)) spr.rotation.y += 100.f * delta;
+    if (clock_key_held(ctx, KEY_C)) spr.rotation.z += 100.f * delta;
 
     // scaling
     const float S = 10.f;
     const float scale_min = 0.35f;
-    if (clock_key_held(KEY_A)) {
+    if (clock_key_held(ctx, KEY_A)) {
       spr.scale.x = spr.scale.x <= scale_min ? scale_min : spr.scale.x - S * delta;
       spr.scale.y = spr.scale.y <= scale_min ? scale_min : spr.scale.y - S * delta;
     }
-    if (clock_key_held(KEY_S)) {
+    if (clock_key_held(ctx, KEY_S)) {
       spr.scale.x += S * delta;
       spr.scale.y += S * delta;
     }
 
     // move camera
     const float speed = 400.f;
-    if (clock_key_held(KEY_UP)) {
+    if (clock_key_held(ctx, KEY_UP)) {
       ctx->camera.y += speed * ctx->delta;
     }
-    if (clock_key_held(KEY_DOWN)) {
+    if (clock_key_held(ctx, KEY_DOWN)) {
       ctx->camera.y -= speed * ctx->delta;
     }
-    if (clock_key_held(KEY_RIGHT)) {
+    if (clock_key_held(ctx, KEY_RIGHT)) {
       ctx->camera.x += speed * ctx->delta;
     }
-    if (clock_key_held(KEY_LEFT)) {
+    if (clock_key_held(ctx, KEY_LEFT)) {
       ctx->camera.x -= speed * ctx->delta;
     }
 
