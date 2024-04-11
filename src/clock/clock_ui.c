@@ -273,20 +273,31 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
   const Rect rect = {pos, size};
   bool hovering = Rect_contains_point(rect, ctx->mpos);
   if (this->active_id == id) {
-    // backspace
-    if (clock_key_pressed(ctx, KEY_BACKSPACE)) {
-      if (cursor > 0) {
-	uint32 n = text_buff_size - cursor;
-	if (n == 0) {
-	  text_buff[--cursor] = '\0';
-	} else {
-	  memcpy((uint8*)text_buff+(cursor-1), (uint8*)text_buff+cursor, n);
-	  cursor--;
-	  // Edge case: text buffer is full, cursor is not at the end of text buffer
-	  if (text_buff[text_buff_size-1] != '\0') {
-	    memset((uint8*)text_buff+cursor+n, 0, text_buff_size - (cursor + n));
-	  }
+    // Backspace
+    if (clock_key_pressed(ctx, KEY_BACKSPACE) && cursor > 0) {
+      uint32 n = text_buff_size - cursor;
+      if (n == 0) {
+	text_buff[--cursor] = '\0';
+      } else {
+	memcpy((uint8*)text_buff+(cursor-1), (uint8*)text_buff+cursor, n);
+	cursor--;
+	// Edge case: text buffer is full, cursor is not at the end of text buffer
+	if (text_buff[text_buff_size-1] != '\0') {
+	  memset((uint8*)text_buff+cursor+n, 0, text_buff_size - (cursor + n));
 	}
+      }
+    }
+
+    // Delete
+    if (clock_key_pressed(ctx, KEY_DELETE) &&
+	cursor < (uint32)strlen(text_buff)) {
+      uint32 n = text_buff_size - cursor;
+
+      if (n == 0) {
+	text_buff[cursor--] = '\0';
+      } else {
+	memcpy((uint8*)text_buff+(cursor), (uint8*)text_buff+(cursor+1), n-1);
+	// TODO: Check for edge-case
       }
     }
 
@@ -305,8 +316,26 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
       cursor++;
     }
 
-    // cursor movement
-        if (clock_key_pressed(ctx, KEY_LEFT)) {
+    // Pasting
+    if (clock_key_held(ctx, KEY_LEFT_CONTROL)) {
+      if (clock_key_pressed(ctx, KEY_V)) {
+	cstr pasted_text = get_clipboard();
+	size_t pasted_text_len = strlen(pasted_text);
+	ASSERT((pasted_text_len + cursor) <= text_buff_size);
+	memcpy((uint8*)text_buff+cursor, pasted_text, pasted_text_len);
+	cursor += (uint32)pasted_text_len;
+      }
+    }
+
+    // Home/End
+    if (clock_key_pressed(ctx, KEY_HOME)) {
+      cursor = 0;
+    } else if (clock_key_pressed(ctx, KEY_END)) {
+      cursor = (uint32)strlen(text_buff);
+    }
+
+    // Cursor movement
+    if (clock_key_pressed(ctx, KEY_LEFT)) {
       if (cursor > 0) cursor--;
     }
 
@@ -351,7 +380,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
   float text_width_until_cursor = get_text_sizen(this->ctx, this->font, text_buff, cursor, char_size).x;
   Rect cursor_rect = {
     .pos = (Vector2f) {text_pos.x + text_width_until_cursor, text_pos.y},
-    .size = (Vector2f) {char_size*0.2f, (real32)char_size}
+    .size = (Vector2f) {char_size*1.f, (real32)char_size}
   };
   draw_rect(ctx, cursor_rect, color_alpha(COLOR_WHITE, 0.5f));
 
