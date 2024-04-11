@@ -71,7 +71,7 @@ bool Texture_load_from_file(Texture* t, const char* filename) {
     log_f(LOG_ERROR, "Could not load image '%s'", filename);
     return false;
   }
-  assert(t->local_data != NULL);
+  ASSERT(t->local_data != NULL);
 
   gl(glGenTextures(1, &t->id));
 
@@ -100,14 +100,14 @@ bool Texture_load_from_file(Texture* t, const char* filename) {
 bool Texture_load_from_memory(Texture* t, unsigned char* data) {
   (void)t;
   (void)data;
-  assert(0 && "Unfinished!");
+  ASSERT(0 && "Unfinished!");
 
   /* t->local_data = data; */
 
   /* // TODO: pass the name here */
   /* /\* t->name = *\/ */
 
-  /* assert(t->local_data != NULL); */
+  /* ASSERT(t->local_data != NULL); */
 
   /* gl(glGenTextures(1, &t->id)); */
 

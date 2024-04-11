@@ -1,5 +1,5 @@
 #include <clock/clock_matrix.h>
-#include <assert.h>
+#include <commonlib.h>
 
 Matrix4 Mat4_identity(void){
   return (Matrix4){
@@ -97,7 +97,7 @@ Matrix4 Mat4_transpose(Matrix4 mat) {
 }
 
 Matrix4 Mat4_screen_to_clip_projection_orthographic(Vector2f size) {
-  assert(size.x > 0.f && size.y > 0.f);
+  ASSERT(size.x > 0.f && size.y > 0.f);
   float depth = size.x;
   Matrix4 m = {
     .m = {{2.f/size.x, 0,          0, -1},

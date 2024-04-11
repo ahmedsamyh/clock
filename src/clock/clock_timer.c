@@ -1,6 +1,5 @@
 #include <clock/clock_timer.h>
 
-
 void Timer_run(Timer* timer, float delta) {
   timer->time += delta;
 }

@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 bool Sprite_init(Sprite* spr, Texture* texture, size_t hframes, size_t vframes) {
-  assert(texture != NULL);
+  ASSERT(texture != NULL);
   spr->texture = texture;
   spr->hframes = hframes;
   spr->vframes = vframes;

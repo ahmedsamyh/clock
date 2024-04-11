@@ -523,7 +523,7 @@ bool clock_key_state(Context* ctx, int key, Key_state state) {
   case KEY_STATE_HELD: {
     return k_kv->value.held;
   } break;
-  default: assert(0 && "Unreachable");
+  default: ASSERT(0 && "Unreachable");
   }
   return false;
 }
@@ -560,7 +560,7 @@ bool clock_mouse_state(Context* ctx, int button, Mouse_state state) {
   case MOUSE_STATE_HELD: {
     return ctx->m[button].held;
   } break;
-  default: assert(0 && "Unreachable");
+  default: ASSERT(0 && "Unreachable");
   }
   return false;
 }
@@ -668,7 +668,7 @@ bool Renderer_init(Renderer* r, Window* win, const Render_mode render_mode) {
   case RENDER_MODE_3D: {
     r->proj = Mat4_screen_to_clip_projection_perspective(90.f, (float)r->win->width/(float)r->win->height, 1.f, 1000.f);
   } break;
-  default: assert(0 && "Unreachable");
+  default: ASSERT(0 && "Unreachable");
   }
 
   return true;
@@ -1002,7 +1002,7 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
 
     // TODO: Handle newline and other codepoints
     Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
-    assert(kv != NULL);
+    ASSERT(kv != NULL);
     Rect rect = kv->value.rect;
 
     spr.tex_rect = rect;
@@ -1095,7 +1095,7 @@ void set_blend_mode(const Blendmode mode) {
     gl(glBlendEquation(GL_FUNC_ADD));
   } break;
   default: {
-    assert(0 && "Unreachable");
+    ASSERT(0 && "Unreachable");
   }
   }
 }

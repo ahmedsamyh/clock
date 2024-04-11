@@ -19,7 +19,7 @@ Texture* Resman_load_texture_from_file(Resource_manager* res_man, const char* fi
 
   shput(res_man->texture_map, filepath, tex);
 
-  assert(tex != NULL);
+  ASSERT(tex != NULL);
 
   arrput(res_man->texture_names, filepath);
 
@@ -39,7 +39,7 @@ Texture* Resman_load_texture_uninitialized(Resource_manager* res_man, const char
 
   shput(res_man->texture_map, filepath, tex);
 
-  assert(tex != NULL);
+  ASSERT(tex != NULL);
 
   arrput(res_man->texture_names, filepath);
 
@@ -60,7 +60,7 @@ void Resman_unload_texture(Resource_manager* res_man, const char* filepath) {
 
 void Resman_unload_every_texture(Resource_manager* res_man) {
   for (size_t i = 0; i < arrlenu(res_man->texture_names); ++i) {
-    assert(shgeti(res_man->texture_map, res_man->texture_names[i]) != -1);
+    ASSERT(shgeti(res_man->texture_map, res_man->texture_names[i]) != -1);
 
     Resman_unload_texture(res_man, res_man->texture_names[i]);
   }

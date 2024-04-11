@@ -46,7 +46,7 @@ void Rentar_set_to_current(Render_target* rt) {
 }
 
 void Rentar_blit(Render_target* rt) {
-  assert(rt->win);
+  ASSERT(rt->win);
   Window* win = rt->win;
   const unsigned int default_fbo = 0;
   gl(glBlitNamedFramebuffer(rt->fbo, default_fbo,

@@ -1,5 +1,5 @@
 #include <clock/clock_rect.h>
-#include <assert.h>
+#include <commonlib.h>
 
 bool Rect_contains_point(Rect r1, Vector2f p){
   return (p.x >= r1.pos.x && p.x < r1.pos.x + r1.size.x &&
@@ -66,7 +66,7 @@ bool Rect_resolve_rect_collision(Rect* rect1, const Rect rect2) {
     } else if (min_d2 == d2_bot){
       rect1->pos.y = rect2_t - rect1->size.y;
     } else {
-      assert(0 && "UNREACHABLE");
+      ASSERT(0 && "UNREACHABLE");
     }
     return true;
   }

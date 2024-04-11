@@ -96,7 +96,7 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
       stbtt_FreeBitmap(single_channel_bitmap, NULL);
 
       Rect codepoint_rect = {0};
-      assert(Font_get_codepoint_rect(font, i, &codepoint_rect));
+      ASSERT(Font_get_codepoint_rect(font, i, &codepoint_rect));
 
       /* log_f(LOG_INFO, "Codepoint: %d '%c' -> Rect: %fx%f | %fx%f", i, i, codepoint_rect.pos.x, codepoint_rect.pos.y, codepoint_rect.size.x, codepoint_rect.size.y); */
 

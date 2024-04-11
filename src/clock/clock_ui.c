@@ -1,5 +1,4 @@
 #include <clock/clock_ui.h>
-#include <assert.h>
 #include <float.h>
 
 Vector2f UI_Layout_available_pos(UI_Layout* this) {
@@ -16,9 +15,9 @@ Vector2f UI_Layout_available_pos(UI_Layout* this) {
       .y = this->pos.y + this->size.y + this->padding.y,
     };
   } break;
-  default: assert(0 && "Unreachable");
+  default: ASSERT(0 && "Unreachable");
   }
-  assert(0 && "Unreachable");
+  ASSERT(0 && "Unreachable");
 
   return (Vector2f) {0.f, 0.f};
 }
@@ -33,7 +32,7 @@ void UI_Layout_push_widget(UI_Layout* this, Vector2f size) {
     this->size.x = max(this->size.x, size.x);
     this->size.y += size.y + this->padding.y;
   } break;
-  default: assert(0 && "Unreachable");
+  default: ASSERT(0 && "Unreachable");
   }
 }
 
@@ -51,12 +50,12 @@ UI UI_make(Context* ctx, Font* font) {
 }
 
 void UI_push_layout(UI* this, UI_Layout layout) {
-  assert(this->layouts_count < LAYOUTS_CAP);
+  ASSERT(this->layouts_count < LAYOUTS_CAP);
   this->layouts[this->layouts_count++] = layout;
 }
 
 UI_Layout UI_pop_layout(UI* this) {
-  assert(this->layouts_count > 0);
+  ASSERT(this->layouts_count > 0);
   return this->layouts[--this->layouts_count];
 }
 
@@ -105,7 +104,7 @@ bool UI_button(UI* this, cstr text, int char_size, Color color) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return false;
   }
-  assert(this->ctx);
+  ASSERT(this->ctx);
   Context* ctx = this->ctx;
 
   const Vector2f pos = UI_Layout_available_pos(top);
@@ -158,7 +157,7 @@ void UI_text(UI* this, cstr text, int char_size, Color color) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return;
   }
-  assert(this->ctx);
+  ASSERT(this->ctx);
   Context* ctx = this->ctx;
 
   const Vector2f pos = UI_Layout_available_pos(top);
@@ -175,7 +174,7 @@ void UI_sprite(UI* this, Sprite* spr) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return;
   }
-  assert(this->ctx);
+  ASSERT(this->ctx);
   Context* ctx = this->ctx;
 
   const Vector2f pos = UI_Layout_available_pos(top);
@@ -191,7 +190,7 @@ bool UI_sprite_button(UI* this, Sprite* spr) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return false;
   }
-  assert(this->ctx);
+  ASSERT(this->ctx);
   Context* ctx = this->ctx;
 
   const Vector2f pos = UI_Layout_available_pos(top);
@@ -242,7 +241,7 @@ void UI_spacing(UI* this, float spacing) {
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return;
   }
-  assert(this->ctx);
+  ASSERT(this->ctx);
 
   Vector2f size = {
     .x = spacing,
@@ -265,7 +264,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
     log_f(LOG_ERROR, "This function must be used between 'begin' and 'end'!");
     return;
   }
-  assert(this->ctx);
+  ASSERT(this->ctx);
   Context* ctx = this->ctx;
 
   const Vector2f pos = UI_Layout_available_pos(top);
@@ -348,7 +347,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
   clock_end_scissor(ctx);
 
   // cursor
-  assert(cursor <= text_buff_size);
+  ASSERT(cursor <= text_buff_size);
   float text_width_until_cursor = get_text_sizen(this->ctx, this->font, text_buff, cursor, char_size).x;
   Rect cursor_rect = {
     .pos = (Vector2f) {text_pos.x + text_width_until_cursor, text_pos.y},
