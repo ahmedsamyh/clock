@@ -41,6 +41,11 @@ void Window_deinit(Window* win);
 
 // Context / main user api
 
+typedef struct {
+  int key;
+  Key value;
+} Key_KV;
+
 struct Context {
   Window*   win;
   Renderer* ren;
@@ -52,8 +57,9 @@ struct Context {
   Vector2f  mscroll;
   Vector3f  camera;
   bool      use_camera_view;
-  Key k[KEYS_COUNT];
-  Mouse m[MOUSE_BUTTONS_COUNT];
+  Key_KV*   key_map; // hashmap
+  int*      key_codes; // dynamic-array; TODO (speed): remove when i know how to iterate over a hashmap;
+  Mouse     m[MOUSE_BUTTONS_COUNT];
   Resource_manager* resman;
   int       ren_tex_image_slot;
 #define TMP_BUFF_SIZE (1024)
@@ -103,12 +109,17 @@ bool clock_key_pressed(Context* ctx, int key);
 bool clock_key_just_pressed(Context* ctx, int key);
 bool clock_key_released(Context* ctx, int key);
 bool clock_key_held(Context* ctx, int key);
+Key  clock_get_key_by_code(Context* ctx, int key);
 
 // !!!IMPORTANT!!!: User must not access the Context::m[] array manually for mouse input, rather must use these functions!!!
 bool clock_mouse_state(Context* ctx, int button, Mouse_state state);
 bool clock_mouse_pressed(Context* ctx, int button);
 bool clock_mouse_released(Context* ctx, int button);
 bool clock_mouse_held(Context* ctx, int button);
+
+// Misc
+cstr get_clipboard(void);
+void set_clipboard(cstr text);
 
 // Callbacks
 

@@ -316,52 +316,178 @@ void clock_end_scissor(Context* ctx) {
 
 // TODO: key pressed are ignored when moving the window
 
+static void add_key_to_key_map(Context* ctx, int code) {
+  Key k = {0};
+  k.code = code;
+  hmput(ctx->key_map, code, k);
+  arrput(ctx->key_codes, code);
+}
+
 void clock_init_keys(Context* ctx) {
-  Key* keys = ctx->k;
-  // ascii
-  for (int i = 0; i < ASCII_KEYS_COUNT; ++i) {
-    keys[i].code = i+KEY_SPACE;
-  }
-
-  // non-us
-  keys[ASCII_KEYS_COUNT+0].code = 161;
-  keys[ASCII_KEYS_COUNT+1].code = 162;
-
-  // function
-  for (int i = 0; i < FUNCTION_KEYS_COUNT; ++i) {
-    keys[i+ASCII_KEYS_COUNT+2].code = i+KEY_ESCAPE;
-  }
-
-  /* log_f(LOG_INFO, "Initialized %d keys!", KEYS_COUNT); */
+  add_key_to_key_map(ctx, KEY_SPACE);
+  add_key_to_key_map(ctx, KEY_APOSTROPHE);
+  add_key_to_key_map(ctx, KEY_COMMA);
+  add_key_to_key_map(ctx, KEY_MINUS);
+  add_key_to_key_map(ctx, KEY_PERIOD);
+  add_key_to_key_map(ctx, KEY_SLASH);
+  add_key_to_key_map(ctx, KEY_0);
+  add_key_to_key_map(ctx, KEY_1);
+  add_key_to_key_map(ctx, KEY_2);
+  add_key_to_key_map(ctx, KEY_3);
+  add_key_to_key_map(ctx, KEY_4);
+  add_key_to_key_map(ctx, KEY_5);
+  add_key_to_key_map(ctx, KEY_6);
+  add_key_to_key_map(ctx, KEY_7);
+  add_key_to_key_map(ctx, KEY_8);
+  add_key_to_key_map(ctx, KEY_9);
+  add_key_to_key_map(ctx, KEY_SEMICOLON);
+  add_key_to_key_map(ctx, KEY_EQUAL);
+  add_key_to_key_map(ctx, KEY_A);
+  add_key_to_key_map(ctx, KEY_B);
+  add_key_to_key_map(ctx, KEY_C);
+  add_key_to_key_map(ctx, KEY_D);
+  add_key_to_key_map(ctx, KEY_E);
+  add_key_to_key_map(ctx, KEY_F);
+  add_key_to_key_map(ctx, KEY_G);
+  add_key_to_key_map(ctx, KEY_H);
+  add_key_to_key_map(ctx, KEY_I);
+  add_key_to_key_map(ctx, KEY_J);
+  add_key_to_key_map(ctx, KEY_K);
+  add_key_to_key_map(ctx, KEY_L);
+  add_key_to_key_map(ctx, KEY_M);
+  add_key_to_key_map(ctx, KEY_N);
+  add_key_to_key_map(ctx, KEY_O);
+  add_key_to_key_map(ctx, KEY_P);
+  add_key_to_key_map(ctx, KEY_Q);
+  add_key_to_key_map(ctx, KEY_R);
+  add_key_to_key_map(ctx, KEY_S);
+  add_key_to_key_map(ctx, KEY_T);
+  add_key_to_key_map(ctx, KEY_U);
+  add_key_to_key_map(ctx, KEY_V);
+  add_key_to_key_map(ctx, KEY_W);
+  add_key_to_key_map(ctx, KEY_X);
+  add_key_to_key_map(ctx, KEY_Y);
+  add_key_to_key_map(ctx, KEY_Z);
+  add_key_to_key_map(ctx, KEY_LEFT_BRACKET);
+  add_key_to_key_map(ctx, KEY_BACKSLASH);
+  add_key_to_key_map(ctx, KEY_RIGHT_BRACKET);
+  add_key_to_key_map(ctx, KEY_GRAVE_ACCENT);
+  add_key_to_key_map(ctx, KEY_WORLD_1);
+  add_key_to_key_map(ctx, KEY_WORLD_2);
+  add_key_to_key_map(ctx, KEY_ESCAPE);
+  add_key_to_key_map(ctx, KEY_ENTER);
+  add_key_to_key_map(ctx, KEY_TAB);
+  add_key_to_key_map(ctx, KEY_BACKSPACE);
+  add_key_to_key_map(ctx, KEY_INSERT);
+  add_key_to_key_map(ctx, KEY_DELETE);
+  add_key_to_key_map(ctx, KEY_RIGHT);
+  add_key_to_key_map(ctx, KEY_LEFT);
+  add_key_to_key_map(ctx, KEY_DOWN);
+  add_key_to_key_map(ctx, KEY_UP);
+  add_key_to_key_map(ctx, KEY_PAGE_UP);
+  add_key_to_key_map(ctx, KEY_PAGE_DOWN);
+  add_key_to_key_map(ctx, KEY_HOME);
+  add_key_to_key_map(ctx, KEY_END);
+  add_key_to_key_map(ctx, KEY_CAPS_LOCK);
+  add_key_to_key_map(ctx, KEY_SCROLL_LOCK);
+  add_key_to_key_map(ctx, KEY_NUM_LOCK);
+  add_key_to_key_map(ctx, KEY_PRINT_SCREEN);
+  add_key_to_key_map(ctx, KEY_PAUSE);
+  add_key_to_key_map(ctx, KEY_F1);
+  add_key_to_key_map(ctx, KEY_F2);
+  add_key_to_key_map(ctx, KEY_F3);
+  add_key_to_key_map(ctx, KEY_F4);
+  add_key_to_key_map(ctx, KEY_F5);
+  add_key_to_key_map(ctx, KEY_F6);
+  add_key_to_key_map(ctx, KEY_F7);
+  add_key_to_key_map(ctx, KEY_F8);
+  add_key_to_key_map(ctx, KEY_F9);
+  add_key_to_key_map(ctx, KEY_F10);
+  add_key_to_key_map(ctx, KEY_F11);
+  add_key_to_key_map(ctx, KEY_F12);
+  add_key_to_key_map(ctx, KEY_F13);
+  add_key_to_key_map(ctx, KEY_F14);
+  add_key_to_key_map(ctx, KEY_F15);
+  add_key_to_key_map(ctx, KEY_F16);
+  add_key_to_key_map(ctx, KEY_F17);
+  add_key_to_key_map(ctx, KEY_F18);
+  add_key_to_key_map(ctx, KEY_F19);
+  add_key_to_key_map(ctx, KEY_F20);
+  add_key_to_key_map(ctx, KEY_F21);
+  add_key_to_key_map(ctx, KEY_F22);
+  add_key_to_key_map(ctx, KEY_F23);
+  add_key_to_key_map(ctx, KEY_F24);
+  add_key_to_key_map(ctx, KEY_F25);
+  add_key_to_key_map(ctx, KEY_KP_0);
+  add_key_to_key_map(ctx, KEY_KP_1);
+  add_key_to_key_map(ctx, KEY_KP_2);
+  add_key_to_key_map(ctx, KEY_KP_3);
+  add_key_to_key_map(ctx, KEY_KP_4);
+  add_key_to_key_map(ctx, KEY_KP_5);
+  add_key_to_key_map(ctx, KEY_KP_6);
+  add_key_to_key_map(ctx, KEY_KP_7);
+  add_key_to_key_map(ctx, KEY_KP_8);
+  add_key_to_key_map(ctx, KEY_KP_9);
+  add_key_to_key_map(ctx, KEY_KP_DECIMAL);
+  add_key_to_key_map(ctx, KEY_KP_DIVIDE);
+  add_key_to_key_map(ctx, KEY_KP_MULTIPLY);
+  add_key_to_key_map(ctx, KEY_KP_SUBTRACT);
+  add_key_to_key_map(ctx, KEY_KP_ADD);
+  add_key_to_key_map(ctx, KEY_KP_ENTER);
+  add_key_to_key_map(ctx, KEY_KP_EQUAL);
+  add_key_to_key_map(ctx, KEY_LEFT_SHIFT);
+  add_key_to_key_map(ctx, KEY_LEFT_CONTROL);
+  add_key_to_key_map(ctx, KEY_LEFT_ALT);
+  add_key_to_key_map(ctx, KEY_LEFT_SUPER);
+  add_key_to_key_map(ctx, KEY_RIGHT_SHIFT);
+  add_key_to_key_map(ctx, KEY_RIGHT_CONTROL);
+  add_key_to_key_map(ctx, KEY_RIGHT_ALT);
+  add_key_to_key_map(ctx, KEY_RIGHT_SUPER);
+  add_key_to_key_map(ctx, KEY_MENU);
+  add_key_to_key_map(ctx, KEY_LAST);
 }
 
 void clock_update_keys(Context* ctx) {
-  Key* keys   = ctx->k;
-  Window* win = ctx->win;
-  // update key states
-  for (size_t i = 0; i < KEYS_COUNT; ++i) {
-    keys[i].just_pressed = false;
-    keys[i].pressed = false;
-    keys[i].released = false;
+  // Clear Pressed/Released/Just_pressed state
+  for (size_t i = 0; i < arrlenu(ctx->key_codes); ++i) {
+    int code = ctx->key_codes[i];
+    Key_KV* k_kv = hmgetp_null(ctx->key_map, code);
+    ASSERT(k_kv != NULL);
+
+    k_kv->value.pressed = false;
+    k_kv->value.released = false;
+    k_kv->value.just_pressed = false;
   }
 
-  for (int i = 0; i < KEYS_COUNT; ++i) {
-    keys[i].prev_state = keys[i].held;
-    int state = glfwGetKey(win->glfw_win, keys[i].code);
+  // Get key state for this frame
+  // ascii
+  for (size_t i = 0; i < arrlenu(ctx->key_codes); ++i) {
+    int code = ctx->key_codes[i];
+    Key_KV* k_kv = hmgetp_null(ctx->key_map, code);
+    ASSERT(k_kv != NULL);
+
+    k_kv->value.prev_state = k_kv->value.held;
+    int state = glfwGetKey(ctx->win->glfw_win, code);
     if (state == GLFW_PRESS) {
-      keys[i].held = true;
+      k_kv->value.held = true;
     } else if (state == GLFW_RELEASE) {
-      keys[i].held = false;
+      k_kv->value.held = false;
     }
   }
 
-  for (int i = 0; i < KEYS_COUNT; ++i) {
-    if (!keys[i].prev_state && keys[i].held) {
-      keys[i].just_pressed = true;
-      keys[i].pressed = true;
+  // Set Pressed/Released/Just_pressed state
+  // ascii
+  for (size_t i = 0; i < arrlenu(ctx->key_codes); ++i) {
+    int code = ctx->key_codes[i];
+    Key_KV* k_kv = hmgetp_null(ctx->key_map, code);
+    ASSERT(k_kv != NULL);
+
+    if (!k_kv->value.prev_state && k_kv->value.held) {
+      k_kv->value.just_pressed = true;
+      k_kv->value.pressed = true;
     }
-    if (keys[i].prev_state && !keys[i].held) {
-      keys[i].released = true;
+    if (k_kv->value.prev_state && !k_kv->value.held) {
+      k_kv->value.released = true;
     }
   }
 }
@@ -381,18 +507,21 @@ void clock_eat_input(Context* ctx) {
 
 bool clock_key_state(Context* ctx, int key, Key_state state) {
   if (ctx->key_input_handled) return false;
+  Key_KV* k_kv = hmgetp(ctx->key_map, key);
+  ASSERT(k_kv != NULL);
+
   switch (state) {
   case KEY_STATE_PRESSED: {
-    return ctx->k[key].pressed;
+    return k_kv->value.pressed;
   } break;
   case KEY_STATE_JUST_PRESSED: {
-    return ctx->k[key].just_pressed;
+    return k_kv->value.just_pressed;
   } break;
   case KEY_STATE_RELEASED: {
-    return ctx->k[key].released;
+    return k_kv->value.released;
   } break;
   case KEY_STATE_HELD: {
-    return ctx->k[key].held;
+    return k_kv->value.held;
   } break;
   default: assert(0 && "Unreachable");
   }
@@ -414,6 +543,10 @@ bool clock_key_released(Context* ctx, int key) {
 bool clock_key_held(Context* ctx, int key) {
   return clock_key_state(ctx, key, KEY_HELD);
 }
+
+/* Key clock_get_key_by_code(Context* ctx, int key) { */
+
+/* } */
 
 bool clock_mouse_state(Context* ctx, int button, Mouse_state state) {
   if (ctx->mouse_input_handled) return false;
@@ -444,6 +577,17 @@ bool clock_mouse_held(Context* ctx, int button) {
   return clock_mouse_state(ctx, button, MOUSE_STATE_HELD);
 }
 
+//
+// Misc
+//
+
+cstr get_clipboard(void) {
+  return glfwGetClipboardString(NULL);
+}
+
+void set_clipboard(cstr text) {
+  glfwSetClipboardString(NULL, text);
+}
 
 // Callbacks
 
@@ -451,11 +595,13 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
   (void)mods;
   (void)scancode;
   Context* ctx = (Context*)glfwGetWindowUserPointer(window);
-  Key* keys = ctx->k;
+  Key_KV* keys = ctx->key_map;
 
   if (action == GLFW_REPEAT) {
     /* log_f(LOG_INFO, "Key: %d repeat", key); */
-    keys[key].pressed = true;
+    Key_KV* k_kv = hmgetp_null(keys, key);
+    ASSERT(k_kv != NULL);
+    k_kv->value.pressed = true;
   }
 }
 
