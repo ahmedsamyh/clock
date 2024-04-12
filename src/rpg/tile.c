@@ -90,8 +90,8 @@ void Tile_draw(Tile* t, bool debug) {
   }
 }
 
-const char* Tile_serialize(Tile* tile) {
-  const char* res;
+cstr Tile_serialize(Tile* tile) {
+  cstr res;
 
   temp_sprint(res, "%.2f,%.2f|%.2f,%.2f|%d,%d|%d|%s", tile->pos.x, tile->pos.y,
 	      tile->size.x, tile->size.y, tile->type.x, tile->type.y, tile->collidable, Warp_info_serialize(&tile->warp_info));

@@ -4,7 +4,6 @@
 #include <rpg/enemy.h>
 #include <rpg/tile.h>
 #include <rpg/common.h>
-#include <assert.h>
 
 typedef enum {
   STATE_PLAY,
@@ -21,7 +20,7 @@ bool change_state(Context* ctx, State* current_state, State next_state, cstr* cu
   case STATE_EDIT: {
     *current_state_text = "Edit";
   } break;
-  default: assert(0 && "Unreachable");
+  default: ASSERT(0 && "Unreachable");
   }
 
   *current_state = next_state;
@@ -53,7 +52,7 @@ bool allocate_new_stage(Context* ctx, cstr new_stage_name, Stage_KV** stage_map)
 }
 
 int main(void) {
-  Context* ctx = clock_init(1280, 960, 1.f, 1.f, "RPG", RENDER_MODE_2D);
+  Context* ctx = clock_init(1280, 960, 1.f, 1.f, "RPG", 0);
 
   float width = (float)ctx->win->width;
   float height = (float)ctx->win->height;
@@ -80,9 +79,6 @@ int main(void) {
   player.pos.x = width  * 0.5f;
   player.pos.y = height * 0.5f;
 
-  // vsync
-  clock_set_vsync(false);
-
   bool DEBUG_DRAW = false;
 
   Enemy* enemies = NULL; // dynamic array
@@ -90,7 +86,7 @@ int main(void) {
   cstr current_stage_name = "stage 1";
 
   // We can assert because we are SURE that there is no other stages in the stage_map
-  assert(allocate_new_stage(ctx, current_stage_name, &stage_map));
+  ASSERT(allocate_new_stage(ctx, current_stage_name, &stage_map));
 
   cstr current_state_text = "";
 
@@ -130,7 +126,7 @@ int main(void) {
     //
 
     Stage_KV* current_stage_kv = shgetp_null(stage_map, current_stage_name);
-    assert(current_stage_kv != NULL);
+    ASSERT(current_stage_kv != NULL);
     Stage* current_stage = &current_stage_kv->value;
 
     switch (current_state) {
@@ -138,7 +134,7 @@ int main(void) {
       clock_clear(ctx, color_from_hex(0xFF555555));
       Stage_draw(current_stage, DEBUG_DRAW);
 
-      for (size_t i = arrlen(enemies) - 1; i >= 0; --i) {
+      for (int i = (int)arrlen(enemies) - 1; i >= 0; --i) {
 	Enemy_draw(&enemies[i], DEBUG_DRAW);
       }
 
@@ -150,7 +146,7 @@ int main(void) {
 
       draw_rect(ctx, edit_cursor, color_alpha(COLOR_GREEN, 0.5f));
 
-      if (ctx->k[KEY_LEFT_SHIFT].held) {
+      if (clock_key_held(ctx, KEY_LEFT_SHIFT)) {
 	bool prev_state = ctx->use_camera_view;
 	clock_use_camera_view(ctx, false);
 	draw_rect(ctx, (Rect){(Vector2f){0.f, 0.f}, screen_size}, color_alpha(COLOR_BLACK, 0.8f));
@@ -184,7 +180,7 @@ int main(void) {
       Player_draw(&player, DEBUG_DRAW);
 
     } break;
-    default: assert(0 && "Unreachable");
+    default: ASSERT(0 && "Unreachable");
     }
 
     //
@@ -208,7 +204,7 @@ int main(void) {
       temp_sprint(warp_mode_text, "Warp mode: %s", (WARP_MODE ? "On" : "Off"));
       UI_text(&ui, warp_mode_text, 24, COLOR_WHITE);
     } break;
-    default: assert(0 && "Unreachable");
+    default: ASSERT(0 && "Unreachable");
     }
 
     UI_end(&ui);
@@ -216,8 +212,8 @@ int main(void) {
     //
     // Update
     //
-    if (ctx->k[KEY_GRAVE_ACCENT].pressed) DEBUG_DRAW = !DEBUG_DRAW;
-    if (ctx->k[KEY_TAB].pressed) {
+    if (clock_key_pressed(ctx, KEY_GRAVE_ACCENT)) DEBUG_DRAW = !DEBUG_DRAW;
+    if (clock_key_pressed(ctx, KEY_TAB)) {
       if (!change_state(ctx, &current_state, (current_state + 1) % STATE_COUNT, &current_state_text)) return 1;
     }
 
@@ -225,7 +221,7 @@ int main(void) {
     case STATE_PLAY: {
       Player_update(&player);
 
-      for (size_t i = arrlen(enemies) - 1; i >= 0; --i) {
+      for (int i = (int)arrlen(enemies) - 1; i >= 0; --i) {
 	Enemy_update(&enemies[i]);
       }
 
@@ -249,8 +245,8 @@ int main(void) {
 	}
       } else {
 	// Increase cursor size
-	if (ctx->k[KEY_Z].pressed) {
-	  if (ctx->k[KEY_LEFT_ALT].held) {
+	if (clock_key_pressed(ctx, KEY_Z)) {
+	  if (clock_key_held(ctx, KEY_LEFT_ALT)) {
 	    edit_cursor.size.x -= TILE_SIZE;
 	    if (edit_cursor.size.x < TILE_SIZE) edit_cursor.size.x = TILE_SIZE;
 	  } else {
@@ -258,8 +254,8 @@ int main(void) {
 	  }
 	}
 
-	if (ctx->k[KEY_X].pressed) {
-	  if (ctx->k[KEY_LEFT_ALT].held) {
+	if (clock_key_pressed(ctx, KEY_X)) {
+	  if (clock_key_held(ctx, KEY_LEFT_ALT)) {
 	    edit_cursor.size.y -= TILE_SIZE;
 	    if (edit_cursor.size.y < TILE_SIZE) edit_cursor.size.y = TILE_SIZE;
 	  } else {
@@ -268,7 +264,7 @@ int main(void) {
 	}
 
 	// Choose tile type
-	if (ctx->k[KEY_LEFT_SHIFT].held) {
+	if (clock_key_held(ctx, KEY_LEFT_SHIFT)) {
 	  if (Rect_contains_point(tiles_rect, ctx->mpos)) {
 	    hovering_tile_type.x = (int)ctx->mpos.x / (int)TILE_SIZE;
 	    hovering_tile_type.y = (int)ctx->mpos.y / (int)TILE_SIZE;
@@ -298,12 +294,12 @@ int main(void) {
 	  }
 	}
 
-	if (ctx->k[KEY_C].pressed) {
+	if (clock_key_pressed(ctx, KEY_C)) {
 	  tile_collidable = !tile_collidable;
 	}
       }
 
-      if (ctx->k[KEY_W].pressed) {
+      if (clock_key_pressed(ctx, KEY_W)) {
 	if (!tile_warp_info.active) {
 	  WARP_MODE = true;
 	} else {
@@ -312,16 +308,16 @@ int main(void) {
 	tile_warp_info.active = !tile_warp_info.active;
       }
 
-      if (ctx->k[KEY_LEFT_CONTROL].held && ctx->k[KEY_S].pressed) {
+      if (clock_key_held(ctx, KEY_LEFT_CONTROL) && clock_key_pressed(ctx, KEY_S)) {
 	if (!Stage_save_to_file(current_stage)) return 1;
       }
 
-      if (ctx->k[KEY_LEFT_CONTROL].held && ctx->k[KEY_L].pressed) {
+      if (clock_key_held(ctx, KEY_LEFT_CONTROL) && clock_key_pressed(ctx, KEY_L)) {
 	if (!Stage_load_from_file(current_stage)) return 1;
       }
 
     } break;
-    default: assert(0 && "Unreachable");
+    default: ASSERT(0 && "Unreachable");
     }
 
     clock_end_draw(ctx);

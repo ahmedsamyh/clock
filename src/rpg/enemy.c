@@ -1,6 +1,5 @@
 #include <rpg/enemy.h>
 #include <rpg/config.h>
-#include <assert.h>
 
 bool Enemy_init(Enemy* e, Context* ctx, Texture* tex) {
   e->pos = (Vector2f){0.f, 0.f};
@@ -22,7 +21,7 @@ bool Enemy_init(Enemy* e, Context* ctx, Texture* tex) {
 }
 
 void Enemy_update(Enemy* e) {
-  assert(e->ctx);
+  ASSERT(e->ctx);
   float delta = e->ctx->delta;
 
   e->vel = v2f_add(e->vel, v2f_muls(e->acc, e->speed));
@@ -63,7 +62,7 @@ void Enemy_update(Enemy* e) {
 }
 
 void Enemy_draw(Enemy* e, bool debug) {
-  assert(e->ctx);
+  ASSERT(e->ctx);
 
   draw_sprite(e->ctx, &e->spr);
 

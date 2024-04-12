@@ -72,29 +72,29 @@ void Player_update(Player* p) {
 }
 
 void Player_control(Player* p) {
-  assert(p->ctx);
-  Key* keys = p->ctx->k;
+  ASSERT(p->ctx);
 
   Vector2f dir = {0};
-  if (keys[PLAYER_MOVE_LEFT_KEY].held) {
+  if (clock_key_held(p->ctx, PLAYER_MOVE_LEFT_KEY)) {
     dir.x--;
     p->last_move_dir = MOVE_DIR_LEFT;
   }
 
-  if (keys[PLAYER_MOVE_RIGHT_KEY].held) {
+  if (clock_key_held(p->ctx, PLAYER_MOVE_RIGHT_KEY)) {
     dir.x++;
     p->last_move_dir = MOVE_DIR_RIGHT;
   }
 
-  if (keys[PLAYER_MOVE_UP_KEY].held) {
+  if (clock_key_held(p->ctx, PLAYER_MOVE_UP_KEY)) {
     dir.y--;
     p->last_move_dir = MOVE_DIR_UP;
   }
 
-  if (keys[PLAYER_MOVE_DOWN_KEY].held) {
+  if (clock_key_held(p->ctx, PLAYER_MOVE_DOWN_KEY)) {
     dir.y++;
     p->last_move_dir = MOVE_DIR_DOWN;
   }
+
   dir = v2f_normalize(dir);
 
   p->is_moving = v2f_mag2(dir) > 0.f;

@@ -2,7 +2,6 @@
 #include <rpg/config.h>
 #include <rpg/common.h>
 #include <commonlib.h>
-#include <assert.h>
 
 void Stage_init(Stage* stage, Context* ctx, const char* name){
   stage->ctx = ctx;
@@ -20,16 +19,18 @@ void Stage_init(Stage* stage, Context* ctx, const char* name){
       stage->tiles[idx].pos.y = y*TILE_SIZE;
       Tile_set_invalid(&stage->tiles[idx]);
 
-      assert(stage->tiles[idx].ctx);
+      ASSERT(stage->tiles[idx].ctx);
     }
   }
+
+  log_f(LOG_INFO, "tiles.len: %u", stage->rows*stage->cols);
 }
 
 void Stage_update(Stage* stage, Player* player) {
   bool will_check_collision = player != NULL;
   if (will_check_collision) player->hitting = false;
   // TODO: Maybe store an array of collidable tiles and loop over those instead
-  for (size_t i = stage->cols*stage->rows-1; i >= 0; --i) {
+  for (int i = (int)(stage->cols*stage->rows-1); i >= 0; --i) {
     if (stage->tiles[i].collidable) {
       if (will_check_collision) {
 	Rect tile_rect = (Rect) {
@@ -48,7 +49,7 @@ void Stage_update(Stage* stage, Player* player) {
 }
 
 void Stage_draw(Stage* stage, bool debug) {
-  for (size_t i = stage->cols*stage->rows-1; i >= 0; --i) {
+  for (int i = (int)(stage->cols*stage->rows-1); i >= 0; --i) {
     Tile_draw(&stage->tiles[i], debug);
   }
 }
@@ -143,10 +144,10 @@ bool Stage_load_from_file(Stage* stage) {
       return false;
     }
 
-    assert(loading_tiles != NULL);
+    ASSERT(loading_tiles != NULL);
     loading_tiles[i] = t;
   }
-  assert(view.count == 0);
+  ASSERT(view.count == 0);
 
   if (loading_tiles) {
     // todo: can we just assign loading_tiles to stage->tiles and not free it?
