@@ -245,22 +245,12 @@ int main(void) {
 	}
       } else {
 	// Increase cursor size
-	if (clock_key_pressed(ctx, KEY_Z)) {
-	  if (clock_key_held(ctx, KEY_LEFT_ALT)) {
-	    edit_cursor.size.x -= TILE_SIZE;
-	    if (edit_cursor.size.x < TILE_SIZE) edit_cursor.size.x = TILE_SIZE;
-	  } else {
-	    edit_cursor.size.x += TILE_SIZE;
-	  }
-	}
-
-	if (clock_key_pressed(ctx, KEY_X)) {
-	  if (clock_key_held(ctx, KEY_LEFT_ALT)) {
-	    edit_cursor.size.y -= TILE_SIZE;
-	    if (edit_cursor.size.y < TILE_SIZE) edit_cursor.size.y = TILE_SIZE;
-	  } else {
-	    edit_cursor.size.y += TILE_SIZE;
-	  }
+	if (clock_key_held(ctx, KEY_LEFT_ALT)) {
+	  edit_cursor.size.x += ctx->mscroll.y * TILE_SIZE;
+	  if (edit_cursor.size.x < TILE_SIZE) edit_cursor.size.x = TILE_SIZE;
+	} else {
+	  edit_cursor.size.y += ctx->mscroll.y * TILE_SIZE;
+	  if (edit_cursor.size.y < TILE_SIZE) edit_cursor.size.y = TILE_SIZE;
 	}
 
 	// Choose tile type

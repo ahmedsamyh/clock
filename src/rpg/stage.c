@@ -3,7 +3,7 @@
 #include <rpg/common.h>
 #include <commonlib.h>
 
-void Stage_init(Stage* stage, Context* ctx, const char* name){
+void Stage_init(Stage* stage, Context* ctx, const char* name) {
   stage->ctx = ctx;
   stage->name = name;
   stage->cols = (size_t)(SCREEN_WIDTH / TILE_SIZE);
@@ -94,15 +94,22 @@ bool Stage_save_to_file(Stage* stage) {
     return false;
   }
 
-  fprintf(f, "%zu|", stage->cols * stage->rows);
+  uint32 tiles_count = (uint32)(stage->cols * stage->rows);
+  size_t written = fwrite(&tiles_count, sizeof(uint32), 1, f);
+  if (written != 1) {
+    log_error("Could not write tiles_count to file!");
+    return false;
+  }
 
-  for (size_t i = 0; i < stage->cols * stage->rows; ++i) {
-    fprintf(f, "(%s)", Tile_serialize(&stage->tiles[i]));
+  written = fwrite(stage->tiles, sizeof(Tile), tiles_count, f);
+  if (written != tiles_count) {
+    log_error("Could not write tiles to file!");
+    return false;
   }
 
   temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
-  log_f(LOG_INFO, "stage '%s' saved to file '%s'!", stage->name, filename);
+  log_f(LOG_INFO, "Stage '%s' saved to file '%s'!", stage->name, filename);
 
   fclose(f);
   return true;
@@ -112,52 +119,43 @@ bool Stage_load_from_file(Stage* stage) {
   const char* filename;
   temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
-  cstr file = slurp_file(filename);
+  FILE* f = fopen(filename, "r");
 
-  if (file == NULL) {
+  if (f == NULL) return false;
+
+  uint32 tiles_count = 0;
+  size_t read = fread(&tiles_count, sizeof(uint32), 1, f);
+  if (read != 1) {
+    fclose(f);
+    log_error("Could not read tiles_count from file!");
     return false;
   }
 
-  String_view view = SV(file);
+  ASSERT(tiles_count > 0);
 
-  String_view tiles_count_sv = sv_lpop_until_char(&view, '|');
-  sv_lremove(&view, 1);
-
-  int tiles_count = sv_to_int(tiles_count_sv);
-
-  Tile* loading_tiles = NULL;
-  if (tiles_count) {
-    loading_tiles = (Tile*)calloc(tiles_count, sizeof(Tile));
-  }
+  Tile* loading_tiles = (Tile*)malloc(tiles_count * sizeof(Tile));
 
   Texture* tiles_tex = load_texture_err_handled(stage->ctx, "resources/gfx/tiles.png");
-  for (size_t i = 0; i < tiles_count; ++i) {
-    String_view tile_sv = sv_lpop_until_char(&view, ')');
-    sv_lremove(&view, 1);
-    sv_lremove(&tile_sv, 1);
 
-    Tile t = {0};
-    if (!Tile_init(&t, (Vector2i) {0, 0}, stage->ctx, tiles_tex)) return false;
-
-    if (!Tile_deserialize(&t, tile_sv)) {
-      if (loading_tiles) free(loading_tiles);
-      return false;
-    }
-
-    ASSERT(loading_tiles != NULL);
-    loading_tiles[i] = t;
-  }
-  ASSERT(view.count == 0);
-
-  if (loading_tiles) {
-    // todo: can we just assign loading_tiles to stage->tiles and not free it?
-
-    memcpy(stage->tiles, loading_tiles, sizeof(Tile)*tiles_count);
-
+  read = fread(loading_tiles, sizeof(Tile), tiles_count, f);
+  if (read != tiles_count) {
     free(loading_tiles);
+    fclose(f);
+    log_error("Could not read tiles from file!");
+    return false;
   }
 
-  log_f(LOG_INFO, "stage '%s' loaded from file '%s'!", stage->name, filename);
+  ASSERT(loading_tiles != NULL);
+  memcpy(stage->tiles, loading_tiles, sizeof(Tile)*tiles_count);
+  free(loading_tiles);
+
+  // copy ctx since it's a pointer
+  for (size_t i = 0; i < tiles_count; ++i) {
+    stage->tiles[i].ctx = stage->ctx;
+    stage->tiles[i].spr.texture = tiles_tex;
+  }
+
+  log_info("Stage '%s' loaded from file '%s'!", stage->name, filename);
 
   return true;
 }
