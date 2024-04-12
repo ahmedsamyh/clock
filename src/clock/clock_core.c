@@ -949,7 +949,7 @@ void draw_rect_centered(Context* ctx, Rect rect, Color col) {
   draw_imm_quad(ctx, p0, p1, p2, p3, col, col, col, col);
 }
 
-void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
+void draw_imm_line3d(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
   Renderer* r = ctx->ren;
 
   Vector3f positions[] = {
@@ -978,6 +978,10 @@ void draw_imm_line(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1) {
   gl(glDrawArrays(GL_LINE_STRIP, 0, 2));
 
   set_matrices(ctx);
+}
+
+void draw_imm_line(Context* ctx, Vector2f p0, Vector2f p1, Color c0, Color c1) {
+  draw_imm_line3d(ctx, (Vector3f) {p0.x, p0.y, 0.f}, (Vector3f) {p1.x, p1.y, 0.f}, c0, c1);
 }
 
 void draw_point_3d(Context* ctx, Vector3f pos, Color col) {
