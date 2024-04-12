@@ -24,6 +24,7 @@ void Stage_draw(Stage* stage, bool debug);
 bool Stage_add_tile(Stage* stage, Vector2i type, bool collidable, Vector2f pos);
 bool Stage_remove_tile(Stage* stage, Vector2f pos);
 void Stage_deinit(Stage* stage);
+Tile* Stage_get_tile_at(Stage* stage, Vector2f pos);
 
 // IO
 bool Stage_save_to_file(Stage* stage);

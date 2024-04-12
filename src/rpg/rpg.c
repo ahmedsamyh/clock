@@ -105,6 +105,8 @@ int main(void) {
   Vector2i hovering_tile_type = {0};
   bool tile_collidable = true;
   Warp_info tile_warp_info = {0};
+  Tile* warp_tile_a = NULL;
+  Tile* warp_tile_b = NULL;
   Sprite tiles_spr = {0};
   if (!Sprite_init_scaled(&tiles_spr, tiles_tex, 1, 1)) return 1;
 
@@ -146,35 +148,62 @@ int main(void) {
 
       draw_rect(ctx, edit_cursor, color_alpha(COLOR_GREEN, 0.5f));
 
-      if (clock_key_held(ctx, KEY_LEFT_SHIFT)) {
-	bool prev_state = ctx->use_camera_view;
-	clock_use_camera_view(ctx, false);
-	draw_rect(ctx, (Rect){(Vector2f){0.f, 0.f}, screen_size}, color_alpha(COLOR_BLACK, 0.8f));
-	Sprite tiles_spr_copy = tiles_spr;
-	draw_sprite(ctx, &tiles_spr_copy);
-	Color color = COLOR_RED;
+      if (WARP_MODE) {
+	draw_rect(ctx, (Rect){(Vector2f){0.f, 0.f}, screen_size}, color_alpha(color_from_hex(0xFF0000AA), 0.6f));
+      } else {
+	if (clock_key_held(ctx, KEY_LEFT_SHIFT)) {
+	  bool prev_state = ctx->use_camera_view;
+	  clock_use_camera_view(ctx, false);
+	  draw_rect(ctx, (Rect){(Vector2f){0.f, 0.f}, screen_size}, color_alpha(COLOR_BLACK, 0.8f));
+	  Sprite tiles_spr_copy = tiles_spr;
+	  draw_sprite(ctx, &tiles_spr_copy);
+	  Color color = COLOR_RED;
 
-	Vector2f p0, p1, p2, p3;
-	Rect_get_points((Rect){tiles_spr.pos, v2f_mul(tiles_spr.size, tiles_spr.scale)}, &p0, &p1, &p2, &p3);
-	draw_imm_box(ctx, p0, p1, p2, p3, color, color, color, color);
+	  Vector2f p0, p1, p2, p3;
+	  Rect_get_points((Rect){tiles_spr.pos, v2f_mul(tiles_spr.size, tiles_spr.scale)}, &p0, &p1, &p2, &p3);
+	  draw_imm_box(ctx, p0, p1, p2, p3, color, color, color, color);
 
-	Rect r = {
-	  .pos =  v2f_muls((Vector2f){(real32)tile_type.x, (real32)tile_type.y}, TILE_SIZE),
-	  .size = (Vector2f){TILE_SIZE, TILE_SIZE}
-	};
-	/* r.pos = clock_screen_to_world(ctx, r.pos); */
-	draw_rect(ctx, r, color_alpha(COLOR_GREEN, 0.4f));
+	  Rect r = {
+	    .pos =  v2f_muls((Vector2f){(real32)tile_type.x, (real32)tile_type.y}, TILE_SIZE),
+	    .size = (Vector2f){TILE_SIZE, TILE_SIZE}
+	  };
+	  /* r.pos = clock_screen_to_world(ctx, r.pos); */
+	  draw_rect(ctx, r, color_alpha(COLOR_GREEN, 0.4f));
 
-	r.pos = v2f_muls((Vector2f){(real32)hovering_tile_type.x, (real32)hovering_tile_type.y}, TILE_SIZE);
-	/* r.pos = clock_screen_to_world(ctx, r.pos); */
-	draw_rect(ctx, r, color_alpha(COLOR_RED, 0.4f));
-	clock_use_camera_view(ctx, prev_state);
+	  r.pos = v2f_muls((Vector2f){(real32)hovering_tile_type.x, (real32)hovering_tile_type.y}, TILE_SIZE);
+	  /* r.pos = clock_screen_to_world(ctx, r.pos); */
+	  draw_rect(ctx, r, color_alpha(COLOR_RED, 0.4f));
+	  clock_use_camera_view(ctx, prev_state);
+	}
       }
 
       if (!tile_collidable) {
 	collidable_text = "Collidable: off";
       } else {
 	collidable_text = "Collidable: on";
+      }
+
+      if (warp_tile_a) {
+	Rect a = {
+	  .pos = warp_tile_a->pos,
+	  .size = warp_tile_a->size,
+	};
+	Color col_a = COLOR_RED;
+        draw_box(ctx, a, COLOR_WHITE, color_alpha(col_a, 0.4f));
+      }
+
+      if (warp_tile_b) {
+	Rect b = {
+	  .pos = warp_tile_b->pos,
+	  .size = warp_tile_b->size,
+	};
+	Color col_b = COLOR_GREEN;
+        draw_box(ctx, b, COLOR_WHITE, color_alpha(col_b, 0.4f));
+      }
+
+      // line
+      if (warp_tile_a && warp_tile_b) {
+	draw_imm_line(ctx, warp_tile_a->pos, warp_tile_b->pos, COLOR_WHITE, COLOR_WHITE);
       }
 
       Player_draw(&player, DEBUG_DRAW);
@@ -203,6 +232,22 @@ int main(void) {
       cstr warp_mode_text;
       temp_sprint(warp_mode_text, "Warp mode: %s", (WARP_MODE ? "On" : "Off"));
       UI_text(&ui, warp_mode_text, 24, COLOR_WHITE);
+
+      if (WARP_MODE) {
+	cstr a;
+	if (warp_tile_a) {
+	  UI_spacing(&ui, 10.f);
+	  temp_sprint(a, "Warp tile a pos: %.0f, %.0f", warp_tile_a->pos.x, warp_tile_a->pos.y);
+	  UI_text(&ui, a, 18, COLOR_WHITE);
+	}
+
+	if (warp_tile_b) {
+	  UI_spacing(&ui, 10.f);
+	  temp_sprint(a, "Warp tile b pos: %.0f, %.0f", warp_tile_b->pos.x, warp_tile_b->pos.y);
+	  UI_text(&ui, a, 18, COLOR_WHITE);
+	}
+      }
+
     } break;
     default: ASSERT(0 && "Unreachable");
     }
@@ -234,14 +279,20 @@ int main(void) {
 
       if (WARP_MODE) {
 	if (clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT)) {
-	  if (!tile_warp_info.in_stage) {
-	    tile_warp_info.in_stage = current_stage_name;
-	    tile_warp_info.in_pos = edit_cursor.pos;
-	  } else {
-	    tile_warp_info.out_stage = current_stage_name;
-	    tile_warp_info.out_pos = edit_cursor.pos;
-	    WARP_MODE = false;
-	  }
+	  warp_tile_a = Stage_get_tile_at(current_stage, ctx->mpos);
+	}
+	if (clock_mouse_pressed(ctx, MOUSE_BUTTON_RIGHT)) {
+	  warp_tile_b = Stage_get_tile_at(current_stage, ctx->mpos);
+	}
+
+	if (warp_tile_a && warp_tile_b) {
+	  warp_tile_a->warp_info.out_stage = warp_tile_b->warp_info.in_stage;
+	  warp_tile_a->warp_info.out_pos = warp_tile_b->warp_info.in_pos;
+	  warp_tile_b->warp_info.out_stage = warp_tile_a->warp_info.in_stage;
+	  warp_tile_b->warp_info.out_pos = warp_tile_a->warp_info.in_pos;
+
+	  warp_tile_a->warp_info.active = true;
+	  warp_tile_b->warp_info.active = true;
 	}
       } else {
 	// Increase cursor size
@@ -287,23 +338,26 @@ int main(void) {
 	if (clock_key_pressed(ctx, KEY_C)) {
 	  tile_collidable = !tile_collidable;
 	}
+
+	if (clock_key_held(ctx, KEY_LEFT_CONTROL) && clock_key_pressed(ctx, KEY_S)) {
+	  if (!Stage_save_to_file(current_stage)) return 1;
+	}
+
+	if (clock_key_held(ctx, KEY_LEFT_CONTROL) && clock_key_pressed(ctx, KEY_L)) {
+	  if (!Stage_load_from_file(current_stage)) return 1;
+	}
+
       }
 
       if (clock_key_pressed(ctx, KEY_W)) {
-	if (!tile_warp_info.active) {
+	if (!WARP_MODE) {
 	  WARP_MODE = true;
 	} else {
 	  WARP_MODE = false;
+	  memset(&tile_warp_info, 0, sizeof(Warp_info));
+	  warp_tile_a = NULL;
+	  warp_tile_b = NULL;
 	}
-	tile_warp_info.active = !tile_warp_info.active;
-      }
-
-      if (clock_key_held(ctx, KEY_LEFT_CONTROL) && clock_key_pressed(ctx, KEY_S)) {
-	if (!Stage_save_to_file(current_stage)) return 1;
-      }
-
-      if (clock_key_held(ctx, KEY_LEFT_CONTROL) && clock_key_pressed(ctx, KEY_L)) {
-	if (!Stage_load_from_file(current_stage)) return 1;
       }
 
     } break;

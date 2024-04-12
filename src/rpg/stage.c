@@ -14,9 +14,8 @@ void Stage_init(Stage* stage, Context* ctx, const char* name) {
   for (float y = 0.f; y < stage->rows; ++y) {
     for (float x = 0.f; x < stage->cols; ++x) {
       size_t idx = (size_t)y * stage->cols + (size_t)x;
-      Tile_init(&stage->tiles[idx], (Vector2i) {0, 0}, ctx, tiles_tex);
-      stage->tiles[idx].pos.x = x*TILE_SIZE;
-      stage->tiles[idx].pos.y = y*TILE_SIZE;
+      Tile_init(&stage->tiles[idx], (Vector2i) {0, 0}, ctx, tiles_tex, name);
+      Tile_set_pos(&stage->tiles[idx], (Vector2f) {x*TILE_SIZE, y*TILE_SIZE});
       Tile_set_invalid(&stage->tiles[idx]);
 
       ASSERT(stage->tiles[idx].ctx);
@@ -79,6 +78,17 @@ bool Stage_remove_tile(Stage* stage, Vector2f pos) {
 
 void Stage_deinit(Stage* stage) {
   free(stage->tiles);
+}
+
+Tile* Stage_get_tile_at(Stage* stage, Vector2f pos) {
+  int x = (int)(pos.x / TILE_SIZE);
+  int y = (int)(pos.y / TILE_SIZE);
+
+  int idx = (int)(y * stage->cols + x);
+  if (idx < 0 || idx >= stage->cols * stage->rows) {
+    return NULL;
+  }
+  return &stage->tiles[(uint)idx];
 }
 
 // IO
