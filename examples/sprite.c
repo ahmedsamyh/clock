@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 int main(void) {
-  Context* ctx = clock_init(800, 800, 1.f, 1.f, "Drawing Sprites", RENDER_MODE_2D);
+  Context* ctx = clock_init(800, 800, 1.f, 1.f, "Drawing Sprites", WINDOW_RESIZABLE|WINDOW_VSYNC);
 
   if (ctx == NULL) {
     return 1;
@@ -25,7 +25,7 @@ int main(void) {
     float delta = ctx->delta;
     clock_begin_draw(ctx);
 
-    clock_clear(ctx, COLOR_BLACK);
+    clock_clear(ctx, color_from_hex(0xFF000045));
 
     // rotation
     if (clock_key_held(ctx, KEY_Z)) spr.rotation.x += 100.f * delta;

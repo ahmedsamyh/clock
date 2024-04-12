@@ -155,4 +155,9 @@ struct Key {
   bool pressed;
 };
 
+typedef struct {
+  int key;
+  Key value;
+} Key_KV;
+
 #endif /* _CLOCK_KEY_H_ */

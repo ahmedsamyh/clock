@@ -42,13 +42,13 @@ static void set_matrices(Context* ctx) {
 
 // Window
 
-bool Window_init(Window* win, unsigned int width, unsigned int height, float scl_x, float scl_y, const char* title) {
+bool Window_init(Window* win, unsigned int width, unsigned int height, Vector2f scale, const char* title, uint32 flags) {
   win->title = title;
 
   win->width = width == 0 ? DEFAULT_WIN_WIDTH : width;
   win->height = height == 0 ? DEFAULT_WIN_HEIGHT : height;
-  win->scale_x = scl_x <= 0 ? 1.f : scl_x;
-  win->scale_y = scl_y <= 0 ? 1.f : scl_y;
+  win->scale_x = scale.x <= 0 ? 1.f : scale.x;
+  win->scale_y = scale.y <= 0 ? 1.f : scale.y;
 
   log_f(LOG_INFO, "Running '%s'", win->title);
   if (!glfwInit()) {
@@ -60,9 +60,14 @@ bool Window_init(Window* win, unsigned int width, unsigned int height, float scl
   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
+  // NOTE: We don't care about the aspect ratio if we can't resize the window, duh
+  if (flags & WINDOW_RESIZABLE_ASPECT) flags |= WINDOW_RESIZABLE;
+  bool resizable = (bool)(flags & WINDOW_RESIZABLE);
+  glfwWindowHint(GLFW_RESIZABLE, (resizable ? GLFW_TRUE : GLFW_FALSE));
 
   win->glfw_win = glfwCreateWindow(win->width, win->height, win->title, NULL, NULL);
+
+  glfwSetWindowAspectRatio(win->glfw_win, (flags & WINDOW_RESIZABLE_ASPECT ? width : GLFW_DONT_CARE), (flags & WINDOW_RESIZABLE_ASPECT ? height : GLFW_DONT_CARE));
 
   if (win->glfw_win == NULL) {
     char* tmpbuff = (char*)malloc(sizeof(char)*1024);
@@ -73,6 +78,8 @@ bool Window_init(Window* win, unsigned int width, unsigned int height, float scl
   }
   log_f(LOG_INFO, "Window Created!");
   glfwMakeContextCurrent(win->glfw_win);
+
+  set_vsync((bool)(flags & WINDOW_VSYNC));
 
   int version = gladLoadGL(glfwGetProcAddress);
 
@@ -96,14 +103,18 @@ void Window_deinit(Window* win) {
 
 // Context / main user api
 
-Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title, const Render_mode render_mode) {
+Context* clock_init(unsigned int window_width, unsigned int window_height, float window_scale_x, float window_scale_y, const char* title, uint32 flags) {
   Context* ctx = (Context*)calloc(1, sizeof(Context));
   ctx->win = (Window*)  malloc(sizeof(Window));
   ctx->ren = (Renderer*)malloc(sizeof(Renderer));
-  if (!Window_init(ctx->win, window_width, window_height, scl_x, scl_y, title)) {
+
+  if (!Window_init(ctx->win, window_width, window_height, (Vector2f) {window_scale_x, window_scale_y}, title, flags)) {
+    // TODO: free ctx
     return NULL;
   }
-  if (!Renderer_init(ctx->ren, ctx->win, render_mode)) {
+
+  if (!Renderer_init(ctx->ren, ctx->win, flags)) {
+    // TODO: free ctx
     return NULL;
   }
 
@@ -113,6 +124,8 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
   glfwSetKeyCallback(ctx->win->glfw_win, key_callback);
   glfwSetCharCallback(ctx->win->glfw_win, text_callback);
   glfwSetScrollCallback(ctx->win->glfw_win, mouse_scroll_callback);
+  glfwSetWindowSizeCallback(ctx->win->glfw_win, window_resize_callback);
+  glfwSetFramebufferSizeCallback(ctx->win->glfw_win, framebuffer_resize_callback);
   glfwSetErrorCallback(error_callback);
 
   ctx->tp1 = glfwGetTime();
@@ -293,10 +306,6 @@ Vector2f clock_world_to_screen(Context* ctx, Vector2f pos) {
     .x = pos.x + ctx->camera.x,
     .y = pos.y + ctx->camera.y,
   };
-}
-
-void clock_set_vsync(bool enable) {
-  glfwSwapInterval(enable ? 1 : 0);
 }
 
 void clock_begin_scissor(Context* ctx, Rect rect) {
@@ -578,8 +587,12 @@ bool clock_mouse_held(Context* ctx, int button) {
 }
 
 //
-// Misc
+// Misc (Context agnostic)
 //
+
+void set_vsync(bool enable) {
+  glfwSwapInterval(enable ? 1 : 0);
+}
 
 cstr get_clipboard(void) {
   return glfwGetClipboardString(NULL);
@@ -617,13 +630,38 @@ void mouse_scroll_callback(GLFWwindow* window, real64 xoffset, real64 yoffset) {
   ctx->mscroll.y = (real32)yoffset;
 }
 
+void window_resize_callback(GLFWwindow* window, int width, int height) {
+  Context* ctx = (Context*)glfwGetWindowUserPointer(window);
+
+  ctx->win->width = width;
+  ctx->win->height = height;
+
+  Rentar_deinit(ctx->ren->ren_tex);
+  ASSERT(Rentar_init(ctx->ren->ren_tex, ctx->win, (uint)(ctx->win->width / ctx->win->scale_x), (uint)(ctx->win->height / ctx->win->scale_y)));
+  Vector2f screen_size = {(real32)ctx->ren->win->width, (real32)ctx->ren->win->height};
+
+  if (ctx->ren->render_3D) {
+    ctx->ren->proj = Mat4_screen_to_clip_projection_perspective(90.f, (float)ctx->ren->win->width/(float)ctx->ren->win->height, 1.f, 1000.f);
+  } else {
+    ctx->ren->proj = Mat4_screen_to_clip_projection_orthographic(screen_size);
+  }
+
+  glViewport(0, 0, width, height);
+}
+
+void framebuffer_resize_callback(GLFWwindow* window, int width, int height) {
+  (void)window;
+  (void)width;
+  (void)height;
+}
+
 void error_callback(int error_code, cstr description) {
   log_f(LOG_ERROR, "GLFW: [%d] %s", error_code, description);
 }
 
 // Renderer
 
-bool Renderer_init(Renderer* r, Window* win, const Render_mode render_mode) {
+bool Renderer_init(Renderer* r, Window* win, uint32 flags) {
   r->win = win;
 
   gl(glGenVertexArrays(1, &r->vao););
@@ -660,15 +698,12 @@ bool Renderer_init(Renderer* r, Window* win, const Render_mode render_mode) {
   }
 
   Vector2f screen_size = {(real32)r->win->width, (real32)r->win->height};
+  r->render_3D = (bool)flags & RENDER_3D;
 
-  switch (render_mode) {
-  case RENDER_MODE_2D: {
-    r->proj = Mat4_screen_to_clip_projection_orthographic(screen_size);
-  } break;
-  case RENDER_MODE_3D: {
+  if (r->render_3D) {
     r->proj = Mat4_screen_to_clip_projection_perspective(90.f, (float)r->win->width/(float)r->win->height, 1.f, 1000.f);
-  } break;
-  default: ASSERT(0 && "Unreachable");
+  } else {
+    r->proj = Mat4_screen_to_clip_projection_orthographic(screen_size);
   }
 
   return true;

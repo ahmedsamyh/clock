@@ -2,12 +2,9 @@
 #include <stdlib.h>
 
 int main(void){
-  Context* ctx = clock_init(800, 800, 1.f, 1.f, "GLFW Window", RENDER_MODE_2D);
+  Context* ctx = clock_init(800, 800, 1.f, 1.f, "GLFW Window", WINDOW_RESIZABLE);
 
   if (ctx == NULL) return 1;
-
-  float width =  (float)ctx->win->width;
-  float height = (float)ctx->win->height;
 
   float deg = 0.f;
   float scl = 1.f;

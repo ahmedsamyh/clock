@@ -36,15 +36,16 @@ struct Window {
   const char* title;
 };
 
-bool Window_init(Window* win, unsigned int width, unsigned int height, float scl_x, float scl_y, const char* title);
+// Flags
+#define WINDOW_RESIZABLE        (1<<0)
+#define WINDOW_RESIZABLE_ASPECT (1<<1)
+#define WINDOW_VSYNC            (1<<2)
+#define RENDER_3D               (1<<3)
+
+bool Window_init(Window* win, unsigned int width, unsigned int height, Vector2f scale, const char* title, uint32 flags);
 void Window_deinit(Window* win);
 
 // Context / main user api
-
-typedef struct {
-  int key;
-  Key value;
-} Key_KV;
 
 struct Context {
   Window*   win;
@@ -70,13 +71,7 @@ struct Context {
   bool mouse_input_handled;
 };
 
-typedef enum {
-  RENDER_MODE_2D,
-  RENDER_MODE_3D,
-  RENDER_MODE_COUNT,
-} Render_mode;
-
-Context* clock_init(unsigned int window_width, unsigned int window_height, float scl_x, float scl_y, const char* title, const Render_mode render_mode);
+Context* clock_init(unsigned int window_width, unsigned int window_height, float window_scale_x, float window_scale_y, const char* title, uint32 flags);
 bool clock_should_quit(Context* ctx);
 void clock_update_mouse(Context* ctx);
 void clock_begin_draw(Context* ctx);
@@ -91,8 +86,6 @@ Vector3f clock_screen_to_world_3d(Context* ctx, Vector3f pos);
 Vector2f clock_screen_to_world(Context* ctx, Vector2f pos);
 Vector3f clock_world_to_screen_3d(Context* ctx, Vector3f pos);
 Vector2f clock_world_to_screen(Context* ctx, Vector2f pos);
-
-void clock_set_vsync(bool enable);
 
 void clock_begin_scissor(Context* ctx, Rect rect);
 void clock_end_scissor(Context* ctx);
@@ -117,7 +110,8 @@ bool clock_mouse_pressed(Context* ctx, int button);
 bool clock_mouse_released(Context* ctx, int button);
 bool clock_mouse_held(Context* ctx, int button);
 
-// Misc
+// Misc (Context agnostic)
+void set_vsync(bool enable);
 cstr get_clipboard(void);
 void set_clipboard(cstr text);
 
@@ -126,10 +120,11 @@ void set_clipboard(cstr text);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void text_callback(GLFWwindow* window, uint32 key_code);
 void mouse_scroll_callback(GLFWwindow* window, real64 xoffset, real64 yoffset);
+void window_resize_callback(GLFWwindow* window, int width, int height);
+void framebuffer_resize_callback(GLFWwindow* window, int width, int height);
 void error_callback(int error_code, cstr description);
 
 // Renderer
-
 typedef enum {
   TEXTURE_SHADER,
   COLOR_SHADER,
@@ -148,9 +143,10 @@ struct Renderer {
   Render_target* ren_tex;
   Window* win;
   Matrix4 proj;
+  bool render_3D;
 };
 
-bool Renderer_init(Renderer* renderer, Window* win, const Render_mode render_mode);
+bool Renderer_init(Renderer* renderer, Window* win, uint32 flags);
 void Renderer_deinit(Renderer* renderer);
 void Renderer_use_custom_shader(Renderer* renderer, const char* vs, const char* fs);
 void Renderer_use_color_shader(Renderer* renderer);
