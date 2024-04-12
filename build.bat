@@ -106,10 +106,6 @@ if "!arg!"=="vector_gen" (
   echo Building clock_engine.lib...
   call shell cl !COMMON_CFLAGS! /c !CLOCK_SRCS! src\gl\gl.c /I!INCLUDE_DIRS!
   call shell lib !LIB_DIR!\glfw3_mt.lib !CLOCK_OBJS! gl.obj /out:.\lib\clock.lib
-) else if "!arg!"=="main" (
-  call shell build clock !config!
-
-  call shell cl !COMMON_CFLAGS! src\main.c /I!INCLUDE_DIRS! /link clock.lib !LIBS! /LIBPATH:!LIB_DIR!
 ) else if "!arg!"=="rpg" (
   call shell build clock !config!
 
