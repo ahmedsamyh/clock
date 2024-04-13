@@ -77,7 +77,10 @@ if "!arg!"=="vector_gen" (
   call shell build sprite
   call shell build text
   call shell build ui
+) else if "!arg!"=="bezier" (
+  call shell build clock !config!
 
+  call shell cl !COMMON_CFLAGS! examples\bezier.c /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! !LIBS!
 ) else if "!arg!"=="rotating_quad" (
   call shell build clock !config!
 
