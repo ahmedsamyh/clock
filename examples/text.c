@@ -1,6 +1,5 @@
 #include <clock/clock.h>
 #include <assert.h>
-#include "embedded/WayfarersToyBoxRegular-gxxER.c"
 
 int main(void) {
   Context* ctx = clock_init(1280, 720, 1.f, 1.f, "Text", 0);
@@ -9,7 +8,7 @@ int main(void) {
   }
 
   Font font = {0};
-  if (!Font_init_from_memory(&font, ctx, WayfarersToyBoxRegular_gxxERb_bytes, "WayfarersToyBoxRegular_gxxERb.ttf")) {
+  if (!Font_init_from_file(&font, ctx, "resources/fonts/iosevka-regular.ttf")) {
     return 1;
   }
 
