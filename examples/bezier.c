@@ -1,15 +1,5 @@
 #include <clock/clock.h>
 
-void draw_bezier_curve(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, int res, Color color) {
-  Vector2f prev_pos = p0;
-  for (int i = 0; i < res; ++i) {
-    float t = (i + 1.f) / res;
-    Vector2f next_pos = v2f_bezier_lerp(p0, p1, p2, t);
-    draw_imm_line(ctx, prev_pos, next_pos, color, color);
-    prev_pos = next_pos;
-  }
-}
-
 int main(void) {
   Context* ctx = clock_init(1280, 720, 1.f, 1.f, "Bezier Curve", WINDOW_RESIZABLE);
   if (!ctx) return 1;
@@ -52,9 +42,9 @@ int main(void) {
       p1 = ctx->mpos;
     }
 
-    draw_rect_centered(ctx, (Rect){.pos = p0, .size = size}, COLOR_RED);
-    draw_rect_centered(ctx, (Rect){.pos = p1, .size = size}, COLOR_RED);
-    draw_rect_centered(ctx, (Rect){.pos = control, .size = size}, COLOR_GREEN);
+    /* draw_rect_centered(ctx, (Rect){.pos = p0, .size = size}, COLOR_RED); */
+    /* draw_rect_centered(ctx, (Rect){.pos = p1, .size = size}, COLOR_RED); */
+    /* draw_rect_centered(ctx, (Rect){.pos = control, .size = size}, COLOR_GREEN); */
 
     const Color C =  color_alpha(COLOR_WHITE, 0.2f);
     draw_imm_line(ctx, p0, p1, C, C);

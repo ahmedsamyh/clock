@@ -773,7 +773,7 @@ void draw_imm_triangle_3d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, C
     r->vertices[i].position = pn;
     r->vertices[i].color = c;
   }
-
+  Renderer_use_color_shader(r);
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 3, r->vertices));
 
@@ -973,6 +973,7 @@ void draw_imm_line3d(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1)
     r->vertices[i].color = c;
   }
 
+  Renderer_use_color_shader(r);
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 2, r->vertices));
   gl(glDrawArrays(GL_LINE_STRIP, 0, 2));
@@ -1055,6 +1056,16 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
     stbtt_GetCodepointHMetrics(&font->font, codepoint, &adv, &lsb);
     codepoint_pos.x += (adv * sf) + (lsb * sf);
     *text++;
+  }
+}
+
+void draw_bezier_curve(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, int res, Color color) {
+  Vector2f prev_pos = p0;
+  for (int i = 0; i < res; ++i) {
+    float t = (i + 1.f) / res;
+    Vector2f next_pos = v2f_bezier_lerp(p0, p1, p2, t);
+    draw_imm_line(ctx, prev_pos, next_pos, color, color);
+    prev_pos = next_pos;
   }
 }
 

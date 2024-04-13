@@ -169,6 +169,7 @@ void draw_point_3d(Context* ctx, Vector3f p, Color col);
 void draw_point(Context* ctx, Vector2f p, Color col);
 // TODO: do we want a 3d version for draw_text()?
 void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color);
+void draw_bezier_curve(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, int res, Color color);
 
 Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size);
 Vector2f get_text_sizen(Context* ctx, Font* font, char* text, uint32 text_size, int char_size);
