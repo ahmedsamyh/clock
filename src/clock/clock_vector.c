@@ -77,6 +77,11 @@ Vector2f v2f_normalize(Vector2f v){
 Vector2f v2f_lerp(Vector2f start, Vector2f end, float t) {
   return v2f_add(start, v2f_muls(v2f_sub(end, start), t));
 }
+Vector2f v2f_bezier_lerp(Vector2f p0, Vector2f p1, Vector2f p2, float t) {
+  Vector2f imm_a = v2f_lerp(p0, p1, t);
+  Vector2f imm_b = v2f_lerp(p1, p2, t);
+  return v2f_lerp(imm_a, imm_b, t);
+}
 
 // Vector3f --------------------------------------------------
 
@@ -155,6 +160,11 @@ Vector3f v3f_normalize(Vector3f v){
 }
 Vector3f v3f_lerp(Vector3f start, Vector3f end, float t) {
   return v3f_add(start, v3f_muls(v3f_sub(end, start), t));
+}
+Vector3f v3f_bezier_lerp(Vector3f p0, Vector3f p1, Vector3f p2, float t) {
+  Vector3f imm_a = v3f_lerp(p0, p1, t);
+  Vector3f imm_b = v3f_lerp(p1, p2, t);
+  return v3f_lerp(imm_a, imm_b, t);
 }
 
 // Vector4f --------------------------------------------------
@@ -243,6 +253,11 @@ Vector4f v4f_normalize(Vector4f v){
 Vector4f v4f_lerp(Vector4f start, Vector4f end, float t) {
   return v4f_add(start, v4f_muls(v4f_sub(end, start), t));
 }
+Vector4f v4f_bezier_lerp(Vector4f p0, Vector4f p1, Vector4f p2, float t) {
+  Vector4f imm_a = v4f_lerp(p0, p1, t);
+  Vector4f imm_b = v4f_lerp(p1, p2, t);
+  return v4f_lerp(imm_a, imm_b, t);
+}
 
 // Vector2d --------------------------------------------------
 
@@ -319,6 +334,11 @@ Vector2d v2d_normalize(Vector2d v){
 }
 Vector2d v2d_lerp(Vector2d start, Vector2d end, float t) {
   return v2d_add(start, v2d_muls(v2d_sub(end, start), t));
+}
+Vector2d v2d_bezier_lerp(Vector2d p0, Vector2d p1, Vector2d p2, float t) {
+  Vector2d imm_a = v2d_lerp(p0, p1, t);
+  Vector2d imm_b = v2d_lerp(p1, p2, t);
+  return v2d_lerp(imm_a, imm_b, t);
 }
 
 // Vector3d --------------------------------------------------
@@ -398,6 +418,11 @@ Vector3d v3d_normalize(Vector3d v){
 }
 Vector3d v3d_lerp(Vector3d start, Vector3d end, float t) {
   return v3d_add(start, v3d_muls(v3d_sub(end, start), t));
+}
+Vector3d v3d_bezier_lerp(Vector3d p0, Vector3d p1, Vector3d p2, float t) {
+  Vector3d imm_a = v3d_lerp(p0, p1, t);
+  Vector3d imm_b = v3d_lerp(p1, p2, t);
+  return v3d_lerp(imm_a, imm_b, t);
 }
 
 // Vector4d --------------------------------------------------
@@ -485,6 +510,11 @@ Vector4d v4d_normalize(Vector4d v){
 }
 Vector4d v4d_lerp(Vector4d start, Vector4d end, float t) {
   return v4d_add(start, v4d_muls(v4d_sub(end, start), t));
+}
+Vector4d v4d_bezier_lerp(Vector4d p0, Vector4d p1, Vector4d p2, float t) {
+  Vector4d imm_a = v4d_lerp(p0, p1, t);
+  Vector4d imm_b = v4d_lerp(p1, p2, t);
+  return v4d_lerp(imm_a, imm_b, t);
 }
 
 // Vector2i --------------------------------------------------

@@ -36,6 +36,10 @@ void declare_vec_func_vec_vec_scal(FILE* out, cstr prefix, cstr func, cstr full_
   fprintf(out, "%s %s_%s(%s start, %s end, float t);\n", full_name, prefix, func, full_name, full_name);
 }
 
+void declare_vec_func_vec_vec_vec_scal(FILE* out, cstr prefix, cstr func, cstr full_name) {
+  fprintf(out, "%s %s_%s(%s p0, %s p1, %s p2, float t);\n", full_name, prefix, func, full_name, full_name, full_name);
+}
+
 // Defines
 
 void define_normalize_function(FILE* out, cstr prefix, cstr full_name, String_view type){
@@ -215,6 +219,14 @@ void define_lerp_function(FILE* out, cstr prefix, cstr func, cstr full_name) {
     fprintf(out, "}\n");
 }
 
+void define_bezier_lerp_function(FILE* out, cstr prefix, cstr func, cstr full_name) {
+  fprintf(out, "%s %s_%s(%s p0, %s p1, %s p2, float t) {\n", full_name, prefix, func, full_name, full_name, full_name);
+  fprintf(out, "  %s imm_a = %s_lerp(p0, p1, t);\n", full_name, prefix);
+  fprintf(out, "  %s imm_b = %s_lerp(p1, p2, t);\n", full_name, prefix);
+  fprintf(out, "  return %s_lerp(imm_a, imm_b, t);\n", prefix);
+  fprintf(out, "}\n");
+}
+
 void declare_vector(String_view format) {
   String_view name = sv_lpop_until_char(&format, ':');
   sv_lremove(&format, 1); // remove :
@@ -306,6 +318,7 @@ void declare_vector(String_view format) {
   if (sv_equals(type, SV(float_str)) ||
       sv_equals(type, SV(double_str))) {
     declare_vec_func_vec_vec_scal(out, prefix, "lerp", full_name);
+    declare_vec_func_vec_vec_vec_scal(out, prefix, "bezier_lerp", full_name);
   }
 
   free(full_name);
@@ -377,7 +390,8 @@ void define_vector(String_view format) {
   cstr double_str = "double";
   if (sv_equals(type, SV(float_str)) ||
       sv_equals(type, SV(double_str))) {
-  define_lerp_function(out, prefix, "lerp", full_name);
+    define_lerp_function(out, prefix, "lerp", full_name);
+    define_bezier_lerp_function(out, prefix, "bezier_lerp", full_name);
   }
 
   free(full_name);

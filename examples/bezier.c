@@ -1,20 +1,10 @@
 #include <clock/clock.h>
 
-Vector2f v2f_lerp_(Vector2f start, Vector2f end, float t) {
-  return v2f_add(start, v2f_muls(v2f_sub(end, start), t));
-}
-
-Vector2f bezier_lerp(Vector2f p0, Vector2f p1, Vector2f p2, float t) {
-  Vector2f imm_a = v2f_lerp(p0, p1, t);
-  Vector2f imm_b = v2f_lerp(p1, p2, t);
-  return v2f_lerp(imm_a, imm_b, t);
-}
-
 void draw_bezier_curve(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, int res, Color color) {
   Vector2f prev_pos = p0;
   for (int i = 0; i < res; ++i) {
     float t = (i + 1.f) / res;
-    Vector2f next_pos = bezier_lerp(p0, p1, p2, t);
+    Vector2f next_pos = v2f_bezier_lerp(p0, p1, p2, t);
     draw_imm_line(ctx, prev_pos, next_pos, color, color);
     prev_pos = next_pos;
   }
@@ -72,7 +62,7 @@ int main(void) {
     Vector2f middle = v2f_lerp(p0, p1, t);
     draw_rect_centered(ctx, (Rect){.pos = middle, .size = v2f_muls(size, 1.5f)}, COLOR_GREEN);
 
-    Vector2f b = bezier_lerp(p0, control, p1, t);
+    Vector2f b = v2f_bezier_lerp(p0, control, p1, t);
     draw_rect_centered(ctx, (Rect){.pos = b, .size = v2f_muls(size, 2.f)}, COLOR_GOLD);
 
     draw_bezier_curve(ctx, p0, control, p1, 100, COLOR_GOLD);
