@@ -27,7 +27,8 @@ typedef struct {
 struct Font {
   Codepoint_rect_KV* codepoint_rect_map;
   int current_character_size;
-  unsigned char* ttf_buffer;
+  uint8* ttf_buffer;
+  bool should_free_ttf_buffer;
   stbtt_fontinfo font;
   int codepoint_start, codepoint_end;
   Texture* texture;
@@ -35,6 +36,8 @@ struct Font {
 };
 
 bool Font_init(Font* font, Context* ctx, const char* filepath);
+bool Font_init_from_file(Font* font, Context* ctx, const char* filepath);
+bool Font_init_from_memory(Font* font, Context* ctx, uint8* data, cstr name);
 bool Font_generate_atlas_tex(Font* font, int character_size);
 bool Font_get_codepoint_rect(Font* font, int codepoint, Rect* rect);
 void Font_deinit(Font* font);

@@ -6,7 +6,8 @@
 #include <stb/stb_truetype.h>
 #include <stb/stb_ds.h>
 
-bool Font_init(Font* font, Context* ctx, const char* filepath) {
+
+bool Font_init_from_file(Font* font, Context* ctx, const char* filepath) {
   uint8* ttf_buffer = (uint8*)slurp_file(filepath);
 
   if (ttf_buffer == NULL) {
@@ -14,12 +15,24 @@ bool Font_init(Font* font, Context* ctx, const char* filepath) {
     return false;
   }
 
-  stbtt_InitFont(&font->font, (const unsigned char*)ttf_buffer, stbtt_GetFontOffsetForIndex((const unsigned char *)ttf_buffer,0));
+  font->should_free_ttf_buffer = true;
+
+  return Font_init_from_memory(font, ctx, ttf_buffer, filepath);
+}
+
+bool Font_init(Font* font, Context* ctx, const char* filepath) {
+  return Font_init_from_file(font, ctx, filepath);
+}
+
+bool Font_init_from_memory(Font* font, Context* ctx, uint8* data, cstr name) {
+  uint8* ttf_buffer = data;
+
+  stbtt_InitFont(&font->font, (const unsigned char*)ttf_buffer, stbtt_GetFontOffsetForIndex((const uint8*)ttf_buffer,0));
 
   font->ttf_buffer = ttf_buffer;
 
   // TODO: Format the texture_name like '[ATLAS] filepath' when i have temp_sprintf in commonlib.h
-  font->texture = Resman_load_texture_uninitialized(ctx->resman, filepath);
+  font->texture = Resman_load_texture_uninitialized(ctx->resman, name);
 
   Font_generate_atlas_tex(font, DEFAULT_FONT_CHARACTER_SIZE);
 
@@ -111,7 +124,9 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
 }
 
 void Font_deinit(Font* font) {
-  free(font->ttf_buffer);
+  if (font->should_free_ttf_buffer) {
+    free(font->ttf_buffer);
+  }
   hmfree(font->codepoint_rect_map);
 }
 

@@ -1,14 +1,15 @@
 #include <clock/clock.h>
 #include <assert.h>
+#include "embedded/WayfarersToyBoxRegular-gxxER.c"
 
 int main(void) {
-  Context* ctx = clock_init(1280, 720, 1.f, 1.f, "Text", RENDER_MODE_2D);
+  Context* ctx = clock_init(1280, 720, 1.f, 1.f, "Text", 0);
   if (ctx == NULL) {
     return 1;
   }
 
   Font font = {0};
-  if (!Font_init(&font, ctx, "resources/fonts/WayfarersToyBoxRegular-gxxER.ttf")) {
+  if (!Font_init_from_memory(&font, ctx, WayfarersToyBoxRegular_gxxERb_bytes, "WayfarersToyBoxRegular_gxxERb.ttf")) {
     return 1;
   }
 
@@ -20,7 +21,7 @@ int main(void) {
 
     float y = 0.f;
     int char_size = 32;
-    if (ctx->k[KEY_SPACE].held) {
+    if (clock_key_held(ctx, KEY_SPACE)) {
       for (size_t i = 0; i < 4; ++i) {
 	draw_text(ctx, &font, text, (Vector2f) {ctx->mpos.x / char_size, y}, char_size, COLOR_MAGENTA);
 	y += char_size;
