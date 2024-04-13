@@ -74,6 +74,9 @@ Vector2f v2f_normalize(Vector2f v){
   if (mag == 0.f) return v;
   return v2f_divs(v, (float)mag);
 }
+Vector2f v2f_lerp(Vector2f start, Vector2f end, float t) {
+  return v2f_add(start, v2f_muls(v2f_sub(end, start), t));
+}
 
 // Vector3f --------------------------------------------------
 
@@ -149,6 +152,9 @@ Vector3f v3f_normalize(Vector3f v){
   float mag = v3f_mag(v);
   if (mag == 0.f) return v;
   return v3f_divs(v, (float)mag);
+}
+Vector3f v3f_lerp(Vector3f start, Vector3f end, float t) {
+  return v3f_add(start, v3f_muls(v3f_sub(end, start), t));
 }
 
 // Vector4f --------------------------------------------------
@@ -234,6 +240,9 @@ Vector4f v4f_normalize(Vector4f v){
   if (mag == 0.f) return v;
   return v4f_divs(v, (float)mag);
 }
+Vector4f v4f_lerp(Vector4f start, Vector4f end, float t) {
+  return v4f_add(start, v4f_muls(v4f_sub(end, start), t));
+}
 
 // Vector2d --------------------------------------------------
 
@@ -307,6 +316,9 @@ Vector2d v2d_normalize(Vector2d v){
   float mag = v2d_mag(v);
   if (mag == 0.f) return v;
   return v2d_divs(v, (double)mag);
+}
+Vector2d v2d_lerp(Vector2d start, Vector2d end, float t) {
+  return v2d_add(start, v2d_muls(v2d_sub(end, start), t));
 }
 
 // Vector3d --------------------------------------------------
@@ -383,6 +395,9 @@ Vector3d v3d_normalize(Vector3d v){
   float mag = v3d_mag(v);
   if (mag == 0.f) return v;
   return v3d_divs(v, (double)mag);
+}
+Vector3d v3d_lerp(Vector3d start, Vector3d end, float t) {
+  return v3d_add(start, v3d_muls(v3d_sub(end, start), t));
 }
 
 // Vector4d --------------------------------------------------
@@ -467,6 +482,9 @@ Vector4d v4d_normalize(Vector4d v){
   float mag = v4d_mag(v);
   if (mag == 0.f) return v;
   return v4d_divs(v, (double)mag);
+}
+Vector4d v4d_lerp(Vector4d start, Vector4d end, float t) {
+  return v4d_add(start, v4d_muls(v4d_sub(end, start), t));
 }
 
 // Vector2i --------------------------------------------------

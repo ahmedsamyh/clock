@@ -198,7 +198,7 @@ void clock_begin_draw(Context* ctx) {
   clock_update_mouse(ctx);
 
   ctx->tp2 = glfwGetTime();
-  ctx->delta = (real32)(ctx->tp2 - ctx->tp1);
+  ctx->delta = (float32)(ctx->tp2 - ctx->tp1);
   ctx->tp1 = ctx->tp2;
 
   ctx->fps = (int)(1.0f / ctx->delta);
@@ -624,10 +624,10 @@ void text_callback(GLFWwindow* window, uint32 key_code) {
   ctx->text_entered = true;
 }
 
-void mouse_scroll_callback(GLFWwindow* window, real64 xoffset, real64 yoffset) {
+void mouse_scroll_callback(GLFWwindow* window, float64 xoffset, float64 yoffset) {
   Context* ctx = (Context*)glfwGetWindowUserPointer(window);
-  ctx->mscroll.x = (real32)xoffset;
-  ctx->mscroll.y = (real32)yoffset;
+  ctx->mscroll.x = (float32)xoffset;
+  ctx->mscroll.y = (float32)yoffset;
 }
 
 void window_resize_callback(GLFWwindow* window, int width, int height) {
@@ -638,7 +638,7 @@ void window_resize_callback(GLFWwindow* window, int width, int height) {
 
   Rentar_deinit(ctx->ren->ren_tex);
   ASSERT(Rentar_init(ctx->ren->ren_tex, ctx->win, (uint)(ctx->win->width / ctx->win->scale_x), (uint)(ctx->win->height / ctx->win->scale_y)));
-  Vector2f screen_size = {(real32)ctx->ren->win->width, (real32)ctx->ren->win->height};
+  Vector2f screen_size = {(float32)ctx->ren->win->width, (float32)ctx->ren->win->height};
 
   if (ctx->ren->render_3D) {
     ctx->ren->proj = Mat4_screen_to_clip_projection_perspective(90.f, (float)ctx->ren->win->width/(float)ctx->ren->win->height, 1.f, 1000.f);
@@ -697,7 +697,7 @@ bool Renderer_init(Renderer* r, Window* win, uint32 flags) {
     return false;
   }
 
-  Vector2f screen_size = {(real32)r->win->width, (real32)r->win->height};
+  Vector2f screen_size = {(float32)r->win->width, (float32)r->win->height};
   r->render_3D = (bool)flags & RENDER_3D;
 
   if (r->render_3D) {
@@ -759,7 +759,7 @@ void draw_imm_triangle_3d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, C
     c0, c1, c2
   };
 
-  /* Vector2f screen_size = (Vector2f){(real32)ctx->win->width, (real32)ctx->win->height}; */
+  /* Vector2f screen_size = (Vector2f){(float32)ctx->win->width, (float32)ctx->win->height}; */
 
   for (size_t i = 0; i < 3; ++i) {
     Vector3f p  = positions[i];
@@ -1037,7 +1037,7 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
 
     int codepoint = *text;
 
-    float sf = stbtt_ScaleForPixelHeight(&font->font, (real32)font->current_character_size);
+    float sf = stbtt_ScaleForPixelHeight(&font->font, (float32)font->current_character_size);
 
     // TODO: Handle newline and other codepoints
     Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
@@ -1062,11 +1062,11 @@ Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size) {
   (void)ctx;
   Vector2f size = {0};
   if (text == NULL) return size;
-  size.y = (real32)char_size;
+  size.y = (float32)char_size;
   while (*text != '\0') {
     int codepoint = *text;
 
-    float sf = stbtt_ScaleForPixelHeight(&font->font, (real32)char_size);
+    float sf = stbtt_ScaleForPixelHeight(&font->font, (float32)char_size);
 
     Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
     if (kv == NULL) {
@@ -1087,12 +1087,12 @@ Vector2f get_text_sizen(Context* ctx, Font* font, char* text, uint32 text_size, 
   (void)ctx;
   Vector2f size = {0};
   if (text == NULL) return size;
-  size.y = (real32)char_size;
+  size.y = (float32)char_size;
   uint32 n = 0;
   while (n < text_size && *text != '\0') {
     int codepoint = *text;
 
-    float sf = stbtt_ScaleForPixelHeight(&font->font, (real32)char_size);
+    float sf = stbtt_ScaleForPixelHeight(&font->font, (float32)char_size);
 
     Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
     if (kv == NULL) {

@@ -56,7 +56,7 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
 
   font->current_character_size = character_size;
 
-  Vector2f tex_size = {0.f, (real32)character_size};
+  Vector2f tex_size = {0.f, (float32)character_size};
 
   int codepoint_min =  INT_MAX;
   int codepoint_max = -INT_MAX;
@@ -68,16 +68,16 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
       if (i > codepoint_max) codepoint_max = i;
 
       int w, h, xoff, yoff;
-      uint8* single_channel_bitmap = stbtt_GetCodepointBitmap(&font->font, 0, stbtt_ScaleForPixelHeight(&font->font, (real32)character_size), i, &w, &h, &xoff, &yoff);
+      uint8* single_channel_bitmap = stbtt_GetCodepointBitmap(&font->font, 0, stbtt_ScaleForPixelHeight(&font->font, (float32)character_size), i, &w, &h, &xoff, &yoff);
       stbtt_FreeBitmap(single_channel_bitmap, NULL);
 
       Rect rect = {
 	.pos = (Vector2f){tex_size.x, 0.f},
-	.size = (Vector2f){(real32)w, (real32)h}
+	.size = (Vector2f){(float32)w, (float32)h}
       };
 
       Codepoint_rect crect = {
-	.offset = (Vector2f){(real32)xoff, (real32)yoff},
+	.offset = (Vector2f){(float32)xoff, (float32)yoff},
 	.rect = rect};
       hmput(font->codepoint_rect_map, i, crect);
       tex_size.x += w;
@@ -103,7 +103,7 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
   for (int i = font->codepoint_start; i <= font->codepoint_end; ++i) {
     if (stbtt_FindGlyphIndex(&font->font, i) != 0) {
       int w, h, xoff, yoff;
-      unsigned char* single_channel_bitmap = stbtt_GetCodepointBitmap(&font->font, 0, stbtt_ScaleForPixelHeight(&font->font, (real32)character_size), i, &w, &h, &xoff, &yoff);
+      unsigned char* single_channel_bitmap = stbtt_GetCodepointBitmap(&font->font, 0, stbtt_ScaleForPixelHeight(&font->font, (float32)character_size), i, &w, &h, &xoff, &yoff);
       size_t single_channel_bitmap_size = sizeof(unsigned char)*w*h;
       unsigned char* bitmap = onechan_to_fourchan(single_channel_bitmap, single_channel_bitmap_size);
       stbtt_FreeBitmap(single_channel_bitmap, NULL);

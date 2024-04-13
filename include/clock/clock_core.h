@@ -119,7 +119,7 @@ void set_clipboard(cstr text);
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void text_callback(GLFWwindow* window, uint32 key_code);
-void mouse_scroll_callback(GLFWwindow* window, real64 xoffset, real64 yoffset);
+void mouse_scroll_callback(GLFWwindow* window, float64 xoffset, float64 yoffset);
 void window_resize_callback(GLFWwindow* window, int width, int height);
 void framebuffer_resize_callback(GLFWwindow* window, int width, int height);
 void error_callback(int error_code, cstr description);

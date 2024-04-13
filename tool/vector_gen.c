@@ -6,31 +6,39 @@
 #include <stdio.h>
 #include <assert.h>
 
-static const char* header_filename = "clock_vector.h";
-static const char* source_filename = "clock_vector.c";
+static cstr header_filename = "clock_vector.h";
+static cstr source_filename = "clock_vector.c";
 #define GUARD_NAME "CLOCK_VECTOR_H"
 
+// Declares
+
 // x func(vector, vector)
-void declare_arithmetic_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name){
+void declare_arithmetic_function(FILE* out, cstr return_type, cstr prefix, cstr func, cstr full_name){
   fprintf(out, "%s %s_%s(%s v1, %s v2);\n", return_type, prefix, func, full_name, full_name);
 }
 
 // x func(vector, scalar)
-void declare_scalar_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type){
+void declare_scalar_function(FILE* out, cstr return_type, cstr prefix, cstr func, cstr full_name, String_view type){
   fprintf(out, "%s %s_%ss(%s v, "SV_FMT" num);\n", return_type, prefix, func, full_name, SV_ARG(type));
 }
 
 // x func(vector)
-void declare_getter_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name){
+void declare_getter_function(FILE* out, cstr return_type, cstr prefix, cstr func, cstr full_name){
   fprintf(out, "%s %s_%s(%s v);\n", return_type, prefix, func, full_name);
 }
 
 // vector func(vector)
-void declare_modifier_function(FILE* out, const char* prefix, const char* func, const char* full_name){
+void declare_modifier_function(FILE* out, cstr prefix, cstr func, cstr full_name){
   fprintf(out, "%s %s_%s(%s v);\n", full_name, prefix, func, full_name);
 }
 
-void define_normalize_function(FILE* out, const char* prefix, const char* full_name, String_view type){
+void declare_vec_func_vec_vec_scal(FILE* out, cstr prefix, cstr func, cstr full_name) {
+  fprintf(out, "%s %s_%s(%s start, %s end, float t);\n", full_name, prefix, func, full_name, full_name);
+}
+
+// Defines
+
+void define_normalize_function(FILE* out, cstr prefix, cstr full_name, String_view type){
   fprintf(out, "%s %s_normalize(%s v){\n", full_name, prefix, full_name);
 
   fprintf(out, "  float mag = %s_mag(v);\n", prefix);
@@ -41,7 +49,7 @@ void define_normalize_function(FILE* out, const char* prefix, const char* full_n
   fprintf(out, "}\n");
 }
 
-void define_arithmetic_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view members, char op){
+void define_arithmetic_function(FILE* out, cstr return_type, cstr prefix, cstr func, cstr full_name, String_view members, char op){
   fprintf(out, "%s %s_%s(%s v1, %s v2){\n", return_type, prefix, func, full_name, full_name);
   fprintf(out, "  return (%s){\n", full_name);
 
@@ -59,7 +67,7 @@ void define_arithmetic_function(FILE* out, const char* return_type, const char* 
   fprintf(out, "}\n");
 }
 
-void define_scalar_arithmetic_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type, String_view members, char op){
+void define_scalar_arithmetic_function(FILE* out, cstr return_type, cstr prefix, cstr func, cstr full_name, String_view type, String_view members, char op){
   fprintf(out, "%s %s_%ss(%s v1, "SV_FMT" num){\n", return_type, prefix, func, full_name, SV_ARG(type));
   fprintf(out, "  return (%s){\n", full_name);
 
@@ -90,8 +98,7 @@ void define_scalar_arithmetic_function(FILE* out, const char* return_type, const
 //     Vector2f {x, y}  -> "return sqrt({x}*{x} + {y}*{y});"
 //
 
-
-void define_getter_function_base(FILE* out, const char* param_name, String_view members, String_view format){
+void define_getter_function_base(FILE* out, cstr param_name, String_view members, String_view format){
   (void)param_name;
   assert(0 && "Not implemented!");
   size_t cursor = 0;
@@ -159,7 +166,7 @@ void define_getter_function_base(FILE* out, const char* param_name, String_view 
   }
 }
 
-void define_mag_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type, String_view members, bool squared){
+void define_mag_function(FILE* out, cstr return_type, cstr prefix, cstr func, cstr full_name, String_view type, String_view members, bool squared){
   (void)type;
   fprintf(out, "%s %s_%s(%s v){\n", return_type, prefix, func, full_name);
   fprintf(out, "  return ");
@@ -180,7 +187,7 @@ void define_mag_function(FILE* out, const char* return_type, const char* prefix,
   fprintf(out, "}\n");
 }
 
-void define_radian_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type, String_view members) {
+void define_radian_function(FILE* out, cstr return_type, cstr prefix, cstr func, cstr full_name, String_view type, String_view members) {
   (void)members;
   (void)type;
   fprintf(out, "%s %s_%s(%s v){\n", return_type, prefix, func, full_name);
@@ -191,7 +198,7 @@ void define_radian_function(FILE* out, const char* return_type, const char* pref
   fprintf(out, "}\n");
 }
 
-void define_degree_function(FILE* out, const char* return_type, const char* prefix, const char* func, const char* full_name, String_view type, String_view members) {
+void define_degree_function(FILE* out, cstr return_type, cstr prefix, cstr func, cstr full_name, String_view type, String_view members) {
   (void)members;
   (void)type;
   fprintf(out, "%s %s_%s(%s v){\n", return_type, prefix, func, full_name);
@@ -202,11 +209,17 @@ void define_degree_function(FILE* out, const char* return_type, const char* pref
   fprintf(out, "}\n");
 }
 
+void define_lerp_function(FILE* out, cstr prefix, cstr func, cstr full_name) {
+    fprintf(out, "%s %s_%s(%s start, %s end, float t) {\n", full_name, prefix, func, full_name, full_name);
+    fprintf(out, "  return %s_add(start, %s_muls(%s_sub(end, start), t));\n", prefix, prefix, prefix);
+    fprintf(out, "}\n");
+}
+
 void declare_vector(String_view format) {
   String_view name = sv_lpop_until_char(&format, ':');
   sv_lremove(&format, 1); // remove :
-  sv_trim(&format);
   sv_trim(&name);
+  sv_trim(&format);
   String_view type = sv_lpop_until_char(&format, ':');
   sv_lremove(&format, 1); // remove :
   sv_trim(&format);
@@ -220,7 +233,6 @@ void declare_vector(String_view format) {
   /* printf("name:    '"SV_FMT"'\n", SV_ARG(name)); */
   /* printf("type:    '"SV_FMT"'\n", SV_ARG(type)); */
   /* printf("members: '"SV_FMT"'\n", SV_ARG(members)); */
-
 
   FILE* out = fopen(header_filename, "a");
   assert(out != NULL);
@@ -289,6 +301,13 @@ void declare_vector(String_view format) {
 
   declare_modifier_function(out, prefix, "normalize", full_name);
 
+  cstr float_str =  "float";
+  cstr double_str = "double";
+  if (sv_equals(type, SV(float_str)) ||
+      sv_equals(type, SV(double_str))) {
+    declare_vec_func_vec_vec_scal(out, prefix, "lerp", full_name);
+  }
+
   free(full_name);
 
   fclose(out);
@@ -354,18 +373,25 @@ void define_vector(String_view format) {
 
   define_normalize_function(out, prefix, full_name, type);
 
+  cstr float_str =  "float";
+  cstr double_str = "double";
+  if (sv_equals(type, SV(float_str)) ||
+      sv_equals(type, SV(double_str))) {
+  define_lerp_function(out, prefix, "lerp", full_name);
+  }
+
   free(full_name);
 
   fclose(out);
 }
 
 int main(void){
-  const char** include_files = NULL;
+  cstr* include_files = NULL;
 
   arrput(include_files, "<math.h>");
 
   prepare_header_begin(header_filename, GUARD_NAME, include_files, arrlenu(include_files));
-  const char* types[] = {
+  cstr types[] = {
     "float",
     "double",
     "int",
@@ -387,7 +413,6 @@ int main(void){
 
   log_f(LOG_INFO, "Output: -> %s", header_filename);
   log_f(LOG_INFO, "Output: -> %s", source_filename);
-
 
   // will get freed by the os
   //  arrfree(include_files);

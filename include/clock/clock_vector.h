@@ -29,6 +29,7 @@ float v2f_mag2(Vector2f v);
 float v2f_dist(Vector2f v);
 float v2f_dist2(Vector2f v);
 Vector2f v2f_normalize(Vector2f v);
+Vector2f v2f_lerp(Vector2f start, Vector2f end, float t);
 
 // Vector3f --------------------------------------------------
 typedef struct {
@@ -50,6 +51,7 @@ float v3f_mag2(Vector3f v);
 float v3f_dist(Vector3f v);
 float v3f_dist2(Vector3f v);
 Vector3f v3f_normalize(Vector3f v);
+Vector3f v3f_lerp(Vector3f start, Vector3f end, float t);
 
 // Vector4f --------------------------------------------------
 typedef struct {
@@ -84,6 +86,7 @@ float v4f_mag2(Vector4f v);
 float v4f_dist(Vector4f v);
 float v4f_dist2(Vector4f v);
 Vector4f v4f_normalize(Vector4f v);
+Vector4f v4f_lerp(Vector4f start, Vector4f end, float t);
 
 // Vector2d --------------------------------------------------
 typedef struct {
@@ -112,6 +115,7 @@ float v2d_mag2(Vector2d v);
 float v2d_dist(Vector2d v);
 float v2d_dist2(Vector2d v);
 Vector2d v2d_normalize(Vector2d v);
+Vector2d v2d_lerp(Vector2d start, Vector2d end, float t);
 
 // Vector3d --------------------------------------------------
 typedef struct {
@@ -133,6 +137,7 @@ float v3d_mag2(Vector3d v);
 float v3d_dist(Vector3d v);
 float v3d_dist2(Vector3d v);
 Vector3d v3d_normalize(Vector3d v);
+Vector3d v3d_lerp(Vector3d start, Vector3d end, float t);
 
 // Vector4d --------------------------------------------------
 typedef struct {
@@ -167,6 +172,7 @@ float v4d_mag2(Vector4d v);
 float v4d_dist(Vector4d v);
 float v4d_dist2(Vector4d v);
 Vector4d v4d_normalize(Vector4d v);
+Vector4d v4d_lerp(Vector4d start, Vector4d end, float t);
 
 // Vector2i --------------------------------------------------
 typedef struct {
