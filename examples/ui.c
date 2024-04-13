@@ -1,7 +1,7 @@
 #include <clock/clock.h>
 
 int main(void) {
-  Context* ctx = clock_init(1280, 720, 1.f, 1.f, "UI", RENDER_MODE_2D);
+  Context* ctx = clock_init(1280, 720, 1.f, 1.f, "UI", 0);
 
   if (!ctx) return 1;
 
@@ -18,7 +18,6 @@ int main(void) {
   uint32 text_cursor = 0;
 
   Vector2f ui_pos = {100.f, 100.f};
-  Vector2f ui_pos2 = {10.f, 10.f};
 
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
@@ -63,6 +62,10 @@ int main(void) {
     if (UI_button(&ui, "Submit", 24, COLOR_WHITE)) {
       log_f(LOG_INFO, "%s", text_input);
     }
+
+    /* cstr a; */
+    /* temp_sprintf(a, "ui->show_text_input_cursor: %s", (ui.show_text_input_cursor ? "true" : "false")); */
+    /* UI_text(&ui, a, 24, COLOR_WHITE); */
 
     UI_end(&ui);
 

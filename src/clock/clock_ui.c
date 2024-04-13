@@ -45,6 +45,8 @@ UI UI_make(Context* ctx, Font* font) {
   res.btn_padding = (Vector2f) {4.f, 4.f};
   res.text_input_width = 12;
   res.bg_padding = (Vector2f) {10.f, 10.f};
+  res.text_input_cursor_blink_alarm.alarm_time = 0.5f;
+  res.show_text_input_cursor = true;
 
   return res;
 }
@@ -273,6 +275,8 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
   const Rect rect = {pos, size};
   bool hovering = Rect_contains_point(rect, ctx->mpos);
   if (this->active_id == id) {
+    bool pressed = false;
+
     // Backspace
     if (clock_key_pressed(ctx, KEY_BACKSPACE) && cursor > 0) {
       uint32 n = text_buff_size - cursor;
@@ -286,6 +290,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
 	  memset((uint8*)text_buff+cursor+n, 0, text_buff_size - (cursor + n));
 	}
       }
+      pressed = true;
     }
 
     // Delete
@@ -299,6 +304,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
 	memcpy((uint8*)text_buff+(cursor), (uint8*)text_buff+(cursor+1), n-1);
 	// TODO: Check for edge-case
       }
+      pressed = true;
     }
 
     // enter
@@ -306,14 +312,16 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
       if (clock_key_held(ctx, KEY_LEFT_CONTROL)) {
 	this->active_id = -1;
       } else {
-    /* 	text_buff[cursor] = '\n'; */
-    /* 	cursor++; */
+	/* 	text_buff[cursor] = '\n'; */
+	/* 	cursor++; */
       }
+      pressed = true;
     }
 
     if (ctx->text_entered) {
       text_buff[cursor] = (char)ctx->last_entered_character;
       cursor++;
+      pressed = true;
     }
 
     // Pasting
@@ -325,23 +333,28 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
 	memcpy((uint8*)text_buff+cursor, pasted_text, pasted_text_len);
 	cursor += (uint32)pasted_text_len;
       }
+      pressed = true;
     }
 
     // Home/End
     if (clock_key_pressed(ctx, KEY_HOME)) {
       cursor = 0;
+      pressed = true;
     } else if (clock_key_pressed(ctx, KEY_END)) {
       cursor = (uint32)strlen(text_buff);
+      pressed = true;
     }
 
     // Cursor movement
     if (clock_key_pressed(ctx, KEY_LEFT)) {
       if (cursor > 0) cursor--;
+      pressed = true;
     }
 
     if (clock_key_pressed(ctx, KEY_RIGHT)) {
       size_t text_len = strlen(text_buff);
       if (cursor < text_len) cursor++;
+      pressed = true;
     }
 
     clock_eat_key_input(ctx);
@@ -349,7 +362,18 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
     if (!hovering && clock_mouse_released(ctx, MOUSE_BUTTON_LEFT)) {
       this->active_id = -1;
     }
+
+    if (!pressed) {
+      if (Alarm_on_alarm(&this->text_input_cursor_blink_alarm, ctx->delta)) {
+	this->show_text_input_cursor = !this->show_text_input_cursor;
+      }
+    } else {
+      this->text_input_cursor_blink_alarm.time = 0.f;
+      this->show_text_input_cursor = true;
+    }
+
   } else {
+    this->show_text_input_cursor = true;
     if (hovering && clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT)) {
       this->active_id = id;
       clock_eat_mouse_input(ctx);
@@ -357,6 +381,7 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
   }
 
   Color fill_col = color_alpha(COLOR_WHITE, this->active_id == id ? 0.2f : 0.f);
+  Vector2f text_box_pos = pos;
   draw_box(ctx, rect, COLOR_WHITE, fill_col);
   // TODO: look previous todo...
   Vector2f text_pos = v2f_add(pos, this->btn_padding);
@@ -366,23 +391,33 @@ void UI_text_input(UI* this, char* text_buff, uint32 text_buff_size, uint32* cur
     text_pos.x -= text_width - text_box_width;
   }
 
-  clock_begin_scissor(ctx, rect);
-  float alpha = 0.5f;
-  if (this->active_id == id) {
-    alpha = 1.f;
-  }
-  color.a = alpha;
-  draw_text(ctx, this->font, text_buff, text_pos, char_size, color);
-  clock_end_scissor(ctx);
-
-  // cursor
+  // offset by cursor
   ASSERT(cursor <= text_buff_size);
   float text_width_until_cursor = get_text_sizen(this->ctx, this->font, text_buff, cursor, char_size).x;
   Rect cursor_rect = {
     .pos = (Vector2f) {text_pos.x + text_width_until_cursor, text_pos.y},
-    .size = (Vector2f) {char_size*1.f, (real32)char_size}
+    .size = (Vector2f) {char_size*0.2f, (real32)char_size}
   };
-  draw_rect(ctx, cursor_rect, color_alpha(COLOR_WHITE, 0.5f));
+
+  if (cursor_rect.pos.x < text_box_pos.x) {
+    text_pos.x += text_box_pos.x - cursor_rect.pos.x;
+    cursor_rect.pos.x = text_box_pos.x;
+  }
+
+  clock_begin_scissor(ctx, rect);
+  color.a = 0.5f;
+  if (this->active_id == id) {
+    color.a = 1.f;
+  }
+
+  draw_text(ctx, this->font, text_buff, text_pos, char_size, color);
+  clock_end_scissor(ctx);
+
+  // cursor
+
+  if (this->show_text_input_cursor) {
+    draw_rect(ctx, cursor_rect, color_alpha(COLOR_WHITE, (this->active_id == id ? 0.85f : 0.45f)));
+  }
 
   UI_Layout_push_widget(top, size);
   *cursor_ptr = cursor;

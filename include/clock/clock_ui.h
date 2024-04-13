@@ -2,6 +2,7 @@
 #define _CLOCK_UI_H_
 
 #include <clock/clock_core.h>
+#include <clock/clock_timer.h>
 
 typedef struct UI UI;
 typedef struct UI_Layout UI_Layout;
@@ -36,6 +37,8 @@ struct UI {
   Vector2f* active_pos;
   Vector2f active_pos_offset;
   bool is_moving;
+  Alarm text_input_cursor_blink_alarm;
+  bool show_text_input_cursor;
 };
 
 UI UI_make(Context* ctx, Font* font);
