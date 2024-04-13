@@ -217,7 +217,7 @@ int main(void) {
     //
     UI_begin(&ui, &ui_pos, UI_LAYOUT_KIND_VERT);
     cstr full_state_text;
-    temp_sprint(full_state_text, "State: %s", current_state_text);
+    temp_sprintf(full_state_text, "State: %s", current_state_text);
     UI_text(&ui, full_state_text, 24, COLOR_WHITE);
 
     switch (current_state) {
@@ -225,25 +225,25 @@ int main(void) {
     } break;
     case STATE_EDIT: {
       cstr full_stage_name;
-      temp_sprint(full_stage_name, "Stage: %s", current_stage_name);
+      temp_sprintf(full_stage_name, "Stage: %s", current_stage_name);
       UI_text(&ui, full_stage_name, 24, COLOR_WHITE);
 
       UI_text(&ui, collidable_text, 24, COLOR_WHITE);
       cstr warp_mode_text;
-      temp_sprint(warp_mode_text, "Warp mode: %s", (WARP_MODE ? "On" : "Off"));
+      temp_sprintf(warp_mode_text, "Warp mode: %s", (WARP_MODE ? "On" : "Off"));
       UI_text(&ui, warp_mode_text, 24, COLOR_WHITE);
 
       if (WARP_MODE) {
 	cstr a;
 	if (warp_tile_a) {
 	  UI_spacing(&ui, 10.f);
-	  temp_sprint(a, "Warp tile a pos: %.0f, %.0f", warp_tile_a->pos.x, warp_tile_a->pos.y);
+	  temp_sprintf(a, "Warp tile a pos: %.0f, %.0f", warp_tile_a->pos.x, warp_tile_a->pos.y);
 	  UI_text(&ui, a, 18, COLOR_WHITE);
 	}
 
 	if (warp_tile_b) {
 	  UI_spacing(&ui, 10.f);
-	  temp_sprint(a, "Warp tile b pos: %.0f, %.0f", warp_tile_b->pos.x, warp_tile_b->pos.y);
+	  temp_sprintf(a, "Warp tile b pos: %.0f, %.0f", warp_tile_b->pos.x, warp_tile_b->pos.y);
 	  UI_text(&ui, a, 18, COLOR_WHITE);
 	}
       }

@@ -96,7 +96,7 @@ Tile* Stage_get_tile_at(Stage* stage, Vector2f pos) {
 bool Stage_save_to_file(Stage* stage) {
   // TODO: Check if the file already exists and choose to whether overwrite or not...
   const char* filename;
-  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
+  temp_sprintf(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
   FILE* f = fopen(filename, "wb");
 
@@ -117,7 +117,7 @@ bool Stage_save_to_file(Stage* stage) {
     return false;
   }
 
-  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
+  temp_sprintf(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
   log_f(LOG_INFO, "Stage '%s' saved to file '%s'!", stage->name, filename);
 
@@ -127,7 +127,7 @@ bool Stage_save_to_file(Stage* stage) {
 
 bool Stage_load_from_file(Stage* stage) {
   const char* filename;
-  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
+  temp_sprintf(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
 
   FILE* f = fopen(filename, "r");
 
@@ -172,7 +172,7 @@ bool Stage_load_from_file(Stage* stage) {
 
 bool Stage_was_saved(Stage* stage) {
   const char* filename;
-  temp_sprint(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
+  temp_sprintf(filename, STAGE_SAVE_PATH"/%s.lvl", stage->name);
   FILE* f = fopen(filename, "r");
   if (f == NULL && errno == ENOENT) {
     return false;
