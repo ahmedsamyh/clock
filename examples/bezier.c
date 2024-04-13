@@ -42,9 +42,9 @@ int main(void) {
       p1 = ctx->mpos;
     }
 
-    /* draw_rect_centered(ctx, (Rect){.pos = p0, .size = size}, COLOR_RED); */
-    /* draw_rect_centered(ctx, (Rect){.pos = p1, .size = size}, COLOR_RED); */
-    /* draw_rect_centered(ctx, (Rect){.pos = control, .size = size}, COLOR_GREEN); */
+    draw_rect_centered(ctx, (Rect){.pos = p0, .size = size}, COLOR_RED);
+    draw_rect_centered(ctx, (Rect){.pos = p1, .size = size}, COLOR_RED);
+    draw_rect_centered(ctx, (Rect){.pos = control, .size = size}, COLOR_GREEN);
 
     const Color C =  color_alpha(COLOR_WHITE, 0.2f);
     draw_imm_line(ctx, p0, p1, C, C);
