@@ -1,7 +1,7 @@
 #include <clock/clock.h>
 
 int main(void) {
-  Context* ctx = clock_init(1280, 720, 1.f, 1.f, "UI", 0);
+  Context* ctx = clock_init(800, 800, 1.f, 1.f, "UI", WINDOW_RESIZABLE_ASPECT);
 
   if (!ctx) return 1;
 
@@ -76,6 +76,7 @@ int main(void) {
     clock_end_draw(ctx);
   }
 
+  UI_free(&ui);
   Sprite_deinit(&spr);
   Font_deinit(&font);
   clock_deinit(ctx);
