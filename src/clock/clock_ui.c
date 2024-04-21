@@ -624,6 +624,19 @@ void UI_end(UI* this) {
     *this->active_pos = v2f_sub(ctx->mpos, this->active_pos_offset);
   }
 
+  // eat mouse input if clicked on ui rect
+  {
+    rect = (Rect) {
+      .pos = v2f_sub(min, this->bg_padding),
+      .size = v2f_add(v2f_sub(max, min), v2f_muls(this->bg_padding, 2.f))
+    };
+
+    if (clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT) &&
+	Rect_contains_point(rect, ctx->mpos)) {
+      clock_eat_mouse_input(ctx);
+    }
+  }
+
   this->last_used_id = 0;
   UI_pop_layout(this);
 }
