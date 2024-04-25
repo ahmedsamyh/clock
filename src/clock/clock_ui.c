@@ -46,13 +46,12 @@ UI UI_make(Context* ctx, Font* font, Vector2f pos) {
   res.btn_padding = (Vector2f) {4.f, 4.f};
   res.text_input_width = 12;
   res.bg_padding = (Vector2f) {10.f, 10.f};
+  res.bg_color = COLOR_GRAY12;
   res.text_input_cursor_blink_alarm.alarm_time = 0.5f;
   res.show_text_input_cursor = true;
   res.draw_element_stack = UI_Draw_element_stack_make();
-  res.move_area = (Rect) {
-    .pos = {0.f, 0.f},
-    .size = {12.f, 12.f}
-  };
+  res.titlebar_height = 16.f;
+  res.titlebar_color = COLOR_BLACK;
   return res;
 }
 
@@ -126,22 +125,9 @@ void UI_Draw_element_stack_free(UI_Draw_element_stack* stack) {
 
 void UI_begin(UI* this, UI_Layout_kind kind) {
   UI_Layout layout = {0};
-  layout.pos = this->pos;
+  layout.pos = v2f_add(this->pos, (Vector2f) {0.f, (this->titlebar_height*2.f)});
   layout.kind = kind;
   UI_push_layout(this, layout);
-
-  // move area
-  UI_Layout* top = UI_top_layout(this);
-  ASSERT(top);
-
-  UI_Draw_element_stack_push(&this->draw_element_stack, (UI_Draw_element) {
-      .type = UI_DRAW_ELEMENT_TYPE_RECT,
-      .pos = v2f_add(UI_Layout_available_pos(top), this->move_area.pos),
-      .size = this->move_area.size,
-      .fill_color = color_alpha(COLOR_RED, 0.65f),
-    });
-
-  UI_spacing(this, this->move_area.size.x);
 }
 
 bool UI_button(UI* this, cstr text, int char_size, Color color) {
@@ -562,7 +548,14 @@ void UI_background(UI* this) {
     .size = v2f_add(v2f_sub(max, min), v2f_muls(this->bg_padding, 2.f))
   };
 
-  draw_box(this->ctx, rect, COLOR_WHITE, color_alpha(COLOR_NAVY, 1.f));
+
+  Rect titlebar = {
+    .pos = v2f_sub(this->pos, (Vector2f) {this->bg_padding.x, 0.f}),
+    .size = (Vector2f) {rect.size.x, this->titlebar_height},
+  };
+
+  draw_box(this->ctx, titlebar, COLOR_WHITE, this->titlebar_color);
+  draw_box(this->ctx, rect, COLOR_WHITE, this->bg_color);
 }
 
 void UI_end(UI* this) {
@@ -591,7 +584,6 @@ void UI_end(UI* this) {
     default: ASSERT(0 && "Unreachable!");
     }
   }
-
   Context* ctx = this->ctx;
 
   Vector2f min = {FLT_MAX, FLT_MAX};
@@ -604,9 +596,9 @@ void UI_end(UI* this) {
     if (this->layouts[i].pos.y + this->layouts[i].size.y > max.y) max.y = this->layouts[i].pos.y + this->layouts[i].size.y;
   }
 
-  Rect rect = {
-    .pos = v2f_add(min, this->move_area.pos),
-    .size = this->move_area.size,
+  Rect titlebar = {
+    .pos = v2f_sub(this->pos, (Vector2f) {this->bg_padding.x, 0.f}),
+    .size = (Vector2f) {max.x - min.x, this->titlebar_height},
   };
 
   if (!clock_mouse_held(ctx, MOUSE_BUTTON_LEFT)) {
@@ -614,8 +606,8 @@ void UI_end(UI* this) {
   }
 
   if (clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT) &&
-      Rect_contains_point(rect, ctx->mpos)) {
-    this->pos_offset = v2f_sub(ctx->mpos, rect.pos);
+      Rect_contains_point(titlebar, ctx->mpos)) {
+    this->pos_offset = v2f_sub(v2f_sub(ctx->mpos, titlebar.pos), (Vector2f) {this->bg_padding.x, 0.f});
     this->is_moving = true;
   }
 
@@ -626,7 +618,7 @@ void UI_end(UI* this) {
 
   // eat mouse input if clicked on ui rect
   {
-    rect = (Rect) {
+    Rect rect = {
       .pos = v2f_sub(min, this->bg_padding),
       .size = v2f_add(v2f_sub(max, min), v2f_muls(this->bg_padding, 2.f))
     };

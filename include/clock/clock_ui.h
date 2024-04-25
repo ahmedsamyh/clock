@@ -66,13 +66,15 @@ struct UI {
   Context* ctx;
   Font* font;
   Vector2f bg_padding;
+  Color bg_color;
   Vector2f pos;
   Vector2f pos_offset;
   bool is_moving;
   Alarm text_input_cursor_blink_alarm;
   bool show_text_input_cursor;
   UI_Draw_element_stack draw_element_stack;
-  Rect move_area;
+  float titlebar_height;
+  Color titlebar_color;
 };
 
 UI UI_make(Context* ctx, Font* font, Vector2f pos);
