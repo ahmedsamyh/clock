@@ -633,6 +633,8 @@ void mouse_scroll_callback(GLFWwindow* window, float64 xoffset, float64 yoffset)
 void window_resize_callback(GLFWwindow* window, int width, int height) {
   Context* ctx = (Context*)glfwGetWindowUserPointer(window);
 
+  if ((width <= 0) || (height <= 0)) return;
+
   ctx->win->width = width;
   ctx->win->height = height;
 
@@ -774,12 +776,12 @@ void draw_imm_triangle_3d(Context* ctx, Vector3f p0, Vector3f p1, Vector3f p2, C
     r->vertices[i].color = c;
   }
   Renderer_use_color_shader(r);
+  set_matrices(ctx);
+
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 3, r->vertices));
 
   gl(glDrawArrays(GL_TRIANGLES, 0, 3));
-
-  set_matrices(ctx);
 }
 
 void draw_imm_triangle(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Color c0, Color c1, Color c2) {
@@ -801,10 +803,10 @@ void draw_imm_triangle(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, Colo
     r->vertices[i].color = c;						\
   }									\
   Renderer_use_color_shader(r);						\
+  set_matrices(ctx);							\
   gl(gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo)));			\
   gl(gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 4, r->vertices))); \
-  gl(glDrawArrays(draw_type, 0, 4));					\
-  set_matrices(ctx)
+  gl(glDrawArrays(draw_type, 0, 4))
 
 // TODO: Should we render quads in term of Render_imm_triangle?
 // From what i understand rn about opengl, more draw calls -> bad, so by implementing Render_imm_quad
@@ -974,11 +976,10 @@ void draw_imm_line3d(Context* ctx, Vector3f p0, Vector3f p1, Color c0, Color c1)
   }
 
   Renderer_use_color_shader(r);
+  set_matrices(ctx);
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 2, r->vertices));
   gl(glDrawArrays(GL_LINE_STRIP, 0, 2));
-
-  set_matrices(ctx);
 }
 
 void draw_imm_line(Context* ctx, Vector2f p0, Vector2f p1, Color c0, Color c1) {
@@ -1010,11 +1011,10 @@ void draw_point_3d(Context* ctx, Vector3f pos, Color col) {
     r->vertices[i].color = c;
   }
 
+  set_matrices(ctx);
   gl(glBindBuffer(GL_ARRAY_BUFFER, r->vbo));
   gl(glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(Vertex) * 1, r->vertices));
   gl(glDrawArrays(GL_POINTS, 0, 1));
-
-  set_matrices(ctx);
 }
 
 void draw_point(Context* ctx, Vector2f p, Color col) {
@@ -1153,6 +1153,8 @@ void set_blend_mode(const Blendmode mode) {
 // Shader
 
 int create_shader(const char* vert_src, const char* frag_src) {
+  if (!vert_src && !frag_src) return 0;
+
   gl(unsigned int vert = glCreateShader(GL_VERTEX_SHADER));
   if (vert == 0) {
     log_f(LOG_ERROR, "Failed to create vertex shader!");
