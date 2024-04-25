@@ -259,14 +259,11 @@ void clock_deinit(Context* ctx) {
 }
 
 Vector2f clock_mpos_world(Context* ctx) {
-  if (ctx->use_camera_view) {
-    return (Vector2f) {
-      .x = ctx->mpos.x - ctx->camera.x,
-      .y = ctx->mpos.y - ctx->camera.y,
-    };
-  }
-
-  return clock_mpos_screen(ctx);
+  ASSERT(ctx->use_camera_view);
+  return (Vector2f) {
+    .x = ctx->mpos.x - ctx->camera.x,
+    .y = ctx->mpos.y - ctx->camera.y,
+  };
 }
 
 Vector2f clock_mpos_screen(Context* ctx) {
