@@ -8,7 +8,7 @@ int main(void) {
   Font font = {0};
   if (!Font_init(&font, ctx, "resources/fonts/WayfarersToyBoxRegular-gxxER.ttf")) return 1;
 
-  UI ui = UI_make(ctx, &font);
+  UI ui = UI_make(ctx, &font, (Vector2f) {100.f, 100.f});
 
   Sprite spr = {0};
   if (!Sprite_init(&spr, Resman_load_texture_from_file(ctx->resman, "resources/gfx/flower.png"), 1, 1)) return 1;
@@ -17,13 +17,11 @@ int main(void) {
   char text_input[text_input_size] = {0};
   uint32 text_cursor = 0;
 
-  Vector2f ui_pos = {100.f, 100.f};
-
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
     clock_clear(ctx, COLOR_MIDNIGHT_BLUE);
 
-    UI_begin(&ui, &ui_pos, UI_LAYOUT_KIND_VERT);
+    UI_begin(&ui, UI_LAYOUT_KIND_VERT);
 
     UI_text(&ui, "Big Text", 32, COLOR_WHITE);
     UI_text(&ui, "Smol Text", 12, COLOR_WHITE);

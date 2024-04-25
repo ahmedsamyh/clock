@@ -36,11 +36,12 @@ void UI_Layout_push_widget(UI_Layout* this, Vector2f size) {
   }
 }
 
-UI UI_make(Context* ctx, Font* font) {
+UI UI_make(Context* ctx, Font* font, Vector2f pos) {
   UI res;
   res.active_id = -1;
   res.layouts_count = 0;
   res.ctx = ctx;
+  res.pos = pos;
   res.font = font;
   res.btn_padding = (Vector2f) {4.f, 4.f};
   res.text_input_width = 12;
@@ -123,10 +124,9 @@ void UI_Draw_element_stack_free(UI_Draw_element_stack* stack) {
   Arena_free(&stack->arena);
 }
 
-void UI_begin(UI* this, Vector2f* pos, UI_Layout_kind kind) {
+void UI_begin(UI* this, UI_Layout_kind kind) {
   UI_Layout layout = {0};
-  this->active_pos = pos;
-  layout.pos = *pos;
+  layout.pos = this->pos;
   layout.kind = kind;
   UI_push_layout(this, layout);
 
@@ -615,13 +615,13 @@ void UI_end(UI* this) {
 
   if (clock_mouse_pressed(ctx, MOUSE_BUTTON_LEFT) &&
       Rect_contains_point(rect, ctx->mpos)) {
-    this->active_pos_offset = v2f_sub(ctx->mpos, rect.pos);
+    this->pos_offset = v2f_sub(ctx->mpos, rect.pos);
     this->is_moving = true;
   }
 
   if (this->is_moving) {
     clock_eat_mouse_input(ctx);
-    *this->active_pos = v2f_sub(ctx->mpos, this->active_pos_offset);
+    this->pos = v2f_sub(ctx->mpos, this->pos_offset);
   }
 
   // eat mouse input if clicked on ui rect

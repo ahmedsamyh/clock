@@ -66,8 +66,8 @@ struct UI {
   Context* ctx;
   Font* font;
   Vector2f bg_padding;
-  Vector2f* active_pos;
-  Vector2f active_pos_offset;
+  Vector2f pos;
+  Vector2f pos_offset;
   bool is_moving;
   Alarm text_input_cursor_blink_alarm;
   bool show_text_input_cursor;
@@ -75,7 +75,7 @@ struct UI {
   Rect move_area;
 };
 
-UI UI_make(Context* ctx, Font* font);
+UI UI_make(Context* ctx, Font* font, Vector2f pos);
 void UI_push_layout(UI* this, UI_Layout layout);
 UI_Layout UI_pop_layout(UI* this);
 UI_Layout* UI_top_layout(UI* this);
@@ -83,7 +83,7 @@ void UI_begin_layout(UI* this, UI_Layout_kind kind);
 void UI_end_layout(UI* this);
 void UI_free(UI* this);
 
-void UI_begin(UI* this, Vector2f* pos, UI_Layout_kind kind);
+void UI_begin(UI* this, UI_Layout_kind kind);
 bool UI_button(UI* this, cstr text, int char_size, Color color);
 void UI_text(UI* this, cstr text, int char_size, Color color);
 void UI_spacing(UI* this, float spacing);
