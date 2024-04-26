@@ -6,6 +6,7 @@
 #include <commonlib.h>
 #include <assert.h>
 #include <string.h>
+#include "default_font.c"
 
 //
 // Private functions to this file
@@ -143,7 +144,11 @@ Context* clock_init(unsigned int window_width, unsigned int window_height, float
 
   set_blend_mode(BLENDMODE_ALPHA);
 
+  // TODO: Why are we using camera view by default???
   clock_use_camera_view(ctx, true);
+
+  // load default font
+  if (!Font_init_from_memory(&ctx->default_font, ctx, romulus_bytes, "[DEFAULT_FONT] romulus.ttf")) return NULL;
 
   clock_init_keys(ctx);
 
@@ -250,6 +255,7 @@ void clock_clear(Context* ctx, Color color) {
 }
 
 void clock_deinit(Context* ctx) {
+  Font_deinit(&ctx->default_font);
   Renderer_deinit(ctx->ren);
   Window_deinit(ctx->win);
   Resman_unload_every_texture(ctx->resman);

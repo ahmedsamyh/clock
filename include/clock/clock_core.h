@@ -69,6 +69,7 @@ struct Context {
   bool text_entered;
   bool key_input_handled;
   bool mouse_input_handled;
+  Font default_font;
 };
 
 Context* clock_init(unsigned int window_width, unsigned int window_height, float window_scale_x, float window_scale_y, const char* title, uint32 flags);
@@ -86,7 +87,6 @@ Vector3f clock_screen_to_world_3d(Context* ctx, Vector3f pos);
 Vector2f clock_screen_to_world(Context* ctx, Vector2f pos);
 Vector3f clock_world_to_screen_3d(Context* ctx, Vector3f pos);
 Vector2f clock_world_to_screen(Context* ctx, Vector2f pos);
-
 void clock_begin_scissor(Context* ctx, Rect rect);
 void clock_end_scissor(Context* ctx);
 
