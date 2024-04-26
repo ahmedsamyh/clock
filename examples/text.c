@@ -8,7 +8,7 @@ int main(void) {
   }
 
   Font font = {0};
-  if (!Font_init_from_file(&font, ctx, "resources/fonts/iosevka-regular.ttf")) {
+  if (!Font_init_from_file(&font, ctx, "resources/fonts/WayfarersToyBoxRegular-gxxER.ttf")) {
     return 1;
   }
 

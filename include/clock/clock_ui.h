@@ -75,9 +75,12 @@ struct UI {
   UI_Draw_element_stack draw_element_stack;
   float titlebar_height;
   Color titlebar_color;
+  cstr title;
+  int titlebar_padding;
+  int title_char_size;
 };
 
-UI UI_make(Context* ctx, Font* font, Vector2f pos);
+UI UI_make(Context* ctx, Font* font, Vector2f pos, cstr title);
 void UI_push_layout(UI* this, UI_Layout layout);
 UI_Layout UI_pop_layout(UI* this);
 UI_Layout* UI_top_layout(UI* this);

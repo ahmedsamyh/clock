@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 int main(void) {
-  Context* ctx = clock_init(800, 800, 1.f, 1.f, "Drawing Sprites", WINDOW_RESIZABLE|WINDOW_VSYNC);
+  Context* ctx = clock_init(800, 800, 1.f, 1.f, "Drawing Sprites", WINDOW_RESIZABLE);
 
   if (ctx == NULL) {
     return 1;
@@ -12,7 +12,7 @@ int main(void) {
 
   Texture* khu_tex = Resman_load_texture_from_file(ctx->resman, "resources/gfx/khu_sheet.png");
 
-  if (!Sprite_init(&spr, khu_tex, 3, 1)) {
+  if (!Sprite_init(&spr, Resman_load_texture_from_file(ctx->resman, "D:/pictures/image0.jpg"), 1, 1)) {
     return 1;
   }
 
@@ -36,8 +36,8 @@ int main(void) {
     const float S = 10.f;
     const float scale_min = 0.35f;
     if (clock_key_held(ctx, KEY_A)) {
-      spr.scale.x = spr.scale.x <= scale_min ? scale_min : spr.scale.x - S * delta;
-      spr.scale.y = spr.scale.y <= scale_min ? scale_min : spr.scale.y - S * delta;
+      spr.scale.x = (spr.scale.x - S * delta) < scale_min ? scale_min : spr.scale.x - S * delta;
+      spr.scale.y = (spr.scale.y - S * delta) < scale_min ? scale_min : spr.scale.y - S * delta;
     }
     if (clock_key_held(ctx, KEY_S)) {
       spr.scale.x += S * delta;
@@ -62,6 +62,11 @@ int main(void) {
     Sprite_animate_hframe(&spr, delta);
 
     spr.pos = ctx->mpos;
+    if (clock_key_held(ctx, KEY_SPACE))
+      Renderer_use_custom_shader(ctx->ren, tex_vert_shader, slurp_file("resources/shaders/outline.frag"));
+    else
+      Renderer_use_texture_shader(ctx->ren);
+
     draw_sprite(ctx, &spr);
 
     clock_end_draw(ctx);

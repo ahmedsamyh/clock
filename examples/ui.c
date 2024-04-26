@@ -8,7 +8,7 @@ int main(void) {
   Font font = {0};
   if (!Font_init(&font, ctx, "resources/fonts/WayfarersToyBoxRegular-gxxER.ttf")) return 1;
 
-  UI ui = UI_make(ctx, &font, (Vector2f) {100.f, 100.f});
+  UI ui = UI_make(ctx, &font, (Vector2f) {100.f, 100.f}, "UI window");
 
   Sprite spr = {0};
   if (!Sprite_init(&spr, Resman_load_texture_from_file(ctx->resman, "resources/gfx/flower.png"), 1, 1)) return 1;

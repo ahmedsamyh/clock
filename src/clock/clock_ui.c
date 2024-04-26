@@ -36,7 +36,7 @@ void UI_Layout_push_widget(UI_Layout* this, Vector2f size) {
   }
 }
 
-UI UI_make(Context* ctx, Font* font, Vector2f pos) {
+UI UI_make(Context* ctx, Font* font, Vector2f pos, cstr title) {
   UI res;
   res.active_id = -1;
   res.layouts_count = 0;
@@ -50,8 +50,11 @@ UI UI_make(Context* ctx, Font* font, Vector2f pos) {
   res.text_input_cursor_blink_alarm.alarm_time = 0.5f;
   res.show_text_input_cursor = true;
   res.draw_element_stack = UI_Draw_element_stack_make();
-  res.titlebar_height = 16.f;
   res.titlebar_color = COLOR_BLACK;
+  res.title = title;
+  res.title_char_size = 16;
+  res.titlebar_padding = 4;
+  res.titlebar_height = (float)(res.title_char_size + (res.titlebar_padding*2.f));
   return res;
 }
 
@@ -555,6 +558,7 @@ void UI_background(UI* this) {
   };
 
   draw_box(this->ctx, titlebar, COLOR_WHITE, this->titlebar_color);
+  draw_text(this->ctx, this->font, this->title, (Vector2f) {titlebar.pos.x, titlebar.pos.y + this->titlebar_padding}, this->title_char_size, COLOR_WHITE);
   draw_box(this->ctx, rect, COLOR_WHITE, this->bg_color);
 }
 
