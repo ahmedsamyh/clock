@@ -62,11 +62,6 @@ int main(void) {
     Sprite_animate_hframe(&spr, delta);
 
     spr.pos = ctx->mpos;
-    if (clock_key_held(ctx, KEY_SPACE))
-      Renderer_use_custom_shader(ctx->ren, tex_vert_shader, slurp_file("resources/shaders/outline.frag"));
-    else
-      Renderer_use_texture_shader(ctx->ren);
-
     draw_sprite(ctx, &spr);
 
     clock_end_draw(ctx);

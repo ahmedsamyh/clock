@@ -77,6 +77,10 @@ if "!arg!"=="vector_gen" (
   call shell build sprite
   call shell build text
   call shell build ui
+) else if "!arg!"=="path_drop" (
+  call shell build clock !config!
+
+  call shell cl !COMMON_CFLAGS! examples\path_drop.c /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! !LIBS!
 ) else if "!arg!"=="camera" (
   call shell build clock !config!
 

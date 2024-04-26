@@ -14,26 +14,20 @@ int main(void) {
 
   cstr text = "The quick brown fox jumps over the lazy dog";
 
+  int char_size = 32;
+
   while (!clock_should_quit(ctx)) {
     clock_begin_draw(ctx);
     clock_clear(ctx, color_from_hex(0xFF141414));
 
-    float y = 0.f;
-    int char_size = 32;
-    if (clock_key_held(ctx, KEY_SPACE)) {
-      for (size_t i = 0; i < 4; ++i) {
-	draw_text(ctx, &font, text, (Vector2f) {ctx->mpos.x / char_size, y}, char_size, COLOR_MAGENTA);
-	y += char_size;
-	char_size -= 1;
-	draw_text(ctx, &font, text, (Vector2f) {ctx->mpos.x / char_size, y}, char_size, COLOR_GOLD);
-	y += char_size;
-	char_size -= 1;
-	draw_text(ctx, &font, text, (Vector2f) {ctx->mpos.x / char_size, y}, char_size, COLOR_ORANGE);
-	y += char_size;
-	char_size -= 1;
-	draw_text(ctx, &font, text, (Vector2f) {ctx->mpos.x / char_size, y}, char_size, COLOR_CYAN);
-      }
+    if (clock_key_pressed(ctx, KEY_W)) {
+      char_size += 1;
     }
+    if (clock_key_pressed(ctx, KEY_W)) {
+      char_size -= 1;
+      if (char_size <= 2) char_size = 2;
+    }
+    draw_text(ctx, &font, text, (Vector2f) {50.f, 50.f}, char_size, COLOR_WHITE);
 
     clock_end_draw(ctx);
   }
