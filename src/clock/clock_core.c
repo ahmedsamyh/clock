@@ -18,9 +18,9 @@ static void set_view_matrix(Context* ctx) {
   if (ctx->use_camera_view) {
     // TODO: Do we have to flip the y-axis of the camera here?
     Vector3f camera_flipped = {
-      ctx->camera.x,
-      ctx->camera.y,
-      ctx->camera.z,
+      -ctx->camera.x,
+      -ctx->camera.y,
+      -ctx->camera.z,
     };
     translate = Mat4_translate(Mat4_identity(), camera_flipped);
   }
@@ -283,31 +283,31 @@ void clock_use_camera_view(Context* ctx, bool use) {
 // TODO: Maybe use a matrix multiplication in converting from space to space
 Vector3f clock_screen_to_world_3d(Context* ctx, Vector3f pos) {
   return (Vector3f) {
-    .x = pos.x - ctx->camera.x,
-    .y = pos.y - ctx->camera.y,
-    .z = pos.z - ctx->camera.z,
-  };
-}
-
-Vector2f clock_screen_to_world(Context* ctx, Vector2f pos) {
-  return (Vector2f) {
-    .x = pos.x - ctx->camera.x,
-    .y = pos.y - ctx->camera.y,
-  };
-}
-
-Vector3f clock_world_to_screen_3d(Context* ctx, Vector3f pos) {
-  return (Vector3f) {
     .x = pos.x + ctx->camera.x,
     .y = pos.y + ctx->camera.y,
     .z = pos.z + ctx->camera.z,
   };
 }
 
-Vector2f clock_world_to_screen(Context* ctx, Vector2f pos) {
+Vector2f clock_screen_to_world(Context* ctx, Vector2f pos) {
   return (Vector2f) {
     .x = pos.x + ctx->camera.x,
     .y = pos.y + ctx->camera.y,
+  };
+}
+
+Vector3f clock_world_to_screen_3d(Context* ctx, Vector3f pos) {
+  return (Vector3f) {
+    .x = pos.x - ctx->camera.x,
+    .y = pos.y - ctx->camera.y,
+    .z = pos.z - ctx->camera.z,
+  };
+}
+
+Vector2f clock_world_to_screen(Context* ctx, Vector2f pos) {
+  return (Vector2f) {
+    .x = pos.x - ctx->camera.x,
+    .y = pos.y - ctx->camera.y,
   };
 }
 
