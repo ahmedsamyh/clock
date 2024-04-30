@@ -68,17 +68,23 @@ bool Font_generate_atlas_tex(Font* font, int character_size) {
       if (i > codepoint_max) codepoint_max = i;
 
       int w, h, xoff, yoff;
-      uint8* single_channel_bitmap = stbtt_GetCodepointBitmap(&font->font, 0, stbtt_ScaleForPixelHeight(&font->font, (float32)character_size), i, &w, &h, &xoff, &yoff);
+      float sf = stbtt_ScaleForPixelHeight(&font->font, (float32)character_size);
+      uint8* single_channel_bitmap = stbtt_GetCodepointBitmap(&font->font, 0, sf, i, &w, &h, &xoff, &yoff);
       stbtt_FreeBitmap(single_channel_bitmap, NULL);
 
       Rect rect = {
 	.pos = (Vector2f){tex_size.x, 0.f},
 	.size = (Vector2f){(float32)w, (float32)h}
       };
+      int ascent, descent, line_gap;
+      stbtt_GetFontVMetrics(&font->font, &ascent, &descent, &line_gap);
+
+      /* log_info("Codepoint %d: ascent: %f, desent: %f, line_gap: %f", i, ascent*sf, descent*sf, line_gap*sf); */
 
       Codepoint_rect crect = {
-	.offset = (Vector2f){(float32)xoff, (float32)yoff},
-	.rect = rect};
+	.offset = (Vector2f){(float32)xoff, (float32)yoff + (ascent*sf + descent*sf + line_gap*sf)},
+	.rect = rect
+      };
       hmput(font->codepoint_rect_map, i, crect);
       tex_size.x += w;
 

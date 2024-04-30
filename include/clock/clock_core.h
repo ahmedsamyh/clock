@@ -26,6 +26,21 @@ typedef struct Window Window;
 typedef struct Renderer Renderer;
 typedef struct Render_target Render_target;
 typedef enum   Blendmode Blendmode;
+typedef enum   Text_align Text_align;
+
+// Text align
+enum Text_align {
+  TEXT_ALIGN_TOP_LEFT,
+  TEXT_ALIGN_TOP_CENTER,
+  TEXT_ALIGN_TOP_RIGHT,
+  TEXT_ALIGN_CENTER_LEFT,
+  TEXT_ALIGN_CENTER_CENTER,
+  TEXT_ALIGN_CENTER_RIGHT,
+  TEXT_ALIGN_BOTTOM_LEFT,
+  TEXT_ALIGN_BOTTOM_CENTER,
+  TEXT_ALIGN_BOTTOM_RIGHT,
+  TEXT_ALIGN_COUNT,
+};
 
 // Window
 struct Window {
@@ -169,6 +184,7 @@ void draw_point_3d(Context* ctx, Vector3f p, Color col);
 void draw_point(Context* ctx, Vector2f p, Color col);
 // TODO: do we want a 3d version for draw_text()?
 void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color);
+void draw_text_aligned(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color, Text_align align);
 void draw_bezier_curve(Context* ctx, Vector2f p0, Vector2f p1, Vector2f p2, int res, Color color);
 
 Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size);

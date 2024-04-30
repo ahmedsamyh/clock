@@ -1025,8 +1025,13 @@ void draw_point(Context* ctx, Vector2f p, Color col) {
 }
 
 void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color) {
+  draw_text_aligned(ctx, font, text, pos, char_size, color, TEXT_ALIGN_TOP_LEFT);
+}
+
+void draw_text_aligned(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size, Color color, Text_align align) {
   if (!text) return;
   Sprite spr = {0};
+  if (font == NULL) font = &ctx->default_font;
   if (font->current_character_size != char_size) {
     Font_generate_atlas_tex(font, char_size);
   }
@@ -1035,6 +1040,8 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
     // TODO: close program
   }
   spr.tint = color;
+
+  Vector2f full_text_size = get_text_size(ctx, font, text, char_size);
 
   Vector2f codepoint_pos = pos;
   while (*text != '\0') {
@@ -1051,13 +1058,53 @@ void draw_text(Context* ctx, Font* font, cstr text, Vector2f pos, int char_size,
     spr.tex_rect = rect;
     spr.pos.y = pos.y + kv->value.offset.y;
     // NOTE: Make the text draw from topleft
-    spr.pos.y += font->current_character_size;
+    /* spr.pos.y += font->current_character_size; */
     spr.pos.x = codepoint_pos.x + kv->value.offset.x;
+
+    switch (align) {
+    case TEXT_ALIGN_TOP_LEFT: {
+    } break;
+    case TEXT_ALIGN_TOP_CENTER: {
+      spr.pos.x -= full_text_size.x / 2.f;
+    } break;
+    case TEXT_ALIGN_TOP_RIGHT: {
+      spr.pos.x -= full_text_size.x;
+    } break;
+    case TEXT_ALIGN_CENTER_LEFT: {
+      spr.pos.y -= full_text_size.y / 2.f;
+    } break;
+    case TEXT_ALIGN_CENTER_CENTER: {
+      spr.pos.y -= full_text_size.y / 2.f;
+      spr.pos.x -= full_text_size.x / 2.f;
+    } break;
+    case TEXT_ALIGN_CENTER_RIGHT: {
+      spr.pos.y -= full_text_size.y / 2.f;
+      spr.pos.x -= full_text_size.x;
+    } break;
+    case TEXT_ALIGN_BOTTOM_LEFT: {
+      spr.pos.y -= full_text_size.y;
+    } break;
+    case TEXT_ALIGN_BOTTOM_CENTER: {
+      spr.pos.y -= full_text_size.y;
+      spr.pos.x -= full_text_size.x / 2.f;
+    } break;
+    case TEXT_ALIGN_BOTTOM_RIGHT: {
+      spr.pos.y -= full_text_size.y;
+      spr.pos.x -= full_text_size.x;
+    } break;
+    default: ASSERT(0 && "Unreachable!");
+    }
+
     draw_sprite(ctx, &spr);
 
     int adv, lsb;
     stbtt_GetCodepointHMetrics(&font->font, codepoint, &adv, &lsb);
     codepoint_pos.x += (adv * sf) + (lsb * sf);
+    if (*(text+1) != '\0') {
+      int next_codepoint = *(text+1);
+      int kern = stbtt_GetCodepointKernAdvance(&font->font, codepoint, next_codepoint);
+      codepoint_pos.x += kern*sf;
+    }
     *text++;
   }
 }
@@ -1076,21 +1123,34 @@ Vector2f get_text_size(Context* ctx, Font* font, cstr text, int char_size) {
   (void)ctx;
   Vector2f size = {0};
   if (text == NULL) return size;
-  size.y = (float32)char_size;
+  size.y = 0.f;
   while (*text != '\0') {
     int codepoint = *text;
 
     float sf = stbtt_ScaleForPixelHeight(&font->font, (float32)char_size);
 
-    Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint);
-    if (kv == NULL) {
-      // could not find codepoint in font, so continue
-      continue;
-    }
+    /* Codepoint_rect_KV* kv = hmgetp_null(font->codepoint_rect_map, codepoint); */
+    /* if (kv == NULL) { */
+    /*   // could not find codepoint in font, so continue */
+    /*   continue; */
+    /* } */
     /* Rect rect = kv->value.rect; */
+
+    int x0, y0, x1, y1;
+    stbtt_GetCodepointBox(&font->font, codepoint, &x0, &y0, &x1, &y1);
+
+    float height = (y1 - y0)*sf;
+    if (height > size.y) {
+      size.y = height;
+    }
 
     int adv, lsb;
     stbtt_GetCodepointHMetrics(&font->font, codepoint, &adv, &lsb);
+    if (*(text+1) != '\0') {
+      int next_codepoint = *(text+1);
+      int kern = stbtt_GetCodepointKernAdvance(&font->font, codepoint, next_codepoint);
+      size.x += kern*sf;
+    }
     *text++;
     size.x += (adv * sf) + (lsb * sf);
   }
