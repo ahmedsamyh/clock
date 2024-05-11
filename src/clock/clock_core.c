@@ -201,6 +201,7 @@ void clock_begin_draw(Context* ctx) {
   Window* win = ctx->win;
 
   clock_update_mouse(ctx);
+  clock_update_controllers(ctx);
 
   ctx->tp2 = glfwGetTime();
   ctx->delta = (float32)(ctx->tp2 - ctx->tp1);
@@ -517,6 +518,30 @@ void clock_eat_input(Context* ctx) {
   clock_eat_mouse_input(ctx);
 }
 
+void clock_update_controllers(Context* ctx) {
+  for (int i = 0; i < XUSER_MAX_COUNT; ++i) {
+    XINPUT_STATE state = {0};
+
+    DWORD result = XInputGetState(i, &state);
+    if (result == ERROR_SUCCESS) {
+      // ith controller is connected
+      setup_controller(&ctx->controllers[i], state);
+    } else {
+      // ith controller is not connected
+    }
+  }
+}
+
+bool get_controller(Controller* ctrler, Context* ctx, int idx) {
+  if (idx < 0 || idx >= XUSER_MAX_COUNT) {
+    return false;
+  }
+
+  *ctrler = ctx->controllers[idx];
+
+  return true;
+}
+
 bool clock_key_state(Context* ctx, int key, Key_state state) {
   if (ctx->key_input_handled) return false;
   Key_KV* k_kv = hmgetp(ctx->key_map, key);
@@ -587,6 +612,35 @@ bool clock_mouse_released(Context* ctx, int button) {
 
 bool clock_mouse_held(Context* ctx, int button) {
   return clock_mouse_state(ctx, button, MOUSE_STATE_HELD);
+}
+
+bool clock_controller_state(Controller* ctrler, int button, Controller_state state) {
+  switch (state) {
+  case CONTROLLER_STATE_PRESSED: {
+    return ctrler->buttons[button].pressed;
+  } break;
+  case CONTROLLER_STATE_HELD: {
+    return ctrler->buttons[button].held;
+  } break;
+  case CONTROLLER_STATE_RELEASED: {
+    return ctrler->buttons[button].released;
+  } break;
+  default: ASSERT(0 && "Unreachable!");
+  }
+
+  return false;
+}
+
+bool clock_controller_held(Controller* ctrler, int button) {
+  return clock_controller_state(ctrler, button, CONTROLLER_STATE_HELD);
+}
+
+bool clock_controller_pressed(Controller* ctrler, int button) {
+  return clock_controller_state(ctrler, button, CONTROLLER_STATE_PRESSED);
+}
+
+bool clock_controller_released(Controller* ctrler, int button) {
+  return clock_controller_state(ctrler, button, CONTROLLER_STATE_RELEASED);
 }
 
 //

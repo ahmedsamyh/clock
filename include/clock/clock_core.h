@@ -15,6 +15,7 @@
 #include <clock/clock_color.h>
 #include <clock/clock_font.h>
 #include <clock/clock_resource_manager.h>
+#include <clock/clock_controller.h>
 #include <stdbool.h>
 #include <commonlib.h>
 
@@ -27,6 +28,7 @@ typedef struct Renderer Renderer;
 typedef struct Render_target Render_target;
 typedef enum   Blendmode Blendmode;
 typedef enum   Text_align Text_align;
+
 
 // Text align
 enum Text_align {
@@ -78,18 +80,18 @@ struct Context {
   Mouse     m[MOUSE_BUTTONS_COUNT];
   Resource_manager* resman;
   int       ren_tex_image_slot;
-#define TMP_BUFF_SIZE (1024)
-  char tmpbuff[TMP_BUFF_SIZE];
-  uint32 last_entered_character; // text input
-  bool text_entered;
-  bool key_input_handled;
-  bool mouse_input_handled;
-  Font default_font;
+#define     TMP_BUFF_SIZE (1024)
+  char      tmpbuff[TMP_BUFF_SIZE];
+  uint32    last_entered_character; // text input
+  bool      text_entered;
+  bool      key_input_handled;
+  bool      mouse_input_handled;
+  Font      default_font;
+  Controller controllers[XUSER_MAX_COUNT];
 };
 
 Context* clock_init(unsigned int window_width, unsigned int window_height, float window_scale_x, float window_scale_y, const char* title, uint32 flags);
 bool clock_should_quit(Context* ctx);
-void clock_update_mouse(Context* ctx);
 void clock_begin_draw(Context* ctx);
 void clock_end_draw(Context* ctx);
 void clock_flush_draw(Context *ctx);
@@ -108,9 +110,12 @@ void clock_end_scissor(Context* ctx);
 // Input
 void clock_init_keys(Context* ctx);
 void clock_update_keys(Context* ctx);
+void clock_update_mouse(Context* ctx);
 void clock_eat_key_input(Context* ctx);
 void clock_eat_mouse_input(Context* ctx);
 void clock_eat_input(Context* ctx);
+void clock_update_controllers(Context* ctx);
+bool get_controller(Controller* ctrller, Context* ctx, int idx);
 // !!!IMPORTANT!!!: User must not access the Context::k[] array manually for key input, rather must use these functions!!!
 bool clock_key_state(Context* ctx, int key, Key_state state);
 bool clock_key_pressed(Context* ctx, int key);
@@ -124,6 +129,12 @@ bool clock_mouse_state(Context* ctx, int button, Mouse_state state);
 bool clock_mouse_pressed(Context* ctx, int button);
 bool clock_mouse_released(Context* ctx, int button);
 bool clock_mouse_held(Context* ctx, int button);
+
+// !!!IMPORTANT!!!: User must not access the Controller::buttons array manually for controller input, rather must use these functions!!!
+bool clock_controller_state(Controller* ctrler, int button, Controller_state state);
+bool clock_controller_held(Controller* ctrler, int button);
+bool clock_controller_pressed(Controller* ctrler, int button);
+bool clock_controller_released(Controller* ctrler, int button);
 
 // Misc (Context agnostic)
 void set_vsync(bool enable);

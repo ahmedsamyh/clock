@@ -5,10 +5,13 @@ set CLEAN_QUIET=1
 
 set INCLUDE_DIRS=.\include
 set LIB_DIR=.\lib
-set LIBS=user32.lib shell32.lib gdi32.lib kernel32.lib clock.lib
+set CLOCK_LINKER_FLAGS=/LIBPATH:!LIB_DIR!
+set CLOCK_LIBS=glfw3_mt.lib
 set IGNORED_WARNINGS_RAW= 4201 4127 4005
 
-set COMMON_LINKER_FLAGS=/LIBPATH:!LIB_DIR! /NODEFAULTLIB:clock.lib
+set EXEC_LIBS=clock.lib user32.lib shell32.lib gdi32.lib kernel32.lib
+
+set EXEC_LINKER_FLAGS=/LIBPATH:!LIB_DIR!
 
 for %%i in (!IGNORED_WARNINGS_RAW!) do (
   set IGNORED_WARNINGS=!IGNORED_WARNINGS! /wd%%i
@@ -16,7 +19,7 @@ for %%i in (!IGNORED_WARNINGS_RAW!) do (
 
 set COMMON_CFLAGS=/Z7 /W4 /nologo /MTd !IGNORED_WARNINGS! /MP
 
-set CLOCK_FILES=clock_core clock_math clock_vector clock_matrix clock_texture clock_sprite clock_rect clock_resource_manager clock_render_target clock_color clock_font clock_timer clock_ui
+set CLOCK_FILES=clock_core clock_math clock_vector clock_matrix clock_texture clock_sprite clock_rect clock_resource_manager clock_render_target clock_color clock_font clock_timer clock_ui clock_controller
 set CLOCK_SRCS=
 set CLOCK_OBJS=
 for %%i in (!CLOCK_FILES!) do (
@@ -77,38 +80,42 @@ if "!arg!"=="vector_gen" (
   call shell build sprite
   call shell build text
   call shell build ui
+) else if "!arg!"=="xinput" (
+  call shell build clock !config!
+
+  call shell cl !COMMON_CFLAGS! examples\xinput.c /I!INCLUDE_DIRS! /link !EXEC_LINKER_FLAGS! !EXEC_LIBS! XInput.lib
 ) else if "!arg!"=="path_drop" (
   call shell build clock !config!
 
-  call shell cl !COMMON_CFLAGS! examples\path_drop.c /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\path_drop.c /I!INCLUDE_DIRS! /link !EXEC_LINKER_FLAGS! !EXEC_LIBS!
 ) else if "!arg!"=="camera" (
   call shell build clock !config!
 
-  call shell cl !COMMON_CFLAGS! examples\camera.c /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\camera.c /I!INCLUDE_DIRS! /link !EXEC_LINKER_FLAGS! !EXEC_LIBS!
 ) else if "!arg!"=="bezier" (
   call shell build clock !config!
 
-  call shell cl !COMMON_CFLAGS! examples\bezier.c /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\bezier.c /I!INCLUDE_DIRS! /link !EXEC_LINKER_FLAGS! !EXEC_LIBS!
 ) else if "!arg!"=="rotating_quad" (
   call shell build clock !config!
 
-  call shell cl !COMMON_CFLAGS! examples\rotating_quad.c /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\rotating_quad.c /I!INCLUDE_DIRS! /link !EXEC_LINKER_FLAGS! !EXEC_LIBS!
 ) else if "!arg!"=="sprite" (
   call shell build clock !config!
 
-  call shell cl !COMMON_CFLAGS! examples\sprite.c /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\sprite.c /I!INCLUDE_DIRS! /link !EXEC_LINKER_FLAGS! !EXEC_LIBS!
 ) else if "!arg!"=="text" (
   call shell build clock !config!
 
-  call shell cl !COMMON_CFLAGS! examples\text.c /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\text.c /I!INCLUDE_DIRS! /link !EXEC_LINKER_FLAGS! !EXEC_LIBS!
 ) else if "!arg!"=="ui" (
   call shell build clock !config!
 
-  call shell cl !COMMON_CFLAGS! examples\ui.c /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\ui.c /I!INCLUDE_DIRS! /link !EXEC_LINKER_FLAGS! !EXEC_LIBS!
 ) else if "!arg!"=="input" (
   call shell build clock !config!
 
-  call shell cl !COMMON_CFLAGS! examples\input.c /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! !LIBS!
+  call shell cl !COMMON_CFLAGS! examples\input.c /I!INCLUDE_DIRS! /link !EXEC_LINKER_FLAGS! !EXEC_LIBS!
 ) else if "!arg!"=="clean" (
   call shell clean exe
   call shell clean ilk
@@ -117,11 +124,11 @@ if "!arg!"=="vector_gen" (
 ) else if "!arg!"=="clock" (
   echo Building clock_engine.lib...
   call shell cl !COMMON_CFLAGS! /c !CLOCK_SRCS! src\gl\gl.c /I!INCLUDE_DIRS!
-  call shell lib /nologo !LIB_DIR!\glfw3_mt.lib !CLOCK_OBJS! gl.obj /out:.\lib\clock.lib
+  call shell lib /out:.\lib\clock.lib /nologo !CLOCK_OBJS! gl.obj !CLOCK_LINKER_FLAGS! !CLOCK_LIBS!
 ) else if "!arg!"=="rpg" (
   call shell build clock !config!
 
-  call shell cl !COMMON_CFLAGS! !RPG_SRCS! /Fe:rpg /DDEBUG /I!INCLUDE_DIRS! /link !COMMON_LINKER_FLAGS! clock.lib !LIBS!
+  call shell cl !COMMON_CFLAGS! !RPG_SRCS! /Fe:rpg /DDEBUG /I!INCLUDE_DIRS! /link !EXEC_LINKER_FLAGS! clock.lib !EXEC_LIBS!
 ) else (
   echo ERROR: Unknown subcommand '!arg!'...
   exit /b 1
