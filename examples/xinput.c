@@ -1,10 +1,89 @@
 #include <clock/clock.h>
 #include <xinput.h>
 
+typedef struct Particle {
+  Vector2f pos;
+  Vector2f size;
+  Color color;
+  float lifetime;
+  float time_since_birth;
+} Particle;
+
+Particle Particle_make(Vector2f pos, Vector2f size, Color color) {
+  return (Particle) {
+    .pos = pos,
+    .size = size,
+    .color = color,
+    .lifetime = 1.f,
+    .time_since_birth = 0.f,
+  };
+}
+
+void Particle_draw(Context* ctx, Particle* p) {
+  float t = 1.f - (p->time_since_birth / p->lifetime);
+  Color color = color_alpha(p->color, t);
+
+  Vector2f draw_size = {
+    .x = t * p->size.x,
+    .y = t * p->size.y,
+  };
+
+  draw_rect_centered(ctx, (Rect) {p->pos, draw_size}, color);
+}
+
 typedef struct R {
+  Particle* particles; // dynamic-array
+  float accumulator;
+  float particle_spawn_rate;
+
   Vector2f pos;
   float size;
+
+  Color color;
+
+  Context* ctx;
 } R;
+
+R R_make(Context* ctx, Color color) {
+  return (R) {
+    .particles = NULL,
+    .accumulator = 0.f,
+    .particle_spawn_rate = 0.1f,
+    .pos = (Vector2f) {0.f, 0.f},
+    .size = 10.f,
+    .color = color,
+    .ctx = ctx,
+  };
+}
+
+void R_update(R* r) {
+  Context* ctx = r->ctx;
+  r->accumulator += ctx->delta;
+  if (r->accumulator >= r->particle_spawn_rate) {
+    r->accumulator -= r->particle_spawn_rate;
+    Particle p = Particle_make(r->pos, (Vector2f) {r->size, r->size}, r->color);
+    arrput(r->particles, p);
+  }
+
+  for (int i = (int)(arrlenu(r->particles)-1); i >= 0; --i) {
+    Particle* p = &r->particles[i];
+    p->time_since_birth += ctx->delta;
+    if (p->time_since_birth >= p->lifetime) {
+      arrdel(r->particles, i);
+    }
+  }
+
+}
+
+void R_draw(R* r) {
+  Context* ctx = r->ctx;
+  for (int i = (int)(arrlenu(r->particles)-1); i >= 0; --i) {
+    Particle* p = &r->particles[i];
+    Particle_draw(ctx, p);
+  }
+
+  draw_rect_centered(ctx, (Rect) {r->pos, {r->size, r->size}}, r->color);
+}
 
 cstr controller_button_as_str(int button) {
   switch (button) {
@@ -78,8 +157,8 @@ int main(void) {
 
   if (!ctx) return 1;
 
-  R left =  {.size = 10.f};
-  R right = {.size = 10.f};
+  R left =  R_make(ctx, COLOR_GOLD);
+  R right = R_make(ctx, COLOR_MAGENTA);
   const float speed = 120.f;
 
   log_info("Xinput supports %u controllers", XUSER_MAX_COUNT);
@@ -146,8 +225,11 @@ int main(void) {
       }
     }
 
-    draw_rect_centered(ctx, (Rect) {left.pos, {left.size, left.size}}, COLOR_RED);
-    draw_rect_centered(ctx, (Rect) {right.pos, {right.size, right.size}}, COLOR_BLUE);
+    R_update(&left);
+    R_update(&right);
+
+    R_draw(&left);
+    R_draw(&right);
 
     clock_end_draw(ctx);
   }
